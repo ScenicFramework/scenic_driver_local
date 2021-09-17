@@ -116,9 +116,10 @@ int main(int argc, char **argv) {
   memset(&data, 0, sizeof(driver_data_t));
   data.keep_going = true;
 
-  if ( !device_init(&g_device_info) ) {
+  int err = device_init( &g_device_info );
+  if ( err ) {
     send_puts( "Failed to initilize the device" );
-    return 1;
+    return err;
   }
   data.p_ctx = g_device_info.p_ctx;
 
