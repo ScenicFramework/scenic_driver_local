@@ -3,7 +3,7 @@
 #  Copyright 2018-2021 Kry10 Limited
 #
 
-defmodule Scenic.Driver.Nerves do
+defmodule Scenic.Driver.Local do
   @default_limit 29
   @default_layer 0
   @default_opacity 255
@@ -31,7 +31,7 @@ defmodule Scenic.Driver.Nerves do
   ]
 
   @moduledoc """
-  Documentation for `Scenic.Driver.Nerves`.
+  Documentation for `Scenic.Driver.Local`.
 
   Supported config options:\n#{NimbleOptions.docs(@opts_schema)}
 
@@ -42,18 +42,18 @@ defmodule Scenic.Driver.Nerves do
 
   alias Scenic.Driver
 
-  alias Scenic.Driver.Nerves.Calbacks
-  alias Scenic.Driver.Nerves.Input
-  alias Scenic.Driver.Nerves.ToPort
-  alias Scenic.Driver.Nerves.FromPort
-  alias Scenic.Driver.Nerves.Cursor
+  alias Scenic.Driver.Local.Calbacks
+  alias Scenic.Driver.Local.Input
+  alias Scenic.Driver.Local.ToPort
+  alias Scenic.Driver.Local.FromPort
+  alias Scenic.Driver.Local.Cursor
 
   alias Scenic.Math.Matrix
   alias Scenic.Math.Vector2
 
-  @port '/scenic_driver_nerves'
+  @port '/scenic_driver_local'
 
-  @root_id Scenic.ViewPort.root_id()
+  # @root_id Scenic.ViewPort.root_id()
 
   # pid = Process.whereis( :rpidrv )
   # pid = pid(0, 1310, 0)
@@ -61,12 +61,12 @@ defmodule Scenic.Driver.Nerves do
 
   # Process.alive?(pid)
 
-  # Scenic.Driver.Nerves.position( pid, scaled: false )
-  # Scenic.Driver.Nerves.position( pid, centered: false )
-  # Scenic.Driver.Nerves.position( pid, orientation: :normal )
-  # Scenic.Driver.Nerves.position( pid, orientation: :left )
+  # Scenic.Driver.Local.position( pid, scaled: false )
+  # Scenic.Driver.Local.position( pid, centered: false )
+  # Scenic.Driver.Local.position( pid, orientation: :normal )
+  # Scenic.Driver.Local.position( pid, orientation: :left )
 
-  # Scenic.Driver.Nerves.cursor( pid, :crosshair )
+  # Scenic.Driver.Local.cursor( pid, :crosshair )
 
   # ============================================================================
   # external api
@@ -190,7 +190,10 @@ defmodule Scenic.Driver.Nerves do
 
     # open and initialize the window
     Process.flag(:trap_exit, true)
-    executable = :code.priv_dir(:scenic_driver_nerves) ++ @port ++ port_args
+
+    executable =
+      (:code.priv_dir(:scenic_driver_local) ++ @port ++ port_args)
+      |> IO.inspect(label: "executable")
 
     port = Port.open({:spawn, executable}, [:binary, {:packet, 4}])
 

@@ -3,7 +3,7 @@
 #  Copyright 2018-2021 Kry10 Limited
 #
 
-defmodule Scenic.Driver.Nerves.ToPort do
+defmodule Scenic.Driver.Local.ToPort do
   use Bitwise
 
   @cmd_put_script 0x01

@@ -7,11 +7,11 @@
 
 # the "hot point" is always {0, 0}, so orient around that.
 
-defmodule Scenic.Driver.Nerves.Cursor do
+defmodule Scenic.Driver.Local.Cursor do
   alias Scenic.Driver
   alias Scenic.Script
-  alias Scenic.Driver.Nerves.ToPort
-  # alias Scenic.Driver.Nerves.Calbacks
+  alias Scenic.Driver.Local.ToPort
+  # alias Scenic.Driver.Local.Calbacks
 
   require Logger
 

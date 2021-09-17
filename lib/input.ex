@@ -3,12 +3,12 @@
 #  Copyright 2018-2021 Kry10 Limited
 #
 
-defmodule Scenic.Driver.Nerves.Input do
+defmodule Scenic.Driver.Local.Input do
   require Logger
   alias Scenic.Driver
   alias Scenic.Math.Vector2
   alias Scenic.Driver.KeyMap
-  alias Scenic.Driver.Nerves.Cursor
+  alias Scenic.Driver.Local.Cursor
 
   import Driver,
     only: [

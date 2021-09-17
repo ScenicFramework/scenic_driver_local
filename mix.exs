@@ -1,9 +1,9 @@
-defmodule Scenic.Driver.Nerves.MixProject do
+defmodule Scenic.Driver.Local.MixProject do
   use Mix.Project
 
-  @app_name :scenic_driver_nerves
+  @app_name :scenic_driver_local
   @version "0.11.0"
-  @github "https://github.com/boydm/scenic_driver_nerves"
+  @github "https://github.com/boydm/scenic_driver_local"
 
   def project do
     [

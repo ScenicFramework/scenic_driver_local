@@ -3,7 +3,7 @@
 #  Copyright 2018-2021 Kry10 Limited
 #
 
-defmodule Scenic.Driver.Nerves.FromPort do
+defmodule Scenic.Driver.Local.FromPort do
   alias Scenic.ViewPort
   alias Scenic.Driver
 
@@ -68,7 +68,7 @@ defmodule Scenic.Driver.Nerves.FromPort do
     driver =
       driver
       |> assign(:window_size, {win_width, win_height})
-      |> Scenic.Driver.Nerves.set_global_tx()
+      |> Scenic.Driver.Local.set_global_tx()
       |> Driver.request_update()
 
     {:noreply, driver}

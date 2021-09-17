@@ -11,7 +11,7 @@
 
 PREFIX = $(MIX_APP_PATH)/priv
 
-DEFAULT_TARGETS ?= $(PREFIX) $(PREFIX)/scenic_driver_nerves
+DEFAULT_TARGETS ?= $(PREFIX) $(PREFIX)/scenic_driver_local
 
 # Look for the EI library and header files
 # For crosscompiled builds, ERL_EI_INCLUDE_DIR and ERL_EI_LIBDIR must be
@@ -56,7 +56,7 @@ all: $(DEFAULT_TARGETS)
 $(PREFIX):
 	mkdir -p $@
 
-$(PREFIX)/scenic_driver_nerves: $(SRCS)
+$(PREFIX)/scenic_driver_local: $(SRCS)
 	$(CC) $(CFLAGS) -o $@ $(SRCS) $(LDFLAGS)
 
 clean:

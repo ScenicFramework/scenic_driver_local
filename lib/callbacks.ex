@@ -3,7 +3,7 @@
 #  Copyright 2018-2021 Kry10 Limited
 #
 
-defmodule Scenic.Driver.Nerves.Calbacks do
+defmodule Scenic.Driver.Local.Calbacks do
   @moduledoc false
 
   alias Scenic.Driver
@@ -13,7 +13,7 @@ defmodule Scenic.Driver.Nerves.Calbacks do
   alias Scenic.Assets.Stream
   alias Scenic.Math.Vector2
 
-  alias Scenic.Driver.Nerves.ToPort
+  alias Scenic.Driver.Local.ToPort
 
   import Driver,
     only: [
@@ -24,7 +24,7 @@ defmodule Scenic.Driver.Nerves.Calbacks do
     ]
 
   # same as scenic/script.ex
-  @root_id Scenic.ViewPort.root_id()
+  # @root_id Scenic.ViewPort.root_id()
 
   # --------------------------------------------------------
   @doc false
