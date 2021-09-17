@@ -1,0 +1,103 @@
+Just examples...
+
+iex(1)> InputEvent.enumerate()
+[
+  {"/dev/input/event0",
+   %InputEvent.Info{
+     bus: 3,
+     input_event_version: "1.0.1",
+     name: "Microsoft Natural® Ergonomic Keyboard 4000",
+     product: 219,
+     report_info: [
+       ev_rep: [250, :rep_delay, 33, :rep_delay],
+       ev_led: [:led_numl, :led_capsl, :led_scrolll, :led_misc],
+       ev_msc: [:msc_scan],
+       ev_key: [:key_esc, :key_1, :key_2, :key_3, :key_4, :key_5, :key_6,
+        :key_7, :key_8, :key_9, :key_0, :key_minus, :key_equal, :key_backspace,
+        :key_tab, :key_q, :key_w, :key_e, :key_r, :key_t, :key_y, :key_u,
+        :key_i, :key_o, :key_p, :key_leftbrace, :key_rightbrace, :key_enter,
+        :key_leftctrl, :key_a, :key_s, :key_d, :key_f, :key_g, :key_h, :key_j,
+        :key_k, :key_l, ...]
+     ],
+     vendor: 1118,
+     version: 273
+   }},
+  {"/dev/input/event1",
+   %InputEvent.Info{
+     bus: 3,
+     input_event_version: "1.0.1",
+     name: "Microsoft Natural® Ergonomic Keyboard 4000",
+     product: 219,
+     report_info: [
+       ev_rep: [250, :rep_delay, 33, :rep_delay],
+       ev_msc: [:msc_scan],
+       ev_abs: [
+         abs_volume: %{
+           flat: 0,
+           fuzz: 0,
+           max: 1023,
+           min: 0,
+           resolution: 0,
+           value: 0
+         }
+       ],
+       ev_rel: [:rel_hwheel, 12],
+       ev_key: [:key_esc, :key_1, :key_2, :key_3, :key_4, :key_5, :key_6,
+        :key_7, :key_8, :key_9, :key_0, :key_minus, :key_equal, :key_backspace,
+        :key_tab, :key_q, :key_w, :key_e, :key_r, :key_t, :key_y, :key_u,
+        :key_i, :key_o, :key_p, :key_leftbrace, :key_rightbrace, :key_enter,
+        :key_leftctrl, :key_a, :key_s, :key_d, :key_f, :key_g, :key_h, :key_j,
+        ...]
+     ],
+     vendor: 1118,
+     version: 273
+   }},
+  {"/dev/input/event2",
+   %InputEvent.Info{
+     bus: 25,
+     input_event_version: "1.0.1",
+     name: "raspberrypi-ts",
+     product: 0,
+     report_info: [
+       ev_abs: [
+         abs_x: %{flat: 0, fuzz: 0, max: 799, min: 0, resolution: 0, value: 0},
+         abs_y: %{flat: 0, fuzz: 0, max: 479, min: 0, resolution: 0, value: 0},
+         abs_mt_slot: %{
+           flat: 0,
+           fuzz: 0,
+           max: 9,
+           min: 0,
+           resolution: 0,
+           value: 0
+         },
+         abs_mt_position_x: %{
+           flat: 0,
+           fuzz: 0,
+           max: 799,
+           min: 0,
+           resolution: 0,
+           value: 0
+         },
+         abs_mt_position_y: %{
+           flat: 0,
+           fuzz: 0,
+           max: 479,
+           min: 0,
+           resolution: 0,
+           value: 0
+         },
+         abs_mt_tracking_id: %{
+           flat: 0,
+           fuzz: 0,
+           max: 65535,
+           min: 0,
+           resolution: 0,
+           value: 0
+         }
+       ],
+       ev_key: [:btn_touch]
+     ],
+     vendor: 0,
+     version: 0
+   }}
+]
