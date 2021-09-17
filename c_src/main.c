@@ -115,7 +115,12 @@ int main(int argc, char **argv) {
   // prep the driver data
   memset(&data, 0, sizeof(driver_data_t));
   data.keep_going = true;
-  data.p_ctx = device_init( &g_device_info );
+
+  if ( !device_init(&g_device_info) ) {
+    send_puts( "Failed to initilize the device" );
+    return 1;
+  }
+  data.p_ctx = g_device_info.p_ctx;
 
   // signal the app that the window is ready
   send_ready();

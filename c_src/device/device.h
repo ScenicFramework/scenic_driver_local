@@ -5,6 +5,6 @@
 */
 
 
-NVGcontext* device_init( device_info_t* p_info );
-void device_close( device_info_t* p_info );
-void device_swap_buffers();
+int device_init( device_info_t* p_info );
+int device_close( device_info_t* p_info );
+int device_swap_buffers();
