@@ -59,6 +59,13 @@ typedef struct {
 
 
 typedef struct {
+  // options from the command line
+  int debug_mode;
+  int layer;
+  int global_opacity;
+  int cursor;
+
+  // internal data tracking
   int screen_width;
   int screen_height;
   NVGcontext* p_ctx;

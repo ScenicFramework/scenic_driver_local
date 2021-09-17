@@ -5,6 +5,6 @@
 */
 
 
-NVGcontext* device_init_video_core( device_info_t* p_info, int debug_mode, int layer, int global_opacity );
+NVGcontext* device_init( device_info_t* p_info );
 
 void device_swap_buffers();

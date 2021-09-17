@@ -1,3 +1,4 @@
+// heavily informed by https://github.com/verypossible-labs/scenic_driver_egl
 
 #define _GNU_SOURCE
 #include <sys/types.h>

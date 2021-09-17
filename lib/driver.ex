@@ -183,10 +183,16 @@ defmodule Scenic.Driver.Local do
         false -> 0
       end
 
+    internal_cursor =
+      case opts[:cursor] do
+        true -> 1
+        false -> 0
+      end
+
     {:ok, layer} = Keyword.fetch(opts, :layer)
     {:ok, opacity} = Keyword.fetch(opts, :opacity)
 
-    port_args = to_charlist(" #{debug_mode} #{layer} #{opacity}")
+    port_args = to_charlist(" #{internal_cursor} #{layer} #{opacity} #{debug_mode}")
 
     # open and initialize the window
     Process.flag(:trap_exit, true)

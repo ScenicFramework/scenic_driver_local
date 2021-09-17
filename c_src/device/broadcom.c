@@ -47,7 +47,7 @@ egl_data_t g_egl_data = {0};
 
 //---------------------------------------------------------
 // setup the video core
-NVGcontext* device_init_video_core( device_info_t* p_info, int debug_mode, int layer, int global_opacity ) {
+NVGcontext* device_init( device_info_t* p_info ) {
   int screen_width, screen_height;
 
   // initialize the bcm_host from broadcom
@@ -139,7 +139,7 @@ NVGcontext* device_init_video_core( device_info_t* p_info, int debug_mode, int l
 
   dst_rect.x = 0;
   dst_rect.y = 0;
-  if ( debug_mode ) {
+  if ( p_info->debug_mode ) {
     dst_rect.width = screen_width / 2;
     dst_rect.height = screen_height / 2;
   } else {
@@ -161,12 +161,19 @@ NVGcontext* device_init_video_core( device_info_t* p_info, int debug_mode, int l
   VC_DISPMANX_ALPHA_T alpha =
   {
       DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS,
-      global_opacity, /*alpha 0->255*/
+      p_info->global_opacity, /*alpha 0->255*/
       0
   };
-  DISPMANX_ELEMENT_HANDLE_T dispman_element = vc_dispmanx_element_add (dispman_update, dispman_display,
-  layer, &dst_rect, 0/*src*/,
-  &src_rect, DISPMANX_PROTECTION_NONE, &alpha, 0/*clamp*/, 0/*transform*/);
+  DISPMANX_ELEMENT_HANDLE_T dispman_element = vc_dispmanx_element_add(
+    dispman_update,
+    dispman_display,
+    p_info->layer,
+    &dst_rect,
+    0/*src*/,
+    &src_rect,
+    DISPMANX_PROTECTION_NONE,
+    &alpha, 0/*clamp*/, 0/*transform*/
+  );
   result = vc_dispmanx_update_submit_sync(dispman_update);
   if (result != 0) {
     send_puts("RPI driver error: Unable to start dispmanx element");

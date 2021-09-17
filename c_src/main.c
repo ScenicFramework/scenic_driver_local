@@ -90,14 +90,17 @@ int main(int argc, char **argv) {
   // test_endian();
 
   // super simple arg check
-  if ( argc != 4 ) {
+  if ( argc != 5 ) {
     send_puts("Argument check failed!");
     printf("\r\nscenic_driver_nerves_rpi should be launched via the Scenic.Driver.Nerves.Rpi library.\r\n\r\n");
     return 0;
   }
-  int debug_mode = atoi(argv[1]);
-  int layer = atoi(argv[2]);
-  int global_opacity = atoi(argv[3]);
+
+  // ingest the command line options
+  g_device_info.cursor = atoi(argv[1]);
+  g_device_info.layer = atoi(argv[2]);
+  g_device_info.global_opacity = atoi(argv[3]);
+  g_device_info.debug_mode = atoi(argv[4]);
 
   // init the hashtables
   init_scripts();
@@ -112,7 +115,7 @@ int main(int argc, char **argv) {
   // prep the driver data
   memset(&data, 0, sizeof(driver_data_t));
   data.keep_going = true;
-  data.p_ctx = device_init_video_core( &g_device_info, debug_mode, layer, global_opacity );
+  data.p_ctx = device_init( &g_device_info );
 
   // signal the app that the window is ready
   send_ready();
