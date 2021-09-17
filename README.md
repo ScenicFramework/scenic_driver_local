@@ -1,4 +1,4 @@
-# # scenic_driver_nerves_rpi
+# # scenic_driver_nerves
 
 The main driver for rendering [Scenic](https://github.com/boydm/scenic) scenes on a Raspberry Pi device.
 
@@ -11,7 +11,7 @@ regarding multi-touch.
 In your Nerves applications dependencies include the following line
 
     ...
-    {:scenic_driver_nerves_rpi, , "~> 0.10"}
+    {:scenic_driver_nerves, , "~> 0.11"}
     ...
 
 ## Configuration
@@ -24,7 +24,7 @@ to the driver list in your ViewPort's config.exs file.
           default_scene: {Sample.Scene.Simple, nil},
           drivers: [
             %{
-              module: Scenic.Driver.Nerves.Rpi,
+              module: Scenic.Driver.Nerves,
             }
           ]
         }
@@ -46,7 +46,7 @@ the screen.
           default_scene: {Sample.Scene.Simple, nil},
           drivers: [
             %{
-              module: Scenic.Driver.Nerves.Rpi,
+              module: Scenic.Driver.Nerves,
             }
           ]
         }
