@@ -1,4 +1,4 @@
-# # scenic_driver_nerves
+# # scenic_driver_local
 
 This is intended to be the main driver for rendering [Scenic](https://github.com/boydm/scenic) on a local computer. For now it only works on RPI3 and below under Nerves.
 
