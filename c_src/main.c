@@ -126,6 +126,7 @@ int main(int argc, char **argv) {
     handle_stdio_in( &data );
   }
 
+  device_close( &g_device_info );
   return 0;
 }
 

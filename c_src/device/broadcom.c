@@ -244,6 +244,9 @@ NVGcontext* device_init( device_info_t* p_info ) {
 }
 
 
+void device_close( device_info_t* p_info ) {
+}
+
 void device_swap_buffers() {
   eglSwapBuffers( g_egl_data.display, g_egl_data.surface );
 }
