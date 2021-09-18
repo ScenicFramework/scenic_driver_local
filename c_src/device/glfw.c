@@ -305,8 +305,3 @@ int device_swap_buffers() {
 void device_poll() {
   glfwPollEvents();
 }
-
-//---------------------------------------------------------
-void device_clear() {
-  glClear( GL_COLOR_BUFFER_BIT );
-}

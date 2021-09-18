@@ -250,4 +250,3 @@ int device_swap_buffers() {
 }
 
 void device_poll() {}
-void device_clear() {}

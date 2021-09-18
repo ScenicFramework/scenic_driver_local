@@ -577,7 +577,7 @@ void render( driver_data_t* p_data )
 
   // render the scene
   nvgBeginFrame( p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio );
-  device_clear();
+  glClear( GL_COLOR_BUFFER_BIT );
 
   // set the global transform
   nvgTransform(
