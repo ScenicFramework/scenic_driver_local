@@ -14,6 +14,11 @@ defmodule Scenic.Driver.Local do
     orientation: [type: {:in, [:normal, :left, :right, :upside_down]}, default: :normal]
   ]
 
+  @window_schema [
+    title: [type: :string, default: "Scenic Window"],
+    resizeable: [type: :boolean, default: "false"],
+  ]
+
   @opts_schema [
     name: [type: {:or, [:atom, :string]}],
     limit_ms: [type: :non_neg_integer, default: @default_limit],
@@ -24,10 +29,19 @@ defmodule Scenic.Driver.Local do
       type: {:custom, __MODULE__, :validate_calibration, []},
       default: []
     ],
-    position: [type: :keyword_list, keys: @position_schema],
+    position: [
+      type: :keyword_list,
+      keys: @position_schema,
+      default: []
+    ],
+    window: [type: :keyword_list, keys: @window_schema],
     # cursor: [type: {:in, [:none, :pointer, :crosshair, :text, :hand]}, default: :none],
     cursor: [type: :boolean, default: false],
-    key_mapper: [type: :atom, default: Scenic.KeyMap.USEnglish]
+    key_mapper: [type: :atom, default: Scenic.KeyMap.USEnglish],
+    on_close: [
+      type: {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
+      default: :restart
+    ]
   ]
 
   @moduledoc """
@@ -39,6 +53,8 @@ defmodule Scenic.Driver.Local do
 
   use Scenic.Driver
   require Logger
+
+  import IEx
 
   alias Scenic.Driver
 
@@ -55,7 +71,7 @@ defmodule Scenic.Driver.Local do
 
   # @root_id Scenic.ViewPort.root_id()
 
-  # pid = Process.whereis( :rpidrv )
+  # pid = Process.whereis( :local )
   # pid = pid(0, 1310, 0)
   # GenServer.call( pid, :dump )
 
@@ -237,7 +253,9 @@ defmodule Scenic.Driver.Local do
     send(self(), {:_set_cursor_, :touch_spot})
 
     # send message so input handling gets set up later
-    send(self(), :_init_input_)
+    if function_exported?(InputEvent, :__info__, 1) do
+      send(self(), :_init_input_)
+    end
 
     {:ok, driver}
   end
@@ -305,7 +323,6 @@ defmodule Scenic.Driver.Local do
     driver =
       driver
       |> assign(:position, new_opts)
-      # |> assign(:cursor_pos, {log_w / 2, log_h / 2})
       |> set_global_tx()
       |> Driver.request_update()
 

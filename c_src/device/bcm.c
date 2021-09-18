@@ -31,7 +31,6 @@
 
 #define DEFAULT_SCREEN    0
 
-
 typedef struct {
   EGLDisplay display;
   EGLConfig config;
@@ -41,25 +40,24 @@ typedef struct {
   int minor_version;
 } egl_data_t;
 
-
 egl_data_t g_egl_data = {0};
-
 
 //---------------------------------------------------------
 // setup the video core
 int device_init( device_info_t* p_info ) {
-  int screen_width, screen_height;
 
   // initialize the bcm_host from broadcom
   bcm_host_init();
 
   // query the monitor attached to HDMI
-  if ( graphics_get_display_size( DEFAULT_SCREEN, &screen_width, &screen_height) < 0 ) {
-    send_puts("RPI driver error: Unable to query the default screen on HDMI");
+  int width, height;
+  if ( graphics_get_display_size( DEFAULT_SCREEN, &width, &height) < 0 ) {
+    log_error("RPI driver error: Unable to query the default screen on HDMI");
     return -1;
   }
-  p_info->screen_width = screen_width;
-  p_info->screen_height = screen_height;
+  p_info->width = width;
+  p_info->height = height;
+  p_info->ratio = 1.0f;
 
 
   //-----------------------------------
@@ -69,7 +67,7 @@ int device_init( device_info_t* p_info ) {
   // get a handle to the display
   EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   if ( display == EGL_NO_DISPLAY ) {
-    send_puts("RPI driver error: Unable get handle to the default screen on HDMI");
+    log_error("RPI driver error: Unable get handle to the default screen on HDMI");
     return -1;
   }
     g_egl_data.display = display;
@@ -80,7 +78,7 @@ int device_init( device_info_t* p_info ) {
   EGLint minor_version;
   // returns a pass/fail boolean
   if ( eglInitialize(display, &major_version, &minor_version) == EGL_FALSE ) {
-    send_puts("RPI driver error: Unable initialize EGL");
+    log_error("RPI driver error: Unable initialize EGL");
     return -1;
   }
   g_egl_data.major_version = major_version;
@@ -107,7 +105,7 @@ int device_init( device_info_t* p_info ) {
 
    // get an appropriate EGL frame buffer configuration
   if ( eglChooseConfig(display, attribute_list, &config, 1, &num_config) == EGL_FALSE ) {
-    send_puts("RPI driver error: Unable to get usable display config");
+    log_error("RPI driver error: Unable to get usable display config");
     return -1;
   }
   g_egl_data.config = config;
@@ -115,7 +113,7 @@ int device_init( device_info_t* p_info ) {
 
   // use open gl es
   if ( eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE ) {
-    send_puts("RPI driver error: Unable to bind to GLES");
+    log_error("RPI driver error: Unable to bind to GLES");
     return -1;
   }
 
@@ -123,11 +121,10 @@ int device_init( device_info_t* p_info ) {
   // create an EGL graphics context
   EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attributes);
   if ( context == EGL_NO_CONTEXT ) {
-    send_puts("RPI driver error: Failed to create EGL context");
+    log_error("RPI driver error: Failed to create EGL context");
     return -1;
   }
   g_egl_data.context = context;
-
 
   //-------------------
   // create the native window and bind it
@@ -140,17 +137,17 @@ int device_init( device_info_t* p_info ) {
   dst_rect.x = 0;
   dst_rect.y = 0;
   if ( p_info->debug_mode ) {
-    dst_rect.width = screen_width / 2;
-    dst_rect.height = screen_height / 2;
+    dst_rect.width = width / 2;
+    dst_rect.height = height / 2;
   } else {
-    dst_rect.width = screen_width;
-    dst_rect.height = screen_height;
+    dst_rect.width = width;
+    dst_rect.height = height;
   }
 
   src_rect.x = 0;
   src_rect.y = 0;
-  src_rect.width = screen_width << 16;
-  src_rect.height = screen_height << 16;
+  src_rect.width = width << 16;
+  src_rect.height = height << 16;
 
   // start the display manager
   DISPMANX_DISPLAY_HANDLE_T dispman_display = vc_dispmanx_display_open(0 /* LCD */);
@@ -176,25 +173,25 @@ int device_init( device_info_t* p_info ) {
   );
   result = vc_dispmanx_update_submit_sync(dispman_update);
   if (result != 0) {
-    send_puts("RPI driver error: Unable to start dispmanx element");
+    log_error("RPI driver error: Unable to start dispmanx element");
     return -1;
   }
 
 
   // create the native window surface
   nativewindow.element = dispman_element;
-  nativewindow.width = screen_width;
-  nativewindow.height = screen_height;
+  nativewindow.width = width;
+  nativewindow.height = height;
   EGLSurface surface = eglCreateWindowSurface(display, config, &nativewindow, NULL);
   if (surface == EGL_NO_SURFACE) {
-    send_puts("RPI driver error: Unable create the native window surface");
+    log_error("RPI driver error: Unable create the native window surface");
     return -1;
   }
   g_egl_data.surface = surface;
 
   // connect the context to the surface and make it current
   if ( eglMakeCurrent(display, surface, surface, context) == EGL_FALSE ) {
-    send_puts("RPI driver error: Unable make the surface current");
+    log_error("RPI driver error: Unable make the surface current");
     return -1;
   }
 
@@ -203,7 +200,7 @@ int device_init( device_info_t* p_info ) {
   // config gles
 
   // set the view port to the new size passed in
-  glViewport(0, 0, screen_width, screen_height);
+  glViewport(0, 0, width, height);
 
   // This turns on/off depth test.
   // With this ON, whatever we draw FIRST is
@@ -232,17 +229,16 @@ int device_init( device_info_t* p_info ) {
   // p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
   p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_DEBUG);
   if (p_info->p_ctx == NULL) {
-    send_puts("RPI driver error: failed nvgCreateGLES2");
+    log_error("RPI driver error: failed nvgCreateGLES2");
     return 0;
   }
 
   // tell the elixir side about the size/shape of the window
-  send_reshape( screen_width, screen_height, screen_width, screen_height );
+  send_reshape( width, height );
 
   // success
   return 0;
 }
-
 
 int device_close( device_info_t* p_info ) {
   return 0;
@@ -252,3 +248,6 @@ int device_swap_buffers() {
   eglSwapBuffers( g_egl_data.display, g_egl_data.surface );
   return 0;
 }
+
+void device_poll() {}
+void device_clear() {}

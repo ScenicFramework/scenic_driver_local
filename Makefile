@@ -9,44 +9,82 @@
 # LDFLAGS	linker flags for linking all binaries
 # ERL_LDFLAGS	additional linker flags for projects referencing Erlang libraries
 
-PREFIX = $(MIX_APP_PATH)/priv
 
+MIX = mix
+PREFIX = $(MIX_APP_PATH)/priv
 DEFAULT_TARGETS ?= $(PREFIX) $(PREFIX)/scenic_driver_local
 
-# Look for the EI library and header files
-# For crosscompiled builds, ERL_EI_INCLUDE_DIR and ERL_EI_LIBDIR must be
-# passed into the Makefile.
-ifeq ($(ERL_EI_INCLUDE_DIR),)
-ERL_ROOT_DIR = $(shell erl -eval "io:format(\"~s~n\", [code:root_dir()])" -s init stop -noshell)
-ifeq ($(ERL_ROOT_DIR),)
-   $(error Could not find the Erlang installation. Check to see that 'erl' is in your PATH)
+# # Look for the EI library and header files
+# # For crosscompiled builds, ERL_EI_INCLUDE_DIR and ERL_EI_LIBDIR must be
+# # passed into the Makefile.
+# ifeq ($(ERL_EI_INCLUDE_DIR),)
+# ERL_ROOT_DIR = $(shell erl -eval "io:format(\"~s~n\", [code:root_dir()])" -s init stop -noshell)
+# ifeq ($(ERL_ROOT_DIR),)
+# 	$(error Could not find the Erlang installation. Check to see that 'erl' is in your PATH)
+# endif
+# ERL_EI_INCLUDE_DIR = "$(ERL_ROOT_DIR)/usr/include"
+# ERL_EI_LIBDIR = "$(ERL_ROOT_DIR)/usr/lib"
+# endif
+
+# # Set Erlang-specific compile and linker flags
+# ERL_CFLAGS ?= -I$(ERL_EI_INCLUDE_DIR)
+# ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
+
+
+ifeq ($(MIX_TARGET),host)
+$(info ~~~~~~in host~~~~~~)
+	CFLAGS = -O3 -std=c99
+
+	ifndef MIX_ENV
+		MIX_ENV = dev
+	endif
+
+	ifdef DEBUG
+		CFLAGS +=  -pedantic -Weverything -Wall -Wextra -Wno-unused-parameter -Wno-gnu
+	endif
+
+	ifeq ($(MIX_ENV),dev)
+		CFLAGS += -g
+	endif
+
+	LDFLAGS += `pkg-config --static --libs glfw3 glew`
+	CFLAGS += `pkg-config --static --cflags glfw3 glew`
+
+	ifneq ($(OS),Windows_NT)
+		CFLAGS += -fPIC
+
+		ifeq ($(shell uname),Darwin)
+$(info ~~~~~~Darwin~~~~~~)
+			LDFLAGS += -framework Cocoa -framework OpenGL -Wno-deprecated
+		else
+$(info ~~~~~~Linux~~~~~~)
+		  LDFLAGS += -lGL -lm -lrt
+		endif
+	endif
+	SRCS = c_src/device/glfw.c
+
+else
+	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif
+	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
+	CFLAGS += -std=gnu99
+
+	BCM := rpi rpi0 rpi2 rpi3 rpi3a
+	EGL := bbb rpi4
+	ifneq ($(filter $(MIX_TARGET),$(BCM)),)
+		LDFLAGS += -lbcm_host
+	   SRCS = c_src/device/bcm.c
+	else
+		LDFLAGS += -ldrm
+	   SRCS = c_src/device/egl.c
+	endif
 endif
-ERL_EI_INCLUDE_DIR = "$(ERL_ROOT_DIR)/usr/include"
-ERL_EI_LIBDIR = "$(ERL_ROOT_DIR)/usr/lib"
-endif
 
-# Set Erlang-specific compile and linker flags
-ERL_CFLAGS ?= -I$(ERL_EI_INCLUDE_DIR)
-ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
 
-#-L/opt/vc/lib -lVCOS
-# LDFLAGS += -lbcm_host -lmnl -lEGL -lGLESv2 -lm-lvcos
-LDFLAGS += -lGLESv2 -lEGL -lm -lbcm_host -lvchostif
+# $(info $(shell printenv))
 
-CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
-
-# Enable for debug messages
-# CFLAGS += -DDEBUG
-
-CFLAGS += -std=gnu99
-
-SRCS = c_src/main.c c_src/nanovg/nanovg.c c_src/comms.c c_src/unix_comms.c \
+SRCS += c_src/main.c c_src/nanovg/nanovg.c c_src/comms.c c_src/unix_comms.c \
 c_src/utils.c c_src/script.c c_src/image.c c_src/font.c \
 c_src/tommyds/src/tommyhashlin.c c_src/tommyds/src/tommyhash.c
-
-SRCS += c_src/device/broadcom.c
-# SRCS += c_src/device/egl.c
-
 
 calling_from_make:
 	mix compile
@@ -63,3 +101,4 @@ clean:
 	$(RM) -rf $(PREFIX)
 
 .PHONY: all clean calling_from_make
+

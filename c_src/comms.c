@@ -50,6 +50,10 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #define MSG_OUT_NEW_TX_ID 0x31
 #define MSG_OUT_NEW_FONT_ID 0x32
 
+#define MSG_OUT_INFO 0xA0
+#define MSG_OUT_WARN 0xA1
+#define MSG_OUT_ERROR 0xA2
+
 
 
 #define CMD_PUT_SCRIPT  0x01
@@ -169,6 +173,51 @@ void send_puts(const char* msg)
   write_exact((byte*) msg, msg_len);
 }
 
+//---------------------------------------------------------
+void log_info(const char* msg)
+{
+  uint32_t msg_len = strlen(msg);
+  uint32_t cmd_len = msg_len + sizeof(uint32_t);
+  uint32_t cmd     = MSG_OUT_INFO;
+
+  cmd_len = ntoh_ui32(cmd_len);
+
+  write_exact((byte*) &cmd_len, sizeof(uint32_t));
+  write_exact((byte*) &cmd, sizeof(uint32_t));
+  write_exact((byte*) msg, msg_len);
+}
+
+//---------------------------------------------------------
+void log_warn(const char* msg)
+{
+  uint32_t msg_len = strlen(msg);
+  uint32_t cmd_len = msg_len + sizeof(uint32_t);
+  uint32_t cmd     = MSG_OUT_WARN;
+
+  cmd_len = ntoh_ui32(cmd_len);
+
+  write_exact((byte*) &cmd_len, sizeof(uint32_t));
+  write_exact((byte*) &cmd, sizeof(uint32_t));
+  write_exact((byte*) msg, msg_len);
+}
+
+//---------------------------------------------------------
+void log_error(const char* msg)
+{
+  uint32_t msg_len = strlen(msg);
+  uint32_t cmd_len = msg_len + sizeof(uint32_t);
+  uint32_t cmd     = MSG_OUT_ERROR;
+
+  cmd_len = ntoh_ui32(cmd_len);
+
+  write_exact((byte*) &cmd_len, sizeof(uint32_t));
+  write_exact((byte*) &cmd, sizeof(uint32_t));
+  write_exact((byte*) msg, msg_len);
+}
+
+
+
+
 
 //---------------------------------------------------------
 void put_sp( const char* msg, void* p ) {
@@ -268,15 +317,11 @@ PACK(typedef struct msg_reshape_t
   uint32_t msg_id;
   uint32_t window_width;
   uint32_t window_height;
-  uint32_t frame_width;
-  uint32_t frame_height;
 }) msg_reshape_t;
 
-void send_reshape(int window_width, int window_height, int frame_width,
-                  int frame_height)
+void send_reshape( int window_width, int window_height )
 {
-  msg_reshape_t msg = {MSG_OUT_RESHAPE, window_width, window_height,
-                       frame_width, frame_height};
+  msg_reshape_t msg = { MSG_OUT_RESHAPE, window_width, window_height };
   write_cmd((byte*) &msg, sizeof(msg_reshape_t));
 }
 
@@ -532,7 +577,8 @@ void render( driver_data_t* p_data )
   id.size = strlen(id.p_data);
 
   // render the scene
-  nvgBeginFrame( p_ctx, g_device_info.screen_width, g_device_info.screen_height, 1.0 );
+  nvgBeginFrame( p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio );
+  device_clear();
 
   // set the global transform
   nvgTransform(

@@ -365,24 +365,9 @@ void render_script( sid_t id, NVGcontext* p_ctx ) {
         render_text( p + i, param, p_ctx );
         i += padded_advance( param );
         break;
-
-
-
-
-
-
-
       case 0x0B:        // draw_sprites
         i = render_sprites( p_ctx, p, i, param );
         break;
-
-
-
-
-
-
-
-
 
       case 0x0F:        // render_script
         // we can reuse the passed in id struct
@@ -391,10 +376,6 @@ void render_script( sid_t id, NVGcontext* p_ctx ) {
         render_script( id, p_ctx );
         i += padded_advance( param );
         break;
-
-
-
-
 
 
 

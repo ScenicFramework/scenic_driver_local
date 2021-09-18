@@ -66,8 +66,9 @@ typedef struct {
   int cursor;
 
   // internal data tracking
-  int screen_width;
-  int screen_height;
+  int width;
+  int height;
+  float ratio;
   NVGcontext* p_ctx;
 } device_info_t;
 

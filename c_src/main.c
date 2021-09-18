@@ -31,11 +31,7 @@
 
 
 #define STDIN_FILENO 0
-
 #define DEFAULT_SCREEN    0
-
-
-#define   MSG_OUT_PUTS              0x02
 
 
 device_info_t g_device_info = {0};
@@ -52,28 +48,29 @@ void test_draw(NVGcontext* p_ctx) {
 
   glClear(GL_COLOR_BUFFER_BIT);
 
-  int screen_width = g_device_info.screen_width;
-  int screen_height = g_device_info.screen_height;
+  int width = g_device_info.width;
+  int height = g_device_info.height;
+  int ratio = g_device_info.ratio;
 
-  nvgBeginFrame(p_ctx, screen_width, screen_height, 1.0f);
+  nvgBeginFrame(p_ctx, width, height, ratio);
 
     // Next, draw graph line
   nvgBeginPath(p_ctx);
   nvgMoveTo(p_ctx, 0, 0);
-  nvgLineTo(p_ctx, screen_width, screen_height);
+  nvgLineTo(p_ctx, width, height);
   nvgStrokeColor(p_ctx, nvgRGBA(0, 160, 192, 255));
   nvgStrokeWidth(p_ctx, 3.0f);
   nvgStroke(p_ctx);
 
   nvgBeginPath(p_ctx);
-  nvgMoveTo(p_ctx, screen_width, 0);
-  nvgLineTo(p_ctx, 0, screen_height);
+  nvgMoveTo(p_ctx, width, 0);
+  nvgLineTo(p_ctx, 0, height);
   nvgStrokeColor(p_ctx, nvgRGBA(0, 160, 192, 255));
   nvgStrokeWidth(p_ctx, 3.0f);
   nvgStroke(p_ctx);
 
   nvgBeginPath(p_ctx);
-  nvgCircle(p_ctx, screen_width / 2, screen_height / 2, 50);
+  nvgCircle(p_ctx, width / 2, height / 2, 50);
   nvgFillColor(p_ctx, nvgRGBAf(0.545f, 0.000f, 0.000f, 1.0f));
   nvgFill(p_ctx);
   nvgStroke(p_ctx);
@@ -130,6 +127,7 @@ int main(int argc, char **argv) {
   while ( data.keep_going && !isCallerDown() ) {
     // check for incoming messages - blocks with a timeout
     handle_stdio_in( &data );
+    device_poll();
   }
 
   device_close( &g_device_info );

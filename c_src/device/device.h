@@ -8,3 +8,5 @@
 int device_init( device_info_t* p_info );
 int device_close( device_info_t* p_info );
 int device_swap_buffers();
+void device_poll();
+void device_clear();

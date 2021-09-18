@@ -75,14 +75,16 @@ void put_sp( const char* msg, void* p );
 void put_sn( const char* msg, int n );
 void put_sf( const char* msg, float f );
 
+void log_info(const char* msg);
+void log_warn(const char* msg);
+void log_error(const char* msg);
 
 void send_image_miss( unsigned int img_id );
 
 // void send_static_texture_miss(const char* key);
 // void send_dynamic_texture_miss(const char* key);
 // void send_font_miss(const char* key);
-void send_reshape(int window_width, int window_height, int frame_width,
-                  int frame_height);
+void send_reshape( int window_width, int window_height );
 void send_key(int key, int scancode, int action, int mods);
 void send_codepoint(unsigned int codepoint, int mods);
 void send_cursor_pos(float xpos, float ypos);
