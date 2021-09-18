@@ -175,12 +175,6 @@ defmodule Scenic.Driver.Local.FromPort do
     {:noreply, driver}
   end
 
-
-
-
-
-
-
   # --------------------------------------------------------
   def handle_port_message(
         <<
@@ -226,7 +220,8 @@ defmodule Scenic.Driver.Local.FromPort do
         # state
         driver
       ) do
-    send_input(driver, {:cursor_pos, {x, y}})
+    pos = scene_coords({x, y}, driver)
+    send_input(driver, {:cursor_pos, pos})
     {:noreply, driver}
   end
 
@@ -245,7 +240,8 @@ defmodule Scenic.Driver.Local.FromPort do
     # action = action_to_atom(action)
     button = button_to_atom(button)
     mods = prep_mods(mods)
-    send_input(driver, {:cursor_button, {button, action, mods, {x, y}}})
+    pos = scene_coords({x, y}, driver)
+    send_input(driver, {:cursor_button, {button, action, mods, pos}})
     {:noreply, driver}
   end
 
@@ -258,9 +254,10 @@ defmodule Scenic.Driver.Local.FromPort do
           x_pos::float-native-size(32),
           y_pos::float-native-size(32)
         >>,
-        driver
+        %{assigns: %{inv_tx: inv_tx}} = driver
       ) do
-    input = {:cursor_scroll, {{x_offset, y_offset}, {x_pos, y_pos}}}
+    pos = scene_coords({x_pos, y_pos}, driver)
+    input = {:cursor_scroll, {{x_offset, y_offset}, pos}}
     send_input(driver, input)
     {:noreply, driver}
   end
@@ -275,7 +272,8 @@ defmodule Scenic.Driver.Local.FromPort do
         >>,
         driver
       ) do
-    send_input(driver, {:viewport, {:exit, {x_pos, y_pos}}})
+    pos = scene_coords({x_pos, y_pos}, driver)
+    send_input(driver, {:viewport, {:exit, pos}})
     {:noreply, driver}
   end
 
@@ -289,7 +287,8 @@ defmodule Scenic.Driver.Local.FromPort do
         >>,
         driver
       ) do
-    send_input(driver, {:viewport, {:enter, {x_pos, y_pos}}})
+    pos = scene_coords({x_pos, y_pos}, driver)
+    send_input(driver, {:viewport, {:enter, pos}})
     {:noreply, driver}
   end
 
@@ -476,4 +475,9 @@ defmodule Scenic.Driver.Local.FromPort do
   # --------------------------------------------------------
   defp codepoint_to_char(codepoint_to_atom)
   defp codepoint_to_char(cp), do: <<cp::utf8>>
+
+  defp scene_coords( {x, y}, %{assigns: %{inv_tx: inv_tx}} ) do
+    Scenic.Math.Vector2.project({x, y}, inv_tx)
+  end
+
 end
