@@ -111,7 +111,6 @@ defmodule Scenic.Driver.Local.FromPort do
         module.fun(reason)
         {:noreply, assign(driver, :closing, true)}
     end
-
   end
 
   # --------------------------------------------------------
@@ -123,7 +122,6 @@ defmodule Scenic.Driver.Local.FromPort do
     Logger.info("scenic_driver_local: #{inspect(msg)}")
     {:noreply, driver}
   end
-
 
   # --------------------------------------------------------
   def handle_port_message(
@@ -154,7 +152,6 @@ defmodule Scenic.Driver.Local.FromPort do
     Logger.error("scenic_driver_local: #{inspect(msg)}")
     {:noreply, driver}
   end
-
 
   # --------------------------------------------------------
   def handle_port_message(
@@ -254,7 +251,7 @@ defmodule Scenic.Driver.Local.FromPort do
           x_pos::float-native-size(32),
           y_pos::float-native-size(32)
         >>,
-        %{assigns: %{inv_tx: inv_tx}} = driver
+        driver
       ) do
     pos = scene_coords({x_pos, y_pos}, driver)
     input = {:cursor_scroll, {{x_offset, y_offset}, pos}}
@@ -291,7 +288,6 @@ defmodule Scenic.Driver.Local.FromPort do
     send_input(driver, {:viewport, {:enter, pos}})
     {:noreply, driver}
   end
-
 
   # --------------------------------------------------------
   def handle_port_message(
@@ -449,23 +445,23 @@ defmodule Scenic.Driver.Local.FromPort do
   defp key_to_atom(code), do: Map.get(@glfw_key_atoms, code, :unknown)
 
   # --------------------------------------------------------
-  @glfw_mod_shift     0x001
-  @glfw_mod_ctrl      0x002
-  @glfw_mod_alt       0x004
-  @glfw_mod_super     0x008
+  @glfw_mod_shift 0x001
+  @glfw_mod_ctrl 0x002
+  @glfw_mod_alt 0x004
+  @glfw_mod_super 0x008
   @glfw_mod_caps_lock 0x010
-  @glfw_mod_num_lock  0x020
+  @glfw_mod_num_lock 0x020
   defp prep_mods(mods) do
     []
-    |> add_if_masked( mods, @glfw_mod_shift, :shift )
-    |> add_if_masked( mods, @glfw_mod_ctrl, :ctrl )
-    |> add_if_masked( mods, @glfw_mod_alt, :alt )
-    |> add_if_masked( mods, @glfw_mod_super, :meta )
-    |> add_if_masked( mods, @glfw_mod_caps_lock, :caps_lock )
-    |> add_if_masked( mods, @glfw_mod_num_lock, :num_lock )
+    |> add_if_masked(mods, @glfw_mod_shift, :shift)
+    |> add_if_masked(mods, @glfw_mod_ctrl, :ctrl)
+    |> add_if_masked(mods, @glfw_mod_alt, :alt)
+    |> add_if_masked(mods, @glfw_mod_super, :meta)
+    |> add_if_masked(mods, @glfw_mod_caps_lock, :caps_lock)
+    |> add_if_masked(mods, @glfw_mod_num_lock, :num_lock)
   end
 
-  defp add_if_masked( list, mods, mask, key ) do
+  defp add_if_masked(list, mods, mask, key) do
     case Bitwise.&&&(mods, mask) do
       0 -> list
       _ -> [key | list]
@@ -476,8 +472,7 @@ defmodule Scenic.Driver.Local.FromPort do
   defp codepoint_to_char(codepoint_to_atom)
   defp codepoint_to_char(cp), do: <<cp::utf8>>
 
-  defp scene_coords( {x, y}, %{assigns: %{inv_tx: inv_tx}} ) do
+  defp scene_coords({x, y}, %{assigns: %{inv_tx: inv_tx}}) do
     Scenic.Math.Vector2.project({x, y}, inv_tx)
   end
-
 end

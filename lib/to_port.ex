@@ -11,10 +11,9 @@ defmodule Scenic.Driver.Local.ToPort do
   @cmd_reset_scripts 0x03
   @cmd_global_tx 0x04
   @cmd_cursor_tx 0x05
-
   @cmd_render 0x06
-
   @cmd_update_cursor 0x07
+  @cmd_clear_color 0x08
 
   @cmd_request_input 0x0A
 
@@ -41,6 +40,22 @@ defmodule Scenic.Driver.Local.ToPort do
   @input_cursor_button 0x08
   @input_cursor_scroll 0x10
   @input_cursor_enter 0x20
+
+  import IEx
+  @doc false
+  def clear_color(color, port) do
+    {:color_rgba, {r, g, b, a}} = Scenic.Color.to_rgba(color)
+
+    msg = <<
+      @cmd_clear_color::unsigned-integer-size(32)-native,
+      r::size(8),
+      g::size(8),
+      b::size(8),
+      a::size(8)
+    >>
+
+    Port.command(port, msg)
+  end
 
   @doc false
   def set_global_tx(

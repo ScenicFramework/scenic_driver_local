@@ -16,7 +16,7 @@ defmodule Scenic.Driver.Local do
 
   @window_schema [
     title: [type: :string, default: "Scenic Window"],
-    resizeable: [type: :boolean, default: "false"],
+    resizeable: [type: :boolean, default: "false"]
   ]
 
   @opts_schema [
@@ -39,7 +39,8 @@ defmodule Scenic.Driver.Local do
     cursor: [type: :boolean, default: false],
     key_mapper: [type: :atom, default: Scenic.KeyMap.USEnglish],
     on_close: [
-      type: {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
+      type:
+        {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
       default: :restart
     ]
   ]
@@ -278,6 +279,10 @@ defmodule Scenic.Driver.Local do
   @doc false
   @impl Scenic.Driver
   defdelegate del_scripts(ids, driver), to: Calbacks
+
+  @doc false
+  @impl Scenic.Driver
+  defdelegate clear_color(color, driver), to: Calbacks
 
   # --------------------------------------------------------
 

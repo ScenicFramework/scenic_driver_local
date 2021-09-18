@@ -56,15 +56,14 @@ The caller will typically be erlang, so use the 2-byte length indicator
 
 
 
-#define CMD_PUT_SCRIPT  0x01
-#define CMD_DEL_SCRIPT  0x02
-#define CMD_RESET       0x03
-#define CMD_GLOBAL_TX   0x04
-#define CMD_CURSOR_TX   0x05
-
-#define CMD_RENDER 0x06
-
+#define CMD_PUT_SCRIPT    0x01
+#define CMD_DEL_SCRIPT    0x02
+#define CMD_RESET         0x03
+#define CMD_GLOBAL_TX     0x04
+#define CMD_CURSOR_TX     0x05
+#define CMD_RENDER        0x06
 #define CMD_UPDATE_CURSOR 0x07
+#define CMD_CLEAR_COLOR   0x08
 
 #define CMD_INPUT 0x0A
 
@@ -667,6 +666,16 @@ void update_cursor( int* p_msg_length, driver_data_t* p_data ) {
 }
 
 //---------------------------------------------------------
+void clear_color( int* p_msg_length ) {
+  byte r, g, b, a;
+  read_bytes_down( &r, 1, p_msg_length );
+  read_bytes_down( &g, 1, p_msg_length );
+  read_bytes_down( &b, 1, p_msg_length );
+  read_bytes_down( &a, 1, p_msg_length );
+  glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+}
+
+//---------------------------------------------------------
 void dispatch_message( int msg_length, driver_data_t* p_data )
 {
 
@@ -709,6 +718,9 @@ void dispatch_message( int msg_length, driver_data_t* p_data )
       update_cursor( &msg_length, p_data );
       break;
 
+    case CMD_CLEAR_COLOR:
+      clear_color( &msg_length );
+      break;
 
   //   case CMD_INPUT:
   //     receive_input(&msg_length, window);

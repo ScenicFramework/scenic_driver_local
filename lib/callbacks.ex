@@ -140,6 +140,13 @@ defmodule Scenic.Driver.Local.Calbacks do
     {:ok, driver}
   end
 
+  # --------------------------------------------------------
+  @doc false
+  def clear_color(color, %{assigns: %{port: port}} = driver) do
+    ToPort.clear_color(color, port)
+    {:ok, driver}
+  end
+
   # ============================================================================
   # message handlers
 
