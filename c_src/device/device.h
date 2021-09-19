@@ -5,7 +5,7 @@
 */
 
 
-int device_init( device_info_t* p_info );
+int device_init( const device_opts_t* p_opts, device_info_t* p_info );
 int device_close( device_info_t* p_info );
 int device_swap_buffers();
 void device_poll();

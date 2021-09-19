@@ -86,23 +86,35 @@ int main(int argc, char **argv) {
 
   // test_endian();
 
+log_info("start main");
+
   // super simple arg check
-  if ( argc != 5 ) {
-    send_puts("Argument check failed!");
-    printf("\r\nscenic_driver_nerves_rpi should be launched via the Scenic.Driver.Nerves.Rpi library.\r\n\r\n");
+  if ( argc != 10 ) {
+    log_error("Wrong number of parameters");
     return 0;
   }
 
   // ingest the command line options
-  g_device_info.cursor = atoi(argv[1]);
-  g_device_info.layer = atoi(argv[2]);
-  g_device_info.global_opacity = atoi(argv[3]);
-  g_device_info.debug_mode = atoi(argv[4]);
+  device_opts_t opts = {0};
+  opts.cursor = atoi(argv[1]);
+  opts.layer = atoi(argv[2]);
+  opts.global_opacity = atoi(argv[3]);
+  opts.antialias = atoi(argv[4]);  
+  opts.debug_mode = atoi(argv[5]);
+  opts.width = atoi(argv[6]);
+  opts.height = atoi(argv[7]);
+  opts.resizable = atoi(argv[8]);
+  opts.title = argv[9];
+
+log_info("init the hashtables");
 
   // init the hashtables
   init_scripts();
   init_fonts();
   init_images();
+
+
+log_info("init transforms");
 
   // initialize the global transform to the identity matrix
   nvgTransformIdentity( data.global_tx );
@@ -110,19 +122,22 @@ int main(int argc, char **argv) {
 
 
   // prep the driver data
-  memset(&data, 0, sizeof(driver_data_t));
   data.keep_going = true;
 
-  int err = device_init( &g_device_info );
+log_info("device_init");
+
+  int err = device_init( &opts, &g_device_info );
   if ( err ) {
     send_puts( "Failed to initilize the device" );
     return err;
   }
   data.p_ctx = g_device_info.p_ctx;
 
+log_info("send_ready");
   // signal the app that the window is ready
   send_ready();
 
+log_info("start loop");
   /* Loop until the calling app closes the window */
   while ( data.keep_going && !isCallerDown() ) {
     // check for incoming messages - blocks with a timeout

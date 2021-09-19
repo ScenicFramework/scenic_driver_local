@@ -59,18 +59,25 @@ typedef struct {
 
 
 typedef struct {
-  // options from the command line
-  int debug_mode;
-  int layer;
-  int global_opacity;
-  int cursor;
-
   // internal data tracking
   int width;
   int height;
   float ratio;
   NVGcontext* p_ctx;
 } device_info_t;
+
+typedef struct {
+  // options from the command line
+  int debug_mode;
+  int layer;
+  int global_opacity;
+  int antialias;
+  int cursor;
+  int width;
+  int height;
+  int resizable;
+  char* title;
+} device_opts_t;
 
 //---------------------------------------------------------
 // combination of a size and location. Do NOT assume the

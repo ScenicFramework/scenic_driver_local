@@ -16,7 +16,7 @@ defmodule Scenic.Driver.Local do
 
   @window_schema [
     title: [type: :string, default: "Scenic Window"],
-    resizeable: [type: :boolean, default: "false"]
+    resizeable: [type: :boolean, default: false]
   ]
 
   @opts_schema [
@@ -29,12 +29,8 @@ defmodule Scenic.Driver.Local do
       type: {:custom, __MODULE__, :validate_calibration, []},
       default: []
     ],
-    position: [
-      type: :keyword_list,
-      keys: @position_schema,
-      default: []
-    ],
-    window: [type: :keyword_list, keys: @window_schema],
+    position: [type: :keyword_list, keys: @position_schema, default: []],
+    window: [type: :keyword_list, keys: @window_schema, default: []],
     # cursor: [type: {:in, [:none, :pointer, :crosshair, :text, :hand]}, default: :none],
     cursor: [type: :boolean, default: false],
     key_mapper: [type: :atom, default: Scenic.KeyMap.USEnglish],
@@ -42,8 +38,11 @@ defmodule Scenic.Driver.Local do
       type:
         {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
       default: :restart
-    ]
+    ],
+    antialias: [type: :boolean, default: true]
   ]
+
+  @mix_target Mix.Nerves.Utils.mix_target()
 
   @moduledoc """
   Documentation for `Scenic.Driver.Local`.
@@ -189,7 +188,7 @@ defmodule Scenic.Driver.Local do
   @doc false
   @impl Scenic.Driver
   def init(driver, opts) do
-    size = driver.viewport.size
+    {width, height} = driver.viewport.size
 
     Logger.info("#{inspect(__MODULE__)}: start: #{inspect(opts)}, pid: #{inspect(self())}")
 
@@ -206,16 +205,35 @@ defmodule Scenic.Driver.Local do
         false -> 0
       end
 
+    antialias =
+      case opts[:antialias] do
+        true -> 1
+        false -> 0
+      end
+
     {:ok, layer} = Keyword.fetch(opts, :layer)
     {:ok, opacity} = Keyword.fetch(opts, :opacity)
 
-    port_args = to_charlist(" #{internal_cursor} #{layer} #{opacity} #{debug_mode}")
+    {:ok, window_opts} = Keyword.fetch(opts, :window)
+    {:ok, title} = Keyword.fetch(window_opts, :title)
+
+    resizeable =
+      case window_opts[:resizeable] do
+        true -> 1
+        false -> 0
+      end
+
+    args =
+      " #{internal_cursor} #{layer} #{opacity} #{antialias} #{debug_mode}" <>
+        " #{width} #{height} #{resizeable} \"#{title}\""
+
+    IO.inspect(args, label: "args")
 
     # open and initialize the window
     Process.flag(:trap_exit, true)
 
     executable =
-      (:code.priv_dir(:scenic_driver_local) ++ @port ++ port_args)
+      (:code.priv_dir(:scenic_driver_local) ++ @port ++ to_charlist(args))
       |> IO.inspect(label: "executable")
 
     port = Port.open({:spawn, executable}, [:binary, {:packet, 4}])
@@ -225,8 +243,8 @@ defmodule Scenic.Driver.Local do
         port: port,
         closing: false,
         screen_factor: 1.0,
-        logical_size: size,
-        window_size: size,
+        logical_size: {width, height},
+        window_size: {width, height},
         on_close: opts[:on_close],
         media: %{},
         position: opts[:position],
@@ -254,9 +272,7 @@ defmodule Scenic.Driver.Local do
     send(self(), {:_set_cursor_, :touch_spot})
 
     # send message so input handling gets set up later
-    if function_exported?(InputEvent, :__info__, 1) do
-      send(self(), :_init_input_)
-    end
+    if @mix_target != :host, do: send(self(), :_init_input_)
 
     {:ok, driver}
   end

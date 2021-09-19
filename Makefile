@@ -64,6 +64,8 @@ $(info ~~~~~~Linux~~~~~~)
 	SRCS = c_src/device/glfw.c
 
 else
+$(info ~~~~~~Device~~~~~~)
+
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99

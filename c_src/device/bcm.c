@@ -44,7 +44,7 @@ egl_data_t g_egl_data = {0};
 
 //---------------------------------------------------------
 // setup the video core
-int device_init( device_info_t* p_info ) {
+int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
 
   // initialize the bcm_host from broadcom
   bcm_host_init();
@@ -136,7 +136,7 @@ int device_init( device_info_t* p_info ) {
 
   dst_rect.x = 0;
   dst_rect.y = 0;
-  if ( p_info->debug_mode ) {
+  if ( p_opts->debug_mode ) {
     dst_rect.width = width / 2;
     dst_rect.height = height / 2;
   } else {
@@ -158,13 +158,13 @@ int device_init( device_info_t* p_info ) {
   VC_DISPMANX_ALPHA_T alpha =
   {
       DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS,
-      p_info->global_opacity, /*alpha 0->255*/
+      p_opts->global_opacity, /*alpha 0->255*/
       0
   };
   DISPMANX_ELEMENT_HANDLE_T dispman_element = vc_dispmanx_element_add(
     dispman_update,
     dispman_display,
-    p_info->layer,
+    p_opts->layer,
     &dst_rect,
     0/*src*/,
     &src_rect,
@@ -226,12 +226,17 @@ int device_init( device_info_t* p_info ) {
   //-------------------
   // initialize nanovg
 
+
+  uint32_t nvg_opts = 0;
+  if ( p_opts->antialias ) nvg_opts |= NVG_ANTIALIAS;
+  if ( p_opts->debug_mode ) nvg_opts |= NVG_DEBUG;
+  p_info->p_ctx = nvgCreateGLES2( nvg_opts );
   // p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
-  p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_DEBUG);
-  if (p_info->p_ctx == NULL) {
-    log_error("RPI driver error: failed nvgCreateGLES2");
-    return 0;
-  }
+  // p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_DEBUG);
+  // if (p_info->p_ctx == NULL) {
+  //   log_error("RPI driver error: failed nvgCreateGLES2");
+  //   return 0;
+  // }
 
   // tell the elixir side about the size/shape of the window
   send_reshape( width, height );

@@ -173,14 +173,14 @@ void set_window_hints(bool f_resizable)
 
 //---------------------------------------------------------
 // set up one-time features of the window
-NVGcontext* setup_window(GLFWwindow* window, int width, int height)
+NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
 {
   // start position tracking with values that are obviously out of the window
   g_glfw_data.last_x      = -1.0f;
   g_glfw_data.last_y      = -1.0f;
 
-  g_glfw_data.window_width  = width;
-  g_glfw_data.window_height = height;
+  g_glfw_data.window_width  = p_opts->width;
+  g_glfw_data.window_height = p_opts->height;
   g_glfw_data.ratio_x = 1.0f;
   g_glfw_data.ratio_y = 1.0f;
 
@@ -201,7 +201,10 @@ NVGcontext* setup_window(GLFWwindow* window, int width, int height)
   glfwGetWindowSize(window, &window_width, &window_height);
   reshape_window( window, window_width, window_height );
 
-  NVGcontext* p_ctx = nvgCreateGL2(NVG_ANTIALIAS | NVG_DEBUG);
+  uint32_t nvg_opts = 0;
+  if ( p_opts->antialias ) nvg_opts |= NVG_ANTIALIAS;
+  if ( p_opts->debug_mode ) nvg_opts |= NVG_DEBUG;
+  NVGcontext* p_ctx = nvgCreateGL2( nvg_opts );
 
   // set up callbacks
   glfwSetFramebufferSizeCallback(window, reshape_framebuffer);
@@ -223,12 +226,7 @@ NVGcontext* setup_window(GLFWwindow* window, int width, int height)
 
 
 //---------------------------------------------------------
-int device_init( device_info_t* p_info ) {
-log_warn( "Hi Boyd" );
-  int width = 1800;
-  int height = 1600;
-  char* title = "Title Goes Here";
-
+int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   // Initialize GLFW
   if ( !glfwInit() )
   {
@@ -246,8 +244,8 @@ log_warn( "Hi Boyd" );
 
   // Create a windowed mode window and its OpenGL context
   g_glfw_data.p_window = glfwCreateWindow(
-    width, height,          // width, height
-    title,
+    p_opts->width, p_opts->height,
+    p_opts->title,
     NULL,                   // which monitor
     NULL
   );
@@ -259,7 +257,7 @@ log_warn( "Hi Boyd" );
 
   // set up one-time features of the window
   g_glfw_data.p_info = p_info;
-  p_info->p_ctx = setup_window( g_glfw_data.p_window, width, height );
+  p_info->p_ctx = setup_window( g_glfw_data.p_window, p_opts );
   p_info->width = g_glfw_data.window_width;
   p_info->height = g_glfw_data.window_height;
 
@@ -293,7 +291,6 @@ int device_close( device_info_t* p_info )
 {
   return 0;
 }
-
 
 //---------------------------------------------------------
 int device_swap_buffers() {
