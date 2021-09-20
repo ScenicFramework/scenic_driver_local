@@ -42,7 +42,12 @@ defmodule Scenic.Driver.Local do
     antialias: [type: :boolean, default: true]
   ]
 
-  @mix_target Mix.Nerves.Utils.mix_target()
+  # figure out what device we are targeting. 
+  @mix_target (case function_exported?(Mix.Nerves.Utils, :mix_target, 0) do
+      true -> Mix.Nerves.Utils.mix_target()
+      false -> Mix.target()
+    end)
+
 
   @moduledoc """
   Documentation for `Scenic.Driver.Local`.

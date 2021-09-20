@@ -41,7 +41,6 @@ defmodule Scenic.Driver.Local.ToPort do
   @input_cursor_scroll 0x10
   @input_cursor_enter 0x20
 
-  import IEx
   @doc false
   def clear_color(color, port) do
     {:color_rgba, {r, g, b, a}} = Scenic.Color.to_rgba(color)
