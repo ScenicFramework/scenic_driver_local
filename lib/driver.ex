@@ -44,10 +44,9 @@ defmodule Scenic.Driver.Local do
 
   # figure out what device we are targeting. 
   @mix_target (case function_exported?(Mix.Nerves.Utils, :mix_target, 0) do
-      true -> Mix.Nerves.Utils.mix_target()
-      false -> Mix.target()
-    end)
-
+                 true -> Mix.Nerves.Utils.mix_target()
+                 false -> Mix.target()
+               end)
 
   @moduledoc """
   Documentation for `Scenic.Driver.Local`.
