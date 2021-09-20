@@ -612,37 +612,6 @@ void render_cursor( driver_data_t* p_data ) {
   render( p_data );
 }
 
-/*
-//---------------------------------------------------------
-void put_font(int* p_msg_length, NVGcontext* p_ctx)
-{
-  // read the size of the font name
-  uint32_t name_bytes;
-  read_bytes_down(&name_bytes, sizeof(uint32_t), p_msg_length);
-
-  // allocate and copy in the font name
-  char* p_name = malloc( name_bytes + 1 );
-  if ( !p_name ) return;
-  read_bytes_down(p_name, name_bytes, p_msg_length);
-  // make sure the name is null terminated
-  p_name[name_bytes] = 0;
-
-  // allocate and read the font blob
-  unsigned int blob_bytes = *p_msg_length;
-  void* p_blob = malloc( blob_bytes );
-  read_bytes_down( p_blob, blob_bytes, p_msg_length );
-
-  // if the font is NOT loaded, then put it into nvg
-  if (nvgFindFont(p_ctx, p_name) < 0) {
-    nvgCreateFontMem(p_ctx, p_name, p_blob, blob_bytes, true);
-  } else {
-    free( p_blob );
-  }
-
-  free(p_name);
-}
-*/
-
 //---------------------------------------------------------
 void set_global_tx( int* p_msg_length, driver_data_t* p_data ) {
   for ( int i = 0; i < 6; i++ ) {
