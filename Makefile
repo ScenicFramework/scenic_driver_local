@@ -31,63 +31,11 @@ DEFAULT_TARGETS ?= $(PREFIX) $(PREFIX)/scenic_driver_local
 # ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
 
 
-
-$(info $(MIX_TARGET))
-$(info $(SCENIC_LOCAL_TARGET))
-
-# ifeq ($(MIX_TARGET),host)
-# $(info ~~~~~~in host~~~~~~)
-# 	CFLAGS = -O3 -std=c99
-
-# 	ifndef MIX_ENV
-# 		MIX_ENV = dev
-# 	endif
-
-# 	ifdef DEBUG
-# 		CFLAGS +=  -pedantic -Weverything -Wall -Wextra -Wno-unused-parameter -Wno-gnu
-# 	endif
-
-# 	ifeq ($(MIX_ENV),dev)
-# 		CFLAGS += -g
-# 	endif
-
-# 	LDFLAGS += `pkg-config --static --libs glfw3 glew`
-# 	CFLAGS += `pkg-config --static --cflags glfw3 glew`
-
-# 	ifneq ($(OS),Windows_NT)
-# 		CFLAGS += -fPIC
-
-# 		ifeq ($(shell uname),Darwin)
-# $(info ~~~~~~Darwin~~~~~~)
-# 			LDFLAGS += -framework Cocoa -framework OpenGL -Wno-deprecated
-# 		else
-# $(info ~~~~~~Linux~~~~~~)
-# 		  LDFLAGS += -lGL -lm -lrt
-# 		endif
-# 	endif
-# 	SRCS = c_src/device/glfw.c
-
-# else
-# $(info ~~~~~~Device~~~~~~)
-
-# 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif
-# 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
-# 	CFLAGS += -std=gnu99
-
-# 	BCM := rpi rpi0 rpi2 rpi3 rpi3a
-# 	EGL := bbb rpi4
-# 	ifneq ($(filter $(MIX_TARGET),$(BCM)),)
-# 		LDFLAGS += -lbcm_host
-# 	   SRCS = c_src/device/bcm.c
-# 	else
-# 		LDFLAGS += -ldrm
-# 	   SRCS = c_src/device/egl.c
-# 	endif
-# endif
-
+# $(info $(MIX_TARGET))
+# $(info $(SCENIC_LOCAL_TARGET))
+# $(info ~~~~~~glfw~~~~~~)
 
 ifeq ($(SCENIC_LOCAL_TARGET),glfw)
-$(info ~~~~~~glfw~~~~~~)
 	CFLAGS = -O3 -std=c99
 
 	ifndef MIX_ENV
@@ -109,10 +57,8 @@ $(info ~~~~~~glfw~~~~~~)
 		CFLAGS += -fPIC
 
 		ifeq ($(shell uname),Darwin)
-$(info ~~~~~~Darwin~~~~~~)
 			LDFLAGS += -framework Cocoa -framework OpenGL -Wno-deprecated
 		else
-$(info ~~~~~~Linux~~~~~~)
 		  LDFLAGS += -lGL -lm -lrt
 		endif
 	endif
@@ -120,7 +66,6 @@ $(info ~~~~~~Linux~~~~~~)
 endif
 
 ifeq ($(SCENIC_LOCAL_TARGET),bcm)
-$(info ~~~~~~bcm~~~~~~)
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -lbcm_host
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
@@ -128,7 +73,6 @@ $(info ~~~~~~bcm~~~~~~)
 endif
 
 ifeq ($(SCENIC_LOCAL_TARGET),egl)
-$(info ~~~~~~egl~~~~~~)
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
