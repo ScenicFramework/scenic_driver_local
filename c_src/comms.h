@@ -16,9 +16,6 @@
   #include "unix_comms.h"
 #endif
 
-// #include <GLES2/gl2.h>
-// #include <GLES2/gl2ext.h>
-
 
 // ntoh means network-to-host endianness
 // hton means host-to-network endianness

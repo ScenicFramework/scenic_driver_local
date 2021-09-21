@@ -152,20 +152,20 @@ static void put_msg_i( char* msg, int n ) {
   send_puts(buff);
 }
 
-static inline GLubyte get_byte( void* p, uint32_t offset ) {
-  return *((GLubyte*)(p + offset));
+static inline byte get_byte( void* p, uint32_t offset ) {
+  return *((byte*)(p + offset));
 }
 
-static inline GLushort get_uint16( void* p, uint32_t offset ) {
-  return ntoh_ui16(*((GLushort*)(p + offset)));
+static inline unsigned short get_uint16( void* p, uint32_t offset ) {
+  return ntoh_ui16(*((unsigned short*)(p + offset)));
 }
 
-static inline GLuint get_uint32( void* p, uint32_t offset ) {
-  return ntoh_ui32(*((GLuint*)(p + offset)));
+static inline unsigned int get_uint32( void* p, uint32_t offset ) {
+  return ntoh_ui32(*((unsigned int*)(p + offset)));
 }
 
-static inline GLfloat get_float( void* p, uint32_t offset ) {
-  return ntoh_f32(*((GLfloat*)(p + offset)));
+static inline float get_float( void* p, uint32_t offset ) {
+  return ntoh_f32(*((float*)(p + offset)));
 }
 
 
@@ -240,14 +240,14 @@ int render_sprites( NVGcontext* p_ctx, void* p, int i, uint16_t  param ) {
 
   // loop the draw commands and draw each
   for ( int n = 0; n < count; n++ ) {
-    GLfloat sx = get_float( p, i );
-    GLfloat sy = get_float( p, i + 4 );
-    GLfloat sw = get_float( p, i + 8 );
-    GLfloat sh = get_float( p, i + 12 );
-    GLfloat dx = get_float( p, i + 16 );
-    GLfloat dy = get_float( p, i + 20 );
-    GLfloat dw = get_float( p, i + 24 );
-    GLfloat dh = get_float( p, i + 28 );
+    float sx = get_float( p, i );
+    float sy = get_float( p, i + 4 );
+    float sw = get_float( p, i + 8 );
+    float sh = get_float( p, i + 12 );
+    float dx = get_float( p, i + 16 );
+    float dy = get_float( p, i + 20 );
+    float dw = get_float( p, i + 24 );
+    float dh = get_float( p, i + 28 );
 
     draw_image( p_ctx, id, sx, sy, sw, sh, dx, dy, dw, dh );
 

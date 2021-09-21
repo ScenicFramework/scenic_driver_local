@@ -7,8 +7,6 @@
 #include <string.h>
 #include "common.h"
 
-// #include <GL/glew.h>
-// #include <GLFW/glfw3.h>
 #include "nanovg/stb_image.h"
 // #include "nanovg/nanovg_gl.h"
 
@@ -115,9 +113,9 @@ void* read_pixels( uint32_t width, uint32_t height, uint32_t format_in, int* p_m
   read_bytes_down( p_buffer, buffer_size, p_msg_length );
 
   void* p_pixels = NULL;
-  GLuint pixel_count = width * height;
-  GLuint src_i;
-  GLuint dst_i;
+  unsigned int pixel_count = width * height;
+  unsigned int src_i;
+  unsigned int dst_i;
   int x, y, comp;
 
   switch (format_in) {
@@ -313,9 +311,9 @@ void set_stroke_image( NVGcontext* p_ctx, sid_t id ) {
 //---------------------------------------------------------
 // see: https://github.com/memononen/nanovg/issues/348
 void draw_image( NVGcontext* p_ctx, sid_t id,
-GLfloat sx, GLfloat sy, GLfloat sw, GLfloat sh,
-GLfloat dx, GLfloat dy, GLfloat dw, GLfloat dh) {
-  GLfloat ax, ay;
+float sx, float sy, float sw, float sh,
+float dx, float dy, float dw, float dh) {
+  float ax, ay;
   NVGpaint img_pattern;
   
   // get the mapped nvg_id for this driver_id

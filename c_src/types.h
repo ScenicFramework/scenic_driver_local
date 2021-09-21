@@ -19,8 +19,6 @@
 #include "nanovg/nanovg.h"
 #endif
 
-// #include <EGL/egl.h>
-
 
 #ifndef PACK
   #ifdef _MSC_VER

@@ -12,17 +12,11 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #include <stdlib.h>
 #include <string.h>
 
-// #include "render_script.h"
-// #include "tx.h"
-
 #include "script.h"
 #include "font.h"
 #include "image.h"
 #include "utils.h"
 #include "device/device.h"
-
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
 
 
 #define MSG_OUT_CLOSE 0x00
@@ -577,7 +571,7 @@ void render( driver_data_t* p_data )
 
   // render the scene
   nvgBeginFrame( p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio );
-  glClear( GL_COLOR_BUFFER_BIT );
+  device_clear();
 
   // set the global transform
   nvgTransform(
@@ -615,14 +609,14 @@ void render_cursor( driver_data_t* p_data ) {
 //---------------------------------------------------------
 void set_global_tx( int* p_msg_length, driver_data_t* p_data ) {
   for ( int i = 0; i < 6; i++ ) {
-    read_bytes_down( &p_data->global_tx[i], sizeof(GLfloat), p_msg_length );
+    read_bytes_down( &p_data->global_tx[i], sizeof(float), p_msg_length );
   }
 }
 
 //---------------------------------------------------------
 void set_cursor_tx( int* p_msg_length, driver_data_t* p_data ) {
   for ( int i = 0; i < 6; i++ ) {
-    read_bytes_down( &p_data->cursor_tx[i], sizeof(GLfloat), p_msg_length );
+    read_bytes_down( &p_data->cursor_tx[i], sizeof(float), p_msg_length );
   }
 }
 
@@ -630,7 +624,7 @@ void set_cursor_tx( int* p_msg_length, driver_data_t* p_data ) {
 void update_cursor( int* p_msg_length, driver_data_t* p_data ) {
   read_bytes_down( &p_data->f_show_cursor, sizeof(uint32_t), p_msg_length );
   for ( int i = 0; i < 2; i++ ) {
-    read_bytes_down( &p_data->cursor_pos[i], sizeof(GLfloat), p_msg_length );
+    read_bytes_down( &p_data->cursor_pos[i], sizeof(float), p_msg_length );
   }
 }
 
@@ -641,7 +635,7 @@ void clear_color( int* p_msg_length ) {
   read_bytes_down( &g, 1, p_msg_length );
   read_bytes_down( &b, 1, p_msg_length );
   read_bytes_down( &a, 1, p_msg_length );
-  glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+  device_clear_color( r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f );
 }
 
 //---------------------------------------------------------

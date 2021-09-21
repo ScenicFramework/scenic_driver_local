@@ -10,7 +10,6 @@
 #include "tommyds/src/tommyhashlin.h"
 
 
-
 void init_images( void );
 void put_image( int* p_msg_length, NVGcontext* p_ctx );
 void reset_images(NVGcontext* p_ctx);

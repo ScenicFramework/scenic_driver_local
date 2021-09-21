@@ -9,3 +9,8 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info );
 int device_close( device_info_t* p_info );
 int device_swap_buffers();
 void device_poll();
+
+void device_clear();
+void device_clear_color( float red, float green, float blue, float alpha );
+char* device_gl_error();
+

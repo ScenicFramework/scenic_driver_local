@@ -302,3 +302,59 @@ int device_swap_buffers() {
 void device_poll() {
   glfwPollEvents();
 }
+
+
+// these case are factored out mostly so that they can be driven by different
+// GL includes as appropriate
+void device_clear() {
+  glClear( GL_COLOR_BUFFER_BIT );
+}
+
+void device_clear_color( float red, float green, float blue, float alpha ) {
+  glClearColor( red, green, blue, alpha );
+}
+
+char* device_gl_error() {
+  GLenum err;
+  while (true)
+  {
+    err = glGetError();
+    // check if there was a gl error
+    switch (err)
+    {
+      case GL_NO_ERROR:
+        return NULL;
+      case GL_INVALID_ENUM:
+        send_puts( "GL_INVALID_ENUM" );
+        break;
+      case GL_INVALID_VALUE:
+        send_puts( "GL_INVALID_VALUE" );
+        break;
+      case GL_INVALID_OPERATION:
+        send_puts( "GL_INVALID_OPERATION" );
+        break;
+      case GL_OUT_OF_MEMORY:
+        send_puts( "GL_OUT_OF_MEMORY" );
+        break;
+
+#ifdef GL_STACK_UNDERFLOW
+      case GL_STACK_UNDERFLOW:
+        send_puts( "GL_STACK_UNDERFLOW" );
+        break;
+#endif
+
+#ifdef GL_STACK_OVERFLOW
+      case GL_STACK_OVERFLOW:
+        send_puts( "GL_STACK_OVERFLOW" );
+        break;
+#endif
+        
+      case GL_INVALID_FRAMEBUFFER_OPERATION:
+        send_puts( "GL_INVALID_FRAMEBUFFER_OPERATION" );
+        break;
+      default:
+        put_sn( "GL_OTHER:", err );
+        break;
+    }
+  }
+}
