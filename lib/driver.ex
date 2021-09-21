@@ -50,6 +50,7 @@ defmodule Scenic.Driver.Local do
 
   # tell elixir_make which C target to build by setting a sys env var
   case @mix_target do
+    :dev -> System.put_env("SCENIC_LOCAL_TARGET", "glfw")
     :host -> System.put_env("SCENIC_LOCAL_TARGET", "glfw")
     :rpi -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
     :rpi0 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
