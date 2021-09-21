@@ -21,6 +21,6 @@ void set_stroke_image( NVGcontext* p_ctx, sid_t id );
 
 void draw_image(
   NVGcontext* p_ctx, sid_t id,
-  GLfloat sx, GLfloat sy, GLfloat sw, GLfloat sh,
-  GLfloat dx, GLfloat dy, GLfloat dw, GLfloat dh
+  float sx, float sy, float sw, float sh,
+  float dx, float dy, float dw, float dh
 );

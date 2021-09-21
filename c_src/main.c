@@ -13,8 +13,8 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+// #include <GLES2/gl2.h>
+// #include <GLES2/gl2ext.h>
 // #include <EGL/egl.h>
 // #include <EGL/eglext.h>
 
@@ -37,47 +37,47 @@
 device_info_t g_device_info = {0};
 
 
-void test_draw(NVGcontext* p_ctx) {
-  //-----------------------------------
-  // Set background color and clear buffers
-  // glClearColor(0.15f, 0.25f, 0.35f, 1.0f);
-  // glClearColor(0.098f, 0.098f, 0.439f, 1.0f);    // midnight blue
-  // glClearColor(0.545f, 0.000f, 0.000f, 1.0f);    // dark red
-  glClearColor(0.184f, 0.310f, 0.310f, 1.0f);       // dark slate gray
-  // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);       // black
+// void test_draw(NVGcontext* p_ctx) {
+//   //-----------------------------------
+//   // Set background color and clear buffers
+//   // glClearColor(0.15f, 0.25f, 0.35f, 1.0f);
+//   // glClearColor(0.098f, 0.098f, 0.439f, 1.0f);    // midnight blue
+//   // glClearColor(0.545f, 0.000f, 0.000f, 1.0f);    // dark red
+//   glClearColor(0.184f, 0.310f, 0.310f, 1.0f);       // dark slate gray
+//   // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);       // black
 
-  glClear(GL_COLOR_BUFFER_BIT);
+//   glClear(GL_COLOR_BUFFER_BIT);
 
-  int width = g_device_info.width;
-  int height = g_device_info.height;
-  int ratio = g_device_info.ratio;
+//   int width = g_device_info.width;
+//   int height = g_device_info.height;
+//   int ratio = g_device_info.ratio;
 
-  nvgBeginFrame(p_ctx, width, height, ratio);
+//   nvgBeginFrame(p_ctx, width, height, ratio);
 
-    // Next, draw graph line
-  nvgBeginPath(p_ctx);
-  nvgMoveTo(p_ctx, 0, 0);
-  nvgLineTo(p_ctx, width, height);
-  nvgStrokeColor(p_ctx, nvgRGBA(0, 160, 192, 255));
-  nvgStrokeWidth(p_ctx, 3.0f);
-  nvgStroke(p_ctx);
+//     // Next, draw graph line
+//   nvgBeginPath(p_ctx);
+//   nvgMoveTo(p_ctx, 0, 0);
+//   nvgLineTo(p_ctx, width, height);
+//   nvgStrokeColor(p_ctx, nvgRGBA(0, 160, 192, 255));
+//   nvgStrokeWidth(p_ctx, 3.0f);
+//   nvgStroke(p_ctx);
 
-  nvgBeginPath(p_ctx);
-  nvgMoveTo(p_ctx, width, 0);
-  nvgLineTo(p_ctx, 0, height);
-  nvgStrokeColor(p_ctx, nvgRGBA(0, 160, 192, 255));
-  nvgStrokeWidth(p_ctx, 3.0f);
-  nvgStroke(p_ctx);
+//   nvgBeginPath(p_ctx);
+//   nvgMoveTo(p_ctx, width, 0);
+//   nvgLineTo(p_ctx, 0, height);
+//   nvgStrokeColor(p_ctx, nvgRGBA(0, 160, 192, 255));
+//   nvgStrokeWidth(p_ctx, 3.0f);
+//   nvgStroke(p_ctx);
 
-  nvgBeginPath(p_ctx);
-  nvgCircle(p_ctx, width / 2, height / 2, 50);
-  nvgFillColor(p_ctx, nvgRGBAf(0.545f, 0.000f, 0.000f, 1.0f));
-  nvgFill(p_ctx);
-  nvgStroke(p_ctx);
+//   nvgBeginPath(p_ctx);
+//   nvgCircle(p_ctx, width / 2, height / 2, 50);
+//   nvgFillColor(p_ctx, nvgRGBAf(0.545f, 0.000f, 0.000f, 1.0f));
+//   nvgFill(p_ctx);
+//   nvgStroke(p_ctx);
 
-  nvgEndFrame(p_ctx);
-  device_swap_buffers();
-}
+//   nvgEndFrame(p_ctx);
+//   device_swap_buffers();
+// }
 
 
 //---------------------------------------------------------

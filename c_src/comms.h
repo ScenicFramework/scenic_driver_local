@@ -34,10 +34,10 @@
   #define ntoh_ui16(x) (((x) >> 8) | ((x) << 8))
   #define ntoh_ui32(x) \
     (((x) >> 24) | (((x) &0x00FF0000) >> 8) | (((x) &0x0000FF00) << 8) | ((x) << 24))
-  static inline GLfloat ntoh_f32( GLfloat f ) {
+  static inline float ntoh_f32( float f ) {
     union {
-      GLuint i;
-      GLfloat f;
+      unsigned int i;
+      float f;
     } sw;
     sw.f = f;
     sw.i = ntoh_ui32(sw.i);

@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 
+
 #ifndef NANOVG_H
 #include "nanovg/nanovg.h"
 #endif
@@ -51,9 +52,9 @@ typedef struct {
   void*             p_tx_ids;
   void*             p_fonts;
   NVGcontext*       p_ctx;
-  GLfloat           global_tx[6];
-  GLfloat           cursor_tx[6];
-  GLfloat           cursor_pos[2];
+  float           global_tx[6];
+  float           cursor_tx[6];
+  float           cursor_pos[2];
   uint32_t          f_show_cursor;
 } driver_data_t;
 
