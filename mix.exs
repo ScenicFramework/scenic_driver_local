@@ -65,7 +65,7 @@ defmodule Scenic.Driver.Local.MixProject do
   end
 
   defp compilers(nil) do
-    [:elixir_make] ++ Mix.compilers()
+    Mix.compilers() ++ [:elixir_make]
   end
 
   defp compilers(_publish) do
