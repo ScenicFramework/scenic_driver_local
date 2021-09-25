@@ -11,8 +11,6 @@ In your Nerves applications dependencies include the following line
     {:scenic_driver_local, github: "ScenicFramework/scenic_driver_local"}
     ...
 
-NOTE: For now you also have to use the scenic "input_and_drivers" branch
-
 ## Configuration
 
 Configure the rpi driver the same way you configure other drivers. Add it
