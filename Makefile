@@ -69,7 +69,7 @@ $(info ~~~~~~glfw~~~~~~)
 endif
 
 ifeq ($(SCENIC_LOCAL_TARGET),bcm)
-$(info ~~~~~~bcm~~~~~~)
+$(info ~~~~~~ bcm ~~~~~~)
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -lbcm_host
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
@@ -77,7 +77,7 @@ $(info ~~~~~~bcm~~~~~~)
 endif
 
 ifeq ($(SCENIC_LOCAL_TARGET),drm_gles2)
-$(info ~~~~~~drm~~~~~~)
+$(info ~~~~~~ drm_gles2 ~~~~~~)
 
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
@@ -93,9 +93,9 @@ $(info ~~~~~~drm~~~~~~)
 endif
 
 ifeq ($(SCENIC_LOCAL_TARGET),drm_gles3)
-$(info ~~~~~~drm~~~~~~)
+$(info ~~~~~~ drm_gles3 ~~~~~~)
 
-	LDFLAGS += -lGLESv3 -lEGL -lm -lvchostif -ldrm -lgbm
+	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
 

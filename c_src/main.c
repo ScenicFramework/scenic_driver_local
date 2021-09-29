@@ -30,6 +30,7 @@
 
 
 
+
 device_info_t g_device_info = {0};
 
 /*

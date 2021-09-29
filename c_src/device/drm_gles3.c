@@ -18,10 +18,10 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <EGL/egl.h>
 
-#define NANOVG_GLES2_IMPLEMENTATION
+#define NANOVG_GLES3_IMPLEMENTATION
 #include "../nanovg/nanovg.h"
 #include "../nanovg/nanovg_gl.h"
 
@@ -599,7 +599,7 @@ int init_egl( const device_opts_t* p_opts, device_info_t* p_info )
   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   fprintf(stderr, "configured gles\n");
   // p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_DEBUG);
-  p_info->p_ctx = nvgCreateGLES2( NVG_ANTIALIAS );
+  p_info->p_ctx = nvgCreateGLES3( NVG_ANTIALIAS );
   if (p_info->p_ctx == NULL)
   {
     fprintf(stderr, "Failed to create nvg\n");
