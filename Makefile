@@ -31,11 +31,14 @@ DEFAULT_TARGETS ?= $(PREFIX) $(PREFIX)/scenic_driver_local
 # ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
 
 
-# $(info $(MIX_TARGET))
 # $(info $(SCENIC_LOCAL_TARGET))
 # $(info ~~~~~~glfw~~~~~~)
+$(info ~~~~~~In Makefile~~~~~~)
+$(info $(SCENIC_LOCAL_TARGET))
 
 ifeq ($(SCENIC_LOCAL_TARGET),glfw)
+$(info ~~~~~~glfw~~~~~~)
+
 	CFLAGS = -O3 -std=c99
 
 	ifndef MIX_ENV
@@ -66,17 +69,39 @@ ifeq ($(SCENIC_LOCAL_TARGET),glfw)
 endif
 
 ifeq ($(SCENIC_LOCAL_TARGET),bcm)
+$(info ~~~~~~bcm~~~~~~)
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -lbcm_host
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
 	SRCS = c_src/device/bcm.c
 endif
 
-ifeq ($(SCENIC_LOCAL_TARGET),egl)
-	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm
+ifeq ($(SCENIC_LOCAL_TARGET),drm_gles2)
+$(info ~~~~~~drm~~~~~~)
+
+	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
-	SRCS = c_src/device/egl.c
+
+# 	CFLAGS += $(shell pkg-config --cflags libdrm)
+# 	LDFLAGS += $(shell pkg-config --libs libdrm)
+
+	CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
+# 	LDFLAGS += -lGLESv2 -lm -lrt -ldl -lEGL -lgbm -ldrm  -lvchostif
+
+	SRCS = c_src/device/drm_gles2.c
+endif
+
+ifeq ($(SCENIC_LOCAL_TARGET),drm_gles3)
+$(info ~~~~~~drm~~~~~~)
+
+	LDFLAGS += -lGLESv3 -lEGL -lm -lvchostif -ldrm -lgbm
+	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
+	CFLAGS += -std=gnu99
+
+	CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
+
+	SRCS = c_src/device/drm_gles3.c
 endif
 
 # $(info $(shell printenv))

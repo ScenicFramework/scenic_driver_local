@@ -19,6 +19,7 @@ defmodule Scenic.Driver.Local do
     resizeable: [type: :boolean, default: false]
   ]
 
+
   @opts_schema [
     name: [type: {:or, [:atom, :string]}],
     limit_ms: [type: :non_neg_integer, default: @default_limit],
@@ -58,9 +59,11 @@ defmodule Scenic.Driver.Local do
       :rpi2 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
       :rpi3 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
       :rpi3a -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-      _ -> System.put_env("SCENIC_LOCAL_TARGET", "egl")
+      _ -> System.put_env("SCENIC_LOCAL_TARGET", "drm")
     end
   end
+  System.put_env("SCENIC_LOCAL_TARGET", "drm")
+
 
   @all_devices [:rpi, :rpi0, :rpi2, :rpi3, :rpi3a, :rpi4, :bbb, :osd32mp1, :x86_64]
 
@@ -377,12 +380,12 @@ defmodule Scenic.Driver.Local do
       )
       when port_id == port do
     if closing do
-      Logger.info("Scenic RPI Driver clean close")
+      Logger.info("#{inspect(__MODULE__)} clean close")
       # we are closing cleanly, let it happen.
       GenServer.stop(self())
       {:noreply, driver}
     else
-      Logger.error("Scenic RPI Driver dirty close")
+      Logger.error("#{inspect(__MODULE__)} dirty close")
       # we are not closing cleanly. Let the supervisor recover.
       {:noreply, driver}
     end
