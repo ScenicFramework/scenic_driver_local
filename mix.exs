@@ -1,8 +1,6 @@
 defmodule Scenic.Driver.Local.MixProject do
   use Mix.Project
 
-  import IEx
-
   @app_name :scenic_driver_local
   @version "0.11.0"
   @github "https://github.com/boydm/scenic_driver_local"
@@ -21,7 +19,8 @@ defmodule Scenic.Driver.Local.MixProject do
       make_env: make_env(),
       deps: deps(),
       package: package(),
-      docs: [extras: ["README.md"]]
+      docs: [extras: ["README.md"]],
+      xref: [exclude: [Mix.Nerves.Utils]]
     ]
   end
 

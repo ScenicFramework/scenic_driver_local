@@ -18,10 +18,14 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 
-#include <GLES3/gl3.h>
+#ifdef SCENIC_GLES2
+  #include <GLES3/gl2.h>
+  #define NANOVG_GLES2_IMPLEMENTATION
+#else
+  #include <GLES3/gl3.h>
+  #define NANOVG_GLES3_IMPLEMENTATION
+#endif
 #include <EGL/egl.h>
-
-#define NANOVG_GLES3_IMPLEMENTATION
 #include "../nanovg/nanovg.h"
 #include "../nanovg/nanovg_gl.h"
 
@@ -37,11 +41,6 @@
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define MAX_DISPLAYS  (4)
 #define MAX_BUFFERS   (4)
-
-
-
-
-
 
 
 
@@ -598,8 +597,13 @@ int init_egl( const device_opts_t* p_opts, device_info_t* p_info )
   glEnable (GL_BLEND);
   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   fprintf(stderr, "configured gles\n");
-  // p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_DEBUG);
+
+#ifdef SCENIC_GLES2
+  p_info->p_ctx = nvgCreateGLES2( NVG_ANTIALIAS );
+#else
   p_info->p_ctx = nvgCreateGLES3( NVG_ANTIALIAS );
+#endif
+
   if (p_info->p_ctx == NULL)
   {
     fprintf(stderr, "Failed to create nvg\n");

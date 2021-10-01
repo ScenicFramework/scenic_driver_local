@@ -31,14 +31,12 @@ DEFAULT_TARGETS ?= $(PREFIX) $(PREFIX)/scenic_driver_local
 # ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
 
 
-# $(info $(SCENIC_LOCAL_TARGET))
-# $(info ~~~~~~glfw~~~~~~)
-$(info ~~~~~~In Makefile~~~~~~)
-$(info $(SCENIC_LOCAL_TARGET))
+$(info SCENIC_LOCAL_TARGET: $(SCENIC_LOCAL_TARGET))
+ifdef SCENIC_LOCAL_GL
+$(info SCENIC_LOCAL_GL: $(SCENIC_LOCAL_GL))
+endif
 
 ifeq ($(SCENIC_LOCAL_TARGET),glfw)
-$(info ~~~~~~glfw~~~~~~)
-
 	CFLAGS = -O3 -std=c99
 
 	ifndef MIX_ENV
@@ -66,43 +64,35 @@ $(info ~~~~~~glfw~~~~~~)
 		endif
 	endif
 	SRCS = c_src/device/glfw.c
-endif
-
-ifeq ($(SCENIC_LOCAL_TARGET),bcm)
-$(info ~~~~~~ bcm ~~~~~~)
+else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -lbcm_host
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
 	SRCS = c_src/device/bcm.c
-endif
-
-ifeq ($(SCENIC_LOCAL_TARGET),drm_gles2)
-$(info ~~~~~~ drm_gles2 ~~~~~~)
-
+else
+	# drm is the forward looking default
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
+  CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
+	SRCS = c_src/device/drm.c
 
-# 	CFLAGS += $(shell pkg-config --cflags libdrm)
-# 	LDFLAGS += $(shell pkg-config --libs libdrm)
-
-	CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
-# 	LDFLAGS += -lGLESv2 -lm -lrt -ldl -lEGL -lgbm -ldrm  -lvchostif
-
-	SRCS = c_src/device/drm_gles2.c
+	ifeq ($(SCENIC_LOCAL_GL),gles2)
+		CFLAGS += -DSCENIC_GLES2
+	else 
+		CFLAGS += -DSCENIC_GLES3
+	endif
 endif
 
-ifeq ($(SCENIC_LOCAL_TARGET),drm_gles3)
-$(info ~~~~~~ drm_gles3 ~~~~~~)
+# ifeq ($(SCENIC_LOCAL_TARGET),drm_gles3)
+# 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
+# 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
+# 	CFLAGS += -std=gnu99
 
-	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
-	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
-	CFLAGS += -std=gnu99
+# 	CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
 
-	CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
-
-	SRCS = c_src/device/drm_gles3.c
-endif
+# 	SRCS = c_src/device/drm_gles3.c
+# endif
 
 # $(info $(shell printenv))
 

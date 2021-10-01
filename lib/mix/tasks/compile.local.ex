@@ -1,11 +1,23 @@
 defmodule Mix.Tasks.Compile.ScenicDriverLocal do
   use Mix.Task
 
+import IEx
+
   @moduledoc """
   Automatically sets the SCENIC_LOCAL_TARGET for the Makefile
   """
 
   @return if Version.match?(System.version(), "~> 1.9"), do: {:ok, []}, else: :ok
+
+
+  @mix_target (case function_exported?(Mix.Nerves.Utils, :mix_target, 0) do
+      true -> Mix.Nerves.Utils.mix_target()
+      false -> Mix.target()
+    end)
+
+
+  @spec target() :: atom
+  def target(), do: @mix_target
 
   @spec run(OptionParser.argv()) :: :ok | no_return
   def run(args) do
@@ -19,18 +31,17 @@ defmodule Mix.Tasks.Compile.ScenicDriverLocal do
         :rpi2 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
         :rpi3 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
         :rpi3a -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-        :bbb -> System.put_env("SCENIC_LOCAL_TARGET", "drm_gles2")
-        _ -> System.put_env("SCENIC_LOCAL_TARGET", "drm_gles3")
+        :bbb ->
+          System.put_env("SCENIC_LOCAL_TARGET", "drm")
+          System.put_env("SCENIC_LOCAL_GL", "gles2")
+
+        _ ->
+          System.put_env("SCENIC_LOCAL_TARGET", "drm")
+          System.put_env("SCENIC_LOCAL_GL", "gles3")
       end
     end
 
     @return
   end
 
-  def target() do
-    case function_exported?(Mix.Nerves.Utils, :mix_target, 0) do
-      true -> Mix.Nerves.Utils.mix_target()
-      false -> Mix.target()
-    end
-  end
 end

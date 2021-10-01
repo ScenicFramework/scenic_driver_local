@@ -43,7 +43,7 @@ defmodule Scenic.Driver.Local do
     antialias: [type: :boolean, default: true]
   ]
 
-  @mix_target Mix.Tasks.Compile.ScenicDriverLocal.target()
+  # @mix_target Mix.Tasks.Compile.ScenicDriverLocal.target()
 
   @moduledoc """
   Documentation for `Scenic.Driver.Local`.
@@ -55,7 +55,7 @@ defmodule Scenic.Driver.Local do
   use Scenic.Driver
   require Logger
 
-  import IEx
+  # import IEx
 
   alias Scenic.Driver
 
@@ -228,14 +228,11 @@ defmodule Scenic.Driver.Local do
       " #{internal_cursor} #{layer} #{opacity} #{antialias} #{debug_mode}" <>
         " #{width} #{height} #{resizeable} \"#{title}\""
 
-    IO.inspect(args, label: "args")
-
     # open and initialize the window
     Process.flag(:trap_exit, true)
 
     executable =
       (:code.priv_dir(:scenic_driver_local) ++ @port ++ to_charlist(args))
-      |> IO.inspect(label: "executable")
 
     port = Port.open({:spawn, executable}, [:binary, {:packet, 4}])
 
@@ -273,8 +270,10 @@ defmodule Scenic.Driver.Local do
     send(self(), {:_set_cursor_, :touch_spot})
 
     # send message so input handling gets set up later
-    if @mix_target != :host, do: send(self(), :_init_input_)
-
+    if Mix.Tasks.Compile.ScenicDriverLocal.target() != :host do
+      send(self(), :_init_input_)
+    end
+    
     {:ok, driver}
   end
 

@@ -128,6 +128,10 @@ int main(int argc, char **argv) {
 
   // test_draw(g_device_info.p_ctx);
 
+#ifdef SCENIC_GLES2
+  send_puts("~~~~~~~~~~~~~SCENIC_GLES2 was defined!");
+#endif
+
   /* Loop until the calling app closes the window */
   while ( data.keep_going && !isCallerDown() ) {
     // check for incoming messages - blocks with a timeout
