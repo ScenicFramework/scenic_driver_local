@@ -128,7 +128,6 @@ int main(int argc, char **argv) {
 
   // test_draw(g_device_info.p_ctx);
 
-log_info("~~~~ start loop ~~~~");
   /* Loop until the calling app closes the window */
   while ( data.keep_going && !isCallerDown() ) {
     // check for incoming messages - blocks with a timeout

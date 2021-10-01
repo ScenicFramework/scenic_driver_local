@@ -1,6 +1,8 @@
 defmodule Scenic.Driver.Local.MixProject do
   use Mix.Project
 
+  import IEx
+
   @app_name :scenic_driver_local
   @version "0.11.0"
   @github "https://github.com/boydm/scenic_driver_local"
@@ -65,7 +67,7 @@ defmodule Scenic.Driver.Local.MixProject do
   end
 
   defp compilers(nil) do
-    Mix.compilers() ++ [:elixir_make]
+    Mix.compilers() ++ [:scenic_driver_local, :elixir_make]
   end
 
   defp compilers(_publish) do

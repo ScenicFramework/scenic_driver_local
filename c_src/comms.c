@@ -564,8 +564,7 @@ void render( driver_data_t* p_data )
 {
   NVGcontext* p_ctx = p_data->p_ctx;
 
-
-log_info("------ rendering ------");
+// log_info("------ rendering ------");
 
   // prep the id to the root scene
   sid_t id;
@@ -575,14 +574,9 @@ log_info("------ rendering ------");
   uint64_t time;
 
   // render the scene
-time = get_time_stamp();
   device_begin_render();
-put_sn("device_begin_render: ", get_time_stamp() - time );
 
-
-time = get_time_stamp();
   nvgBeginFrame( p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio );
-put_sn("nvgBeginFrame: ", get_time_stamp() - time );
 
   // set the global transform
   nvgTransform(
@@ -593,9 +587,7 @@ put_sn("nvgBeginFrame: ", get_time_stamp() - time );
   );
 
   // render the root script
-time = get_time_stamp();
   render_script( id, p_ctx );
-put_sn("render_script: ", get_time_stamp() - time );
 
   // render the cursor if one is provided
   if ( p_data->f_show_cursor ) {
@@ -607,15 +599,15 @@ put_sn("render_script: ", get_time_stamp() - time );
   }
 
   // End frame and swap front and back buffers
-time = get_time_stamp();
+// time = get_time_stamp();
   nvgEndFrame( p_ctx );
-put_sn("nvgEndFrame: ", get_time_stamp() - time );
+// put_sn("nvgEndFrame: ", get_time_stamp() - time );
 
 
   // device_swap_buffers();
-time = get_time_stamp();
+// time = get_time_stamp();
   device_end_render();
-put_sn("device_end_render: ", get_time_stamp() - time );
+// put_sn("device_end_render: ", get_time_stamp() - time );
 
   // all done
   send_ready();
