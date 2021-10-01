@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.Compile.ScenicDriverLocal do
   use Mix.Task
 
-import IEx
+  import IEx
 
   @moduledoc """
   Automatically sets the SCENIC_LOCAL_TARGET for the Makefile
@@ -9,12 +9,10 @@ import IEx
 
   @return if Version.match?(System.version(), "~> 1.9"), do: {:ok, []}, else: :ok
 
-
   @mix_target (case function_exported?(Mix.Nerves.Utils, :mix_target, 0) do
-      true -> Mix.Nerves.Utils.mix_target()
-      false -> Mix.target()
-    end)
-
+                 true -> Mix.Nerves.Utils.mix_target()
+                 false -> Mix.target()
+               end)
 
   @spec target() :: atom
   def target(), do: @mix_target
@@ -24,13 +22,27 @@ import IEx
     # tell elixir_make which C target to build by setting a sys env var
     with nil <- System.get_env("SCENIC_LOCAL_TARGET") do
       case target() do
-        :dev -> System.put_env("SCENIC_LOCAL_TARGET", "glfw")
-        :host -> System.put_env("SCENIC_LOCAL_TARGET", "glfw")
-        :rpi -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-        :rpi0 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-        :rpi2 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-        :rpi3 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-        :rpi3a -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
+        :dev ->
+          System.put_env("SCENIC_LOCAL_TARGET", "glfw")
+
+        :host ->
+          System.put_env("SCENIC_LOCAL_TARGET", "glfw")
+
+        :rpi ->
+          System.put_env("SCENIC_LOCAL_TARGET", "bcm")
+
+        :rpi0 ->
+          System.put_env("SCENIC_LOCAL_TARGET", "bcm")
+
+        :rpi2 ->
+          System.put_env("SCENIC_LOCAL_TARGET", "bcm")
+
+        :rpi3 ->
+          System.put_env("SCENIC_LOCAL_TARGET", "bcm")
+
+        :rpi3a ->
+          System.put_env("SCENIC_LOCAL_TARGET", "bcm")
+
         :bbb ->
           System.put_env("SCENIC_LOCAL_TARGET", "drm")
           System.put_env("SCENIC_LOCAL_GL", "gles2")
@@ -43,5 +55,4 @@ import IEx
 
     @return
   end
-
 end

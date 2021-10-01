@@ -19,7 +19,6 @@ defmodule Scenic.Driver.Local do
     resizeable: [type: :boolean, default: false]
   ]
 
-
   @opts_schema [
     name: [type: {:or, [:atom, :string]}],
     limit_ms: [type: :non_neg_integer, default: @default_limit],
@@ -40,7 +39,7 @@ defmodule Scenic.Driver.Local do
       type:
         {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
       default: :restart
-    ],
+    ]
   ]
 
   # @mix_target Mix.Tasks.Compile.ScenicDriverLocal.target()
@@ -231,8 +230,7 @@ defmodule Scenic.Driver.Local do
     # open and initialize the window
     Process.flag(:trap_exit, true)
 
-    executable =
-      (:code.priv_dir(:scenic_driver_local) ++ @port ++ to_charlist(args))
+    executable = :code.priv_dir(:scenic_driver_local) ++ @port ++ to_charlist(args)
 
     port = Port.open({:spawn, executable}, [:binary, {:packet, 4}])
 
@@ -273,7 +271,7 @@ defmodule Scenic.Driver.Local do
     if Mix.Tasks.Compile.ScenicDriverLocal.target() != :host do
       send(self(), :_init_input_)
     end
-    
+
     {:ok, driver}
   end
 
