@@ -249,21 +249,19 @@ int device_close( device_info_t* p_info ) {
   return 0;
 }
 
-int device_swap_buffers() {
-  eglSwapBuffers( g_egl_data.display, g_egl_data.surface );
-  return 0;
-}
-
 void device_poll() {}
 
 
 
-
-// these case are factored out mostly so that they can be driven by different
-// GL includes as appropriate
-void device_clear() {
-  glClear( GL_COLOR_BUFFER_BIT );
+void device_begin_render() {
+  glClear(GL_COLOR_BUFFER_BIT);
 }
+
+void device_end_render() {
+  eglSwapBuffers( g_egl_data.display, g_egl_data.surface );
+}
+
+
 
 void device_clear_color( float red, float green, float blue, float alpha ) {
   glClearColor( red, green, blue, alpha );
