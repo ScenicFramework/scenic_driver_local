@@ -204,6 +204,7 @@ NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
   uint32_t nvg_opts = 0;
   if ( p_opts->antialias ) nvg_opts |= NVG_ANTIALIAS;
   if ( p_opts->debug_mode ) nvg_opts |= NVG_DEBUG;
+  
   NVGcontext* p_ctx = nvgCreateGL2( nvg_opts );
 
   // set up callbacks

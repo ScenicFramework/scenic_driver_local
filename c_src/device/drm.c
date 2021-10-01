@@ -43,8 +43,6 @@
 #define MAX_BUFFERS   (4)
 
 
-
-
 static void page_flip_handler(int fd, unsigned int frame,
       unsigned int sec, unsigned int usec, void *data)
 {
@@ -598,10 +596,14 @@ int init_egl( const device_opts_t* p_opts, device_info_t* p_info )
   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   fprintf(stderr, "configured gles\n");
 
+  uint32_t nvg_opts = 0;
+  if ( p_opts->antialias ) nvg_opts |= NVG_ANTIALIAS;
+  if ( p_opts->debug_mode ) nvg_opts |= NVG_DEBUG;
+
 #ifdef SCENIC_GLES2
-  p_info->p_ctx = nvgCreateGLES2( NVG_ANTIALIAS );
+  p_info->p_ctx = nvgCreateGLES2( nvg_opts );
 #else
-  p_info->p_ctx = nvgCreateGLES3( NVG_ANTIALIAS );
+  p_info->p_ctx = nvgCreateGLES3( nvg_opts );
 #endif
 
   if (p_info->p_ctx == NULL)

@@ -26,6 +26,7 @@ defmodule Scenic.Driver.Local do
     layer: [type: :integer, default: @default_layer],
     opacity: [type: :integer, default: @default_opacity],
     debug: [type: :boolean, default: false],
+    antialias: [type: :boolean, default: true],
     calibration: [
       type: {:custom, __MODULE__, :validate_calibration, []},
       default: []
@@ -40,7 +41,6 @@ defmodule Scenic.Driver.Local do
         {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
       default: :restart
     ],
-    antialias: [type: :boolean, default: true]
   ]
 
   # @mix_target Mix.Tasks.Compile.ScenicDriverLocal.target()
