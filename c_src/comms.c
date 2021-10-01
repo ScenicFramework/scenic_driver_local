@@ -564,14 +564,19 @@ void render( driver_data_t* p_data )
 {
   NVGcontext* p_ctx = p_data->p_ctx;
 
+// log_info("------ rendering ------");
+
   // prep the id to the root scene
   sid_t id;
   id.p_data = "_root_";
   id.size = strlen(id.p_data);
 
+  uint64_t time;
+
   // render the scene
+  device_begin_render();
+
   nvgBeginFrame( p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio );
-  device_clear();
 
   // set the global transform
   nvgTransform(
@@ -594,12 +599,20 @@ void render( driver_data_t* p_data )
   }
 
   // End frame and swap front and back buffers
+// time = get_time_stamp();
   nvgEndFrame( p_ctx );
-  device_swap_buffers();
+// put_sn("nvgEndFrame: ", get_time_stamp() - time );
+
+
+  // device_swap_buffers();
+// time = get_time_stamp();
+  device_end_render();
+// put_sn("device_end_render: ", get_time_stamp() - time );
 
   // all done
   send_ready();
 }
+
 
 //---------------------------------------------------------
 void render_cursor( driver_data_t* p_data ) {

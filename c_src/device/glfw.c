@@ -204,6 +204,7 @@ NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
   uint32_t nvg_opts = 0;
   if ( p_opts->antialias ) nvg_opts |= NVG_ANTIALIAS;
   if ( p_opts->debug_mode ) nvg_opts |= NVG_DEBUG;
+  
   NVGcontext* p_ctx = nvgCreateGL2( nvg_opts );
 
   // set up callbacks
@@ -293,27 +294,26 @@ int device_close( device_info_t* p_info )
 }
 
 //---------------------------------------------------------
-int device_swap_buffers() {
-  glfwSwapBuffers( g_glfw_data.p_window );
-  return 0;
+void device_clear_color( float red, float green, float blue, float alpha ) {
+  glClearColor( red, green, blue, alpha );
 }
+
+//---------------------------------------------------------
+void device_begin_render() {
+  glClear( GL_COLOR_BUFFER_BIT );
+}
+
+void device_end_render() {
+  glfwSwapBuffers( g_glfw_data.p_window );
+}
+
 
 //---------------------------------------------------------
 void device_poll() {
   glfwPollEvents();
 }
 
-
-// these case are factored out mostly so that they can be driven by different
-// GL includes as appropriate
-void device_clear() {
-  glClear( GL_COLOR_BUFFER_BIT );
-}
-
-void device_clear_color( float red, float green, float blue, float alpha ) {
-  glClearColor( red, green, blue, alpha );
-}
-
+//---------------------------------------------------------
 char* device_gl_error() {
   GLenum err;
   while (true)

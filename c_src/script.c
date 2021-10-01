@@ -261,6 +261,7 @@ int render_sprites( NVGcontext* p_ctx, void* p, int i, uint16_t  param ) {
 //---------------------------------------------------------
 void render_script( sid_t id, NVGcontext* p_ctx ) {
   // get the script
+
   script_t* p_script = get_script( id );
   if ( !p_script ) {
     return;
@@ -268,7 +269,6 @@ void render_script( sid_t id, NVGcontext* p_ctx ) {
 
   // track the state pushes
   int push_count = 0;
-  
 
   // setup
   void* p = p_script->script.p_data;

@@ -19,7 +19,8 @@ defmodule Scenic.Driver.Local.MixProject do
       make_env: make_env(),
       deps: deps(),
       package: package(),
-      docs: [extras: ["README.md"]]
+      docs: [extras: ["README.md"]],
+      xref: [exclude: [Mix.Nerves.Utils]]
     ]
   end
 
@@ -65,7 +66,7 @@ defmodule Scenic.Driver.Local.MixProject do
   end
 
   defp compilers(nil) do
-    Mix.compilers() ++ [:elixir_make]
+    Mix.compilers() ++ [:scenic_driver_local, :elixir_make]
   end
 
   defp compilers(_publish) do

@@ -25,6 +25,7 @@ defmodule Scenic.Driver.Local do
     layer: [type: :integer, default: @default_layer],
     opacity: [type: :integer, default: @default_opacity],
     debug: [type: :boolean, default: false],
+    antialias: [type: :boolean, default: true],
     calibration: [
       type: {:custom, __MODULE__, :validate_calibration, []},
       default: []
@@ -38,31 +39,10 @@ defmodule Scenic.Driver.Local do
       type:
         {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
       default: :restart
-    ],
-    antialias: [type: :boolean, default: true]
+    ]
   ]
 
-  # figure out what device we are targeting. 
-  @mix_target (case function_exported?(Mix.Nerves.Utils, :mix_target, 0) do
-                 true -> Mix.Nerves.Utils.mix_target()
-                 false -> Mix.target()
-               end)
-
-  # tell elixir_make which C target to build by setting a sys env var
-  with nil <- System.get_env("SCENIC_LOCAL_TARGET") do
-    case @mix_target do
-      :dev -> System.put_env("SCENIC_LOCAL_TARGET", "glfw")
-      :host -> System.put_env("SCENIC_LOCAL_TARGET", "glfw")
-      :rpi -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-      :rpi0 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-      :rpi2 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-      :rpi3 -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-      :rpi3a -> System.put_env("SCENIC_LOCAL_TARGET", "bcm")
-      _ -> System.put_env("SCENIC_LOCAL_TARGET", "egl")
-    end
-  end
-
-  @all_devices [:rpi, :rpi0, :rpi2, :rpi3, :rpi3a, :rpi4, :bbb, :osd32mp1, :x86_64]
+  # @mix_target Mix.Tasks.Compile.ScenicDriverLocal.target()
 
   @moduledoc """
   Documentation for `Scenic.Driver.Local`.
@@ -74,7 +54,7 @@ defmodule Scenic.Driver.Local do
   use Scenic.Driver
   require Logger
 
-  import IEx
+  # import IEx
 
   alias Scenic.Driver
 
@@ -247,14 +227,10 @@ defmodule Scenic.Driver.Local do
       " #{internal_cursor} #{layer} #{opacity} #{antialias} #{debug_mode}" <>
         " #{width} #{height} #{resizeable} \"#{title}\""
 
-    IO.inspect(args, label: "args")
-
     # open and initialize the window
     Process.flag(:trap_exit, true)
 
-    executable =
-      (:code.priv_dir(:scenic_driver_local) ++ @port ++ to_charlist(args))
-      |> IO.inspect(label: "executable")
+    executable = :code.priv_dir(:scenic_driver_local) ++ @port ++ to_charlist(args)
 
     port = Port.open({:spawn, executable}, [:binary, {:packet, 4}])
 
@@ -292,7 +268,9 @@ defmodule Scenic.Driver.Local do
     send(self(), {:_set_cursor_, :touch_spot})
 
     # send message so input handling gets set up later
-    if @mix_target != :host, do: send(self(), :_init_input_)
+    if Mix.Tasks.Compile.ScenicDriverLocal.target() != :host do
+      send(self(), :_init_input_)
+    end
 
     {:ok, driver}
   end
@@ -377,12 +355,12 @@ defmodule Scenic.Driver.Local do
       )
       when port_id == port do
     if closing do
-      Logger.info("Scenic RPI Driver clean close")
+      Logger.info("#{inspect(__MODULE__)} clean close")
       # we are closing cleanly, let it happen.
       GenServer.stop(self())
       {:noreply, driver}
     else
-      Logger.error("Scenic RPI Driver dirty close")
+      Logger.error("#{inspect(__MODULE__)} dirty close")
       # we are not closing cleanly. Let the supervisor recover.
       {:noreply, driver}
     end
