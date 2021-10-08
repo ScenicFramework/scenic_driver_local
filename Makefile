@@ -69,7 +69,7 @@ else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
 	SRCS = c_src/device/bcm.c
-else
+else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 	# drm is the forward looking default
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
@@ -82,6 +82,19 @@ else
 	else 
 		CFLAGS += -DSCENIC_GLES3
 	endif
+else
+$(info ------ no SCENIC_LOCAL_TARGET set ------)
+$(info If you get here, then you are probably using a custom Nerves system)
+$(info Please export/set SCENIC_LOCAL_TARGET to one of [glfw, bcm, drm])
+$(info If you are running on a desktop machine, pick: glfw)
+$(info For any varient of rpi <= 3, pick: bcm)
+$(info For any varient of rpi >= 4, pick: drm)
+$(info For any varient of bbb, pick: drm)
+$(info example for a custom rpi3 build system:)
+$(info export SCENIC_LOCAL_TARGET=bcm)
+$(info For bbb, you also need to set SCENIC_LOCAL_GL=gles2)
+$(info For >= rpi4, you also need to set SCENIC_LOCAL_GL=gles3)
+$(info ----------------------------------------)
 endif
 
 # ifeq ($(SCENIC_LOCAL_TARGET),drm_gles3)
