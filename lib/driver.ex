@@ -88,7 +88,7 @@ defmodule Scenic.Driver.Local do
   # external api
 
   @impl Scenic.Driver
-  def validate_opts(opts), do: NimbleOptions.validate(opts, @opts_schema)
+  def validate_opts(opts), do: NimbleOptions.validate(Enum.into(opts, []), @opts_schema)
 
   def validate_calibration(calibrations) do
     Enum.all?(calibrations, fn {name, {{ax, bx, dx}, {ay, by, dy}}} ->
