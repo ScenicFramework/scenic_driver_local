@@ -47,7 +47,7 @@ defmodule Mix.Tasks.Compile.ScenicDriverLocal do
           System.put_env("SCENIC_LOCAL_TARGET", "drm")
           System.put_env("SCENIC_LOCAL_GL", "gles2")
 
-        _ ->
+        :rpi4 ->
           System.put_env("SCENIC_LOCAL_TARGET", "drm")
           System.put_env("SCENIC_LOCAL_GL", "gles3")
       end
