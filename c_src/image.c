@@ -109,7 +109,10 @@ void* read_pixels( uint32_t width, uint32_t height, uint32_t format_in, int* p_m
   // read incoming data into a temporary buffer
   int buffer_size = *p_msg_length;
   void* p_buffer = malloc(buffer_size);
-  if ( !p_buffer ) return NULL;
+  if ( !p_buffer ) {
+    send_puts("Unable to alloc temporary pixel buffer!!");
+    return NULL;
+  }
   read_bytes_down( p_buffer, buffer_size, p_msg_length );
 
   void* p_pixels = NULL;
@@ -254,6 +257,7 @@ void put_image( int* p_msg_length, NVGcontext* p_ctx ) {
     // can save some bit of work by replacing the pixels of the existing image
     void* p_pixels = read_pixels( width, height, format, p_msg_length );
     if ( !p_pixels ) {
+      image_free( p_ctx, p_image );
       free( p_temp_id );
       send_puts( "Unable to alloc img pixels" );
       return;
