@@ -677,7 +677,10 @@ void dispatch_message( int msg_length, driver_data_t* p_data )
 
     case CMD_RESET:
       reset_scripts();
-      reset_images( p_data->p_ctx );
+      // resetting images turns out to be bad for nvg, which
+      // doesn't handle ever increasing image id ranges very well.
+      // it tries to keep a big static table of all images in mem
+      // reset_images( p_data->p_ctx );
       break;
 
     case CMD_RENDER:
