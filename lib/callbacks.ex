@@ -119,11 +119,10 @@ defmodule Scenic.Driver.Local.Calbacks do
   def update_scene(ids, driver), do: do_update_scene(ids, driver)
 
   defp do_update_scene(ids, %{assigns: %{port: port, dirty_streams: streams}} = driver) do
-
     # update any pending streams
     streams
     |> Enum.uniq()
-    |> Enum.each( &do_put_stream(&1, port) )
+    |> Enum.each(&do_put_stream(&1, port))
 
     driver =
       driver
@@ -159,7 +158,7 @@ defmodule Scenic.Driver.Local.Calbacks do
 
   # --------------------------------------------------------
   # streaming asset updates
-  defp do_put_stream( id, port ) do
+  defp do_put_stream(id, port) do
     case Stream.fetch(id) do
       {:ok, {Stream.Image, {w, h, _mime}, bin}} ->
         ToPort.put_texture(port, id, :file, w, h, bin)
@@ -167,7 +166,8 @@ defmodule Scenic.Driver.Local.Calbacks do
       {:ok, {Stream.Bitmap, {w, h, type}, bin}} ->
         ToPort.put_texture(port, id, type, w, h, bin)
 
-      _ -> :ok
+      _ ->
+        :ok
     end
   end
 

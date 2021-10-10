@@ -325,12 +325,12 @@ defmodule Scenic.Driver.Local do
 
   # handle asset stream updates
   def handle_info(
-    {{Scenic.Assets.Stream, _}, _type, id},
-    %{assigns: %{dirty_streams: streams}} = driver
-  ) do
+        {{Scenic.Assets.Stream, _}, _type, id},
+        %{assigns: %{dirty_streams: streams}} = driver
+      ) do
     driver =
       driver
-      |> assign( :dirty_streams, [id | streams] )
+      |> assign(:dirty_streams, [id | streams])
       |> Driver.request_update()
 
     {:noreply, driver}
