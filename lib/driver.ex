@@ -261,7 +261,8 @@ defmodule Scenic.Driver.Local do
         last_cursor: nil,
         cursor_update: false,
         rel_x: 0,
-        rel_y: 0
+        rel_y: 0,
+        dirty_streams: []
       )
 
     # send message to set up the cursor later
@@ -323,8 +324,16 @@ defmodule Scenic.Driver.Local do
   end
 
   # handle asset stream updates
-  def handle_info({{Scenic.Assets.Stream, _}, type, id}, driver) do
-    Calbacks.handle_put_stream(type, id, driver)
+  def handle_info(
+    {{Scenic.Assets.Stream, _}, _type, id},
+    %{assigns: %{dirty_streams: streams}} = driver
+  ) do
+    driver =
+      driver
+      |> assign( :dirty_streams, [id | streams] )
+      |> Driver.request_update()
+
+    {:noreply, driver}
   end
 
   # deal with the positioning api

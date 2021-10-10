@@ -118,14 +118,21 @@ defmodule Scenic.Driver.Local.Calbacks do
 
   def update_scene(ids, driver), do: do_update_scene(ids, driver)
 
-  defp do_update_scene(ids, %{assigns: %{port: port}} = driver) do
+  defp do_update_scene(ids, %{assigns: %{port: port, dirty_streams: streams}} = driver) do
+
+    # update any pending streams
+    streams
+    |> Enum.uniq()
+    |> Enum.each( &do_put_stream(&1, port) )
+
     driver =
       driver
       |> do_put_scripts(ids)
       |> assign(
         cursor_update: false,
         rel_x: 0,
-        rel_y: 0
+        rel_y: 0,
+        dirty_streams: []
       )
       |> set_busy(true)
 
@@ -152,27 +159,29 @@ defmodule Scenic.Driver.Local.Calbacks do
 
   # --------------------------------------------------------
   # streaming asset updates
-  def handle_put_stream(Stream.Image, id, %{assigns: %{port: port}} = driver) do
-    driver = case Stream.fetch(id) do
+  defp do_put_stream( id, port ) do
+    case Stream.fetch(id) do
       {:ok, {Stream.Image, {w, h, _mime}, bin}} ->
         ToPort.put_texture(port, id, :file, w, h, bin)
-        Driver.request_update(driver)
-      _ -> driver
-    end
-    {:noreply, driver}
-  end
 
-  def handle_put_stream(Stream.Bitmap, id, %{assigns: %{port: port}} = driver) do
-    driver = case Stream.fetch(id) do
       {:ok, {Stream.Bitmap, {w, h, type}, bin}} ->
-      ToPort.put_texture(port, id, type, w, h, bin)
-        Driver.request_update(driver)
-      _ -> driver
+        ToPort.put_texture(port, id, type, w, h, bin)
+
+      _ -> :ok
     end
-    {:noreply, driver}
   end
 
-  def handle_put_stream(_, _id, driver), do: {:noreply, driver}
+  # defp do_put_stream(Stream.Bitmap, id, %{assigns: %{port: port}} = driver) do
+  #   driver = case Stream.fetch(id) do
+  #     {:ok, {Stream.Bitmap, {w, h, type}, bin}} ->
+  #     ToPort.put_texture(port, id, type, w, h, bin)
+  #       Driver.request_update(driver)
+  #     _ -> driver
+  #   end
+  #   {:noreply, driver}
+  # end
+
+  # def handle_put_stream(_, _id, driver), do: {:noreply, driver}
 
   # ============================================================================
   # rendering specific functions
