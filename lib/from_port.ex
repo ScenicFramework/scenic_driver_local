@@ -4,10 +4,12 @@
 #
 
 defmodule Scenic.Driver.Local.FromPort do
+  @moduledoc false
+
   alias Scenic.ViewPort
   alias Scenic.Driver
 
-  import IEx
+  # import IEx
 
   require Logger
 
@@ -49,6 +51,7 @@ defmodule Scenic.Driver.Local.FromPort do
   # ============================================================================
 
   @doc false
+  @spec handle_port_message(binary, Driver.t()) :: {:noreply, Driver.t()}
   def handle_port_message(msg, state)
 
   # --------------------------------------------------------
@@ -178,14 +181,14 @@ defmodule Scenic.Driver.Local.FromPort do
           @msg_key_id::unsigned-integer-size(32)-native,
           key::unsigned-integer-native-size(32),
           _scancode::unsigned-integer-native-size(32),
-          action::unsigned-integer-native-size(32),
+          action::integer-native-size(32),
           mods::unsigned-integer-native-size(32)
         >>,
         driver
       ) do
     key = key_to_atom(key)
-    # action = action_to_atom(action)
     mods = prep_mods(mods)
+
     send_input(driver, {:key, {key, action, mods}})
 
     {:noreply, driver}
@@ -442,7 +445,7 @@ defmodule Scenic.Driver.Local.FromPort do
 
     348 => :key_menu
   }
-  defp key_to_atom(code), do: Map.get(@glfw_key_atoms, code, :unknown)
+  defp key_to_atom(code), do: Map.get(@glfw_key_atoms, code, :key_unknown)
 
   # --------------------------------------------------------
   @glfw_mod_shift 0x001

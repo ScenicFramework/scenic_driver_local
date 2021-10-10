@@ -1,13 +1,11 @@
 defmodule Mix.Tasks.Compile.ScenicDriverLocal do
   use Mix.Task
 
-  import IEx
+  # import IEx
 
   @moduledoc """
   Automatically sets the SCENIC_LOCAL_TARGET for the Makefile
   """
-
-  @return if Version.match?(System.version(), "~> 1.9"), do: {:ok, []}, else: :ok
 
   @mix_target (case function_exported?(Mix.Nerves.Utils, :mix_target, 0) do
                  true -> Mix.Nerves.Utils.mix_target()
@@ -17,8 +15,8 @@ defmodule Mix.Tasks.Compile.ScenicDriverLocal do
   @spec target() :: atom
   def target(), do: @mix_target
 
-  @spec run(OptionParser.argv()) :: :ok | no_return
-  def run(args) do
+  @spec run(OptionParser.argv()) :: {:ok, []} | no_return
+  def run(_args) do
     # tell elixir_make which C target to build by setting a sys env var
     with nil <- System.get_env("SCENIC_LOCAL_TARGET") do
       case target() do
@@ -53,6 +51,6 @@ defmodule Mix.Tasks.Compile.ScenicDriverLocal do
       end
     end
 
-    @return
+    {:ok, []}
   end
 end
