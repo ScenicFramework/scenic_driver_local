@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.Compile.ScenicDriverLocal do
   use Mix.Task
 
-  import IEx
+  # import IEx
 
   @moduledoc """
   Automatically sets the SCENIC_LOCAL_TARGET for the Makefile
@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Compile.ScenicDriverLocal do
   def target(), do: @mix_target
 
   @spec run(OptionParser.argv()) :: :ok | no_return
-  def run(args) do
+  def run(_args) do
     # tell elixir_make which C target to build by setting a sys env var
     with nil <- System.get_env("SCENIC_LOCAL_TARGET") do
       case target() do

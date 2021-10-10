@@ -7,7 +7,7 @@ defmodule Scenic.Driver.Local.FromPort do
   alias Scenic.ViewPort
   alias Scenic.Driver
 
-  import IEx
+  # import IEx
 
   require Logger
 

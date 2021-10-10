@@ -2,8 +2,8 @@ defmodule Scenic.Driver.Local.MixProject do
   use Mix.Project
 
   @app_name :scenic_driver_local
-  @version "0.11.0"
-  @github "https://github.com/boydm/scenic_driver_local"
+  @version "0.11.0-beta.0"
+  @github "https://github.com/ScenicFramework/scenic_driver_local"
 
   def project do
     [
@@ -87,9 +87,7 @@ defmodule Scenic.Driver.Local.MixProject do
         "c_src/**/*.[ch]",
         # only include *.ex files
         "lib/**/*.ex",
-        "mix.exs",
-        "fonts/**/*.txt",
-        "fonts/**/*.ttf.*"
+        "mix.exs"
       ]
     ]
   end
