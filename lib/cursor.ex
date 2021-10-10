@@ -8,7 +8,17 @@
 # the "hot point" is always {0, 0}, so orient around that.
 
 defmodule Scenic.Driver.Local.Cursor do
-  @moduledoc false
+  @moduledoc """
+  Experimental library of cursors that you can use with a Nerves project.
+
+  The `:cursor` option must be set to `true` in the driver config.
+
+  Note: the implementation of cursors is pretty naive and will be much more
+  performant in the future.
+
+  In fact, I would really recommend using cursors at this point except to test
+  it out and provide feedback...
+  """
 
   alias Scenic.Driver
   alias Scenic.Script
