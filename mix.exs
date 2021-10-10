@@ -27,15 +27,25 @@ defmodule Scenic.Driver.Local.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: extra_applications()
     ]
+  end
+
+  def extra_applications do
+    apps = [:logger]
+
+    case Mix.env() do
+      :dev -> apps ++ [:mix]
+      _ -> apps
+    end
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:input_event, "~> 0.4"},
-      {:scenic, git: "https://github.com/boydm/scenic.git", branch: "v0.11"},
+      # {:scenic, git: "https://github.com/boydm/scenic.git", branch: "v0.11"},
+      {:scenic, path: "../scenic"},
       {:elixir_make, "~> 0.6", runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false}

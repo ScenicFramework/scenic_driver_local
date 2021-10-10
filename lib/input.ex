@@ -5,7 +5,7 @@
 
 defmodule Scenic.Driver.Local.Input do
   @moduledoc false
-  
+
   require Logger
   alias Scenic.Driver
   alias Scenic.Math.Vector2
@@ -247,14 +247,14 @@ defmodule Scenic.Driver.Local.Input do
     {device, driver}
   end
 
-  defp do_input_event({:ev_led, key, value}, _, {device, %{keys: old_keys} = driver}) do
+  defp do_input_event({:ev_led, key, value}, _, {device, %{assigns: %{keys: old_keys}} = driver}) do
     send_input(driver, {:led, {key, value}})
     new_keys = Map.put(old_keys, key, value)
     driver = assign(driver, :keys, new_keys)
     {device, driver}
   end
 
-  defp do_input_event({:ev_sw, key, value}, _, {device, %{keys: old_keys} = driver}) do
+  defp do_input_event({:ev_sw, key, value}, _, {device, %{assigns: %{keys: old_keys}} = driver}) do
     send_input(driver, {:switch, {key, value}})
     new_keys = Map.put(old_keys, key, value)
     driver = assign(driver, :keys, new_keys)
@@ -287,6 +287,64 @@ defmodule Scenic.Driver.Local.Input do
     mods = KeyMap.mods(new_keys)
     send_input(driver, {:key, {:key_capslock, 1, mods}})
     send_input(driver, {:key, {:virt_caps_lock, value, mods}})
+    {device, driver}
+  end
+
+  # special case the nums lock key as we need to track it's state ourselves
+  defp do_input_event(
+         {:ev_key, :key_numlock, 1} = event,
+         source,
+         {
+           %{debounce: db} = device,
+           %{assigns: %{keys: old_keys}} = driver
+         }
+       ) do
+    value =
+      case Map.get(old_keys, :virt_num_lock, 0) do
+        0 -> 1
+        _ -> 0
+      end
+
+    new_keys =
+      old_keys
+      |> Map.put(:key_numlock, 1)
+      |> Map.put(:virt_num_lock, value)
+
+    driver = assign(driver, :keys, new_keys)
+    device = Map.put(device, :debounce, [event | db])
+    Process.send_after(self(), {:_clear_input_debounce_, source, event}, @debounce_ms)
+    mods = KeyMap.mods(new_keys)
+    send_input(driver, {:key, {:key_numlock, 1, mods}})
+    send_input(driver, {:key, {:virt_num_lock, value, mods}})
+    {device, driver}
+  end
+
+  # special case the nums lock key as we need to track it's state ourselves
+  defp do_input_event(
+         {:ev_key, :key_scrolllock, 1} = event,
+         source,
+         {
+           %{debounce: db} = device,
+           %{assigns: %{keys: old_keys}} = driver
+         }
+       ) do
+    value =
+      case Map.get(old_keys, :virt_scroll_lock, 0) do
+        0 -> 1
+        _ -> 0
+      end
+
+    new_keys =
+      old_keys
+      |> Map.put(:key_scrolllock, 1)
+      |> Map.put(:virt_scroll_lock, value)
+
+    driver = assign(driver, :keys, new_keys)
+    device = Map.put(device, :debounce, [event | db])
+    Process.send_after(self(), {:_clear_input_debounce_, source, event}, @debounce_ms)
+    mods = KeyMap.mods(new_keys)
+    send_input(driver, {:key, {:key_scrolllock, 1, mods}})
+    send_input(driver, {:key, {:virt_scroll_lock, value, mods}})
     {device, driver}
   end
 
