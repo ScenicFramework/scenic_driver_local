@@ -153,20 +153,22 @@ defmodule Scenic.Driver.Local.Calbacks do
   # --------------------------------------------------------
   # streaming asset updates
   def handle_put_stream(Stream.Image, id, %{assigns: %{port: port}} = driver) do
-    with {:ok, {Stream.Image, {w, h, _mime}, bin}} <- Stream.fetch(id) do
-      ToPort.put_texture(port, id, :file, w, h, bin)
+    driver = case Stream.fetch(id) do
+      {:ok, {Stream.Image, {w, h, _mime}, bin}} ->
+        ToPort.put_texture(port, id, :file, w, h, bin)
+        Driver.request_update(driver)
+      _ -> driver
     end
-
-    # Driver.request_update(driver)
     {:noreply, driver}
   end
 
   def handle_put_stream(Stream.Bitmap, id, %{assigns: %{port: port}} = driver) do
-    with {:ok, {Stream.Bitmap, {w, h, type}, bin}} <- Stream.fetch(id) do
+    driver = case Stream.fetch(id) do
+      {:ok, {Stream.Bitmap, {w, h, type}, bin}} ->
       ToPort.put_texture(port, id, type, w, h, bin)
+        Driver.request_update(driver)
+      _ -> driver
     end
-
-    # Driver.request_update(driver)
     {:noreply, driver}
   end
 
