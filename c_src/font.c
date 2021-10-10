@@ -94,7 +94,8 @@ void put_font( int* p_msg_length, NVGcontext* p_ctx ) {
 
   // create the nvg font
   p_font->nvg_id = nvgCreateFontMem(
-    p_ctx, p_font->id.p_data, p_font->blob.p_data, blob_size, true
+    p_ctx, p_font->id.p_data, p_font->blob.p_data, blob_size,
+    false // tells nvg to NOT free p_font->blob.p_data when releasing font
   );
   if ( p_font->nvg_id < 0 ) {
     send_puts( "Unable to create nvg font" );

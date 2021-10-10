@@ -302,6 +302,5 @@ defmodule Scenic.Driver.Local.ToPort do
     ]
 
     Port.command(port, msg)
-    render(port)
   end
 end
