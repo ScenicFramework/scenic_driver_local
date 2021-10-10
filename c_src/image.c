@@ -230,7 +230,7 @@ void put_image( int* p_msg_length, NVGcontext* p_ctx ) {
     };
 
     // basic setup
-    memset( p_image, 0, struct_size + id_size )
+    memset( p_image, 0, struct_size + id_size );
     p_image->width = width;
     p_image->height = height;
     p_image->format = format;
