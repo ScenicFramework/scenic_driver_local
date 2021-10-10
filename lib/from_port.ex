@@ -4,6 +4,8 @@
 #
 
 defmodule Scenic.Driver.Local.FromPort do
+  @moduledoc false
+  
   alias Scenic.ViewPort
   alias Scenic.Driver
 

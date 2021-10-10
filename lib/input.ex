@@ -4,6 +4,8 @@
 #
 
 defmodule Scenic.Driver.Local.Input do
+  @moduledoc false
+  
   require Logger
   alias Scenic.Driver
   alias Scenic.Math.Vector2
@@ -298,7 +300,7 @@ defmodule Scenic.Driver.Local.Input do
            %{
              assigns: %{
                keys: old_keys,
-               key_mapper: mapper,
+               key_map: mapper,
                mapper_state: mapper_state
              }
            } = driver

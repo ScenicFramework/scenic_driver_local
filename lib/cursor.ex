@@ -8,6 +8,8 @@
 # the "hot point" is always {0, 0}, so orient around that.
 
 defmodule Scenic.Driver.Local.Cursor do
+  @moduledoc false
+
   alias Scenic.Driver
   alias Scenic.Script
   alias Scenic.Driver.Local.ToPort
@@ -17,11 +19,8 @@ defmodule Scenic.Driver.Local.Cursor do
 
   import Scenic.Driver,
     only: [
-      # get: 3,
       assign: 2,
       assign: 3
-      # set_busy: 2,
-      # send_input: 2
     ]
 
   @type t ::
@@ -30,9 +29,6 @@ defmodule Scenic.Driver.Local.Cursor do
           | :pointer
           | :text
           | Script.t()
-
-  # @height   20
-  # @width    20
 
   @fill_color :black
   @stroke_width 3

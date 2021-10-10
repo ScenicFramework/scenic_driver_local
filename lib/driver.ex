@@ -34,7 +34,7 @@ defmodule Scenic.Driver.Local do
     window: [type: :keyword_list, keys: @window_schema, default: []],
     # cursor: [type: {:in, [:none, :pointer, :crosshair, :text, :hand]}, default: :none],
     cursor: [type: :boolean, default: false],
-    key_mapper: [type: :atom, default: Scenic.KeyMap.USEnglish],
+    key_map: [type: :atom, default: Scenic.KeyMap.USEnglish],
     on_close: [
       type:
         {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
@@ -248,7 +248,7 @@ defmodule Scenic.Driver.Local do
         calibration: opts[:calibration],
         input_state: %{},
         input_debounce: [],
-        key_mapper: opts[:key_mapper],
+        key_map: opts[:key_map],
         keys: %{},
         mapper_state: nil,
         tx: Scenic.Math.Matrix.identity(),

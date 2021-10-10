@@ -4,6 +4,8 @@
 #
 
 defmodule Scenic.Driver.Local.ToPort do
+  @moduledoc false
+  
   use Bitwise
 
   @cmd_put_script 0x01
