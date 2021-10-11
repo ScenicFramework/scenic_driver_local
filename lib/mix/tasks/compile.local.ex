@@ -48,6 +48,11 @@ defmodule Mix.Tasks.Compile.ScenicDriverLocal do
         :rpi4 ->
           System.put_env("SCENIC_LOCAL_TARGET", "drm")
           System.put_env("SCENIC_LOCAL_GL", "gles3")
+
+        _ ->
+          # let it go without specifying anything.
+          # The Makefile will put up an appropriate error
+          :ok
       end
     end
 
