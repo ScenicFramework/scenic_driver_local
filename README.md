@@ -4,7 +4,7 @@ This is the main "local" renderer for Scenic applications.
 
 If you are on a Mac/PC/Linux machine, or building under Nerves, then this is the driver to use to render on the screen connected to the computer Scenic is running on.
 
-This driver replaces both `:scenic_driver_glfw` and `:scenic_driver_nerves_rpi` going forward for v0.11 and up.
+This driver replaces both `:scenic_driver_glfw` and `:scenic_driver_nerves_rpi` going forward for Scenic v0.11 and up.
 
 
 ## Installation
@@ -95,9 +95,9 @@ apt-get install pkgconf libglfw3 libglfw3-dev libglew2.1 libglew-dev
 
 Once these components have been installed, you should be able to build the `scenic_driver_glfw` driver.
 
-### Installing on Archlinux
+### Installing on Arch Linux
 
-The easiest way to install on Archlinux is to use pacman. Just run the following:
+The easiest way to install on Arch Linux is to use pacman. Just run the following:
 
 
 ```bash
@@ -105,7 +105,7 @@ pacman -Syu
 sudo pacman -S glfw-x11 glew
 ```
 
-If you're using wayland, you'll probably need `glfw-wayland` instead of `glfw-x11` and `glew-wayland` instead of `glew`
+If you're using Wayland, you'll probably need `glfw-wayland` instead of `glfw-x11` and `glew-wayland` instead of `glew`
 
 ### Installing on Windows
 
