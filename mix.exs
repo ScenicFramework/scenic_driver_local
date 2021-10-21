@@ -53,7 +53,7 @@ defmodule Scenic.Driver.Local.MixProject do
 
   defp description() do
     """
-    Scenic.Driver.Nerves - Scenic driver for Nerves devices
+    Scenic.Driver.Local - Scenic driver for locally rendered devices
     """
   end
 
