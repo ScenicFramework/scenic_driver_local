@@ -19,8 +19,13 @@ defmodule Scenic.Driver.Local.MixProject do
       make_env: make_env(),
       deps: deps(),
       package: package(),
-      docs: [extras: ["README.md"]],
-      xref: [exclude: [Mix.Nerves.Utils]]
+      xref: [exclude: [Mix.Nerves.Utils]],
+      docs: [
+        extras: doc_guides(),
+        main: "overview",
+        source_ref: "v#{@version}",
+        source_url: @github
+      ]
     ]
   end
 
@@ -98,6 +103,12 @@ defmodule Scenic.Driver.Local.MixProject do
         "lib/**/*.ex",
         "mix.exs"
       ]
+    ]
+  end
+
+  defp doc_guides do
+    [
+      "guides/overview.md"
     ]
   end
 end

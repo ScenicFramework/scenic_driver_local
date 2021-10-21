@@ -113,6 +113,9 @@ If you're using Wayland, you'll probably need `glfw-wayland` instead of `glfw-x1
 
 ### Installing on Windows
 
+This has not been tested yet and probably needs work in the makefile!!!!!
+If you are interested in helping out, that would be welcome.
+
 First, make sure to have installed Visual Studio with its "Desktop development with C++" package.
 
 Next, you need to download the Windows binaries for [GLFW](https://www.glfw.org/download.html) and [GLEW](http://glew.sourceforge.net/index.html) manually.
@@ -127,9 +130,4 @@ Open the GLFW package you downloaded. Extract the contents of the packaged `incl
 Lastly, install the GLEW package. Find the packaged `include` folder and extract its contents to your **Include** folder as well. You should now have two new folders in your **Include** folder: `GL` and `GLFW`. Now navigate to `lib\Release\x64` in the GLEW package. Copy all `*.lib` files to your **Lib** folder. Finally, navigate to `bin\Release\x64` and copy `glew32.dll` to your `Windows\system32` folder.
 
 Once these components have been installed, you should be able to build the `scenic_driver_glfw` driver.
-
-
-## Documentation
-
-Documentation can be found at [https://hexdocs.pm/scenic_driver_local](https://hexdocs.pm/scenic_driver_local).
 
