@@ -19,8 +19,13 @@ defmodule Scenic.Driver.Local.MixProject do
       make_env: make_env(),
       deps: deps(),
       package: package(),
-      docs: [extras: ["README.md"]],
-      xref: [exclude: [Mix.Nerves.Utils]]
+      xref: [exclude: [Mix.Nerves.Utils]],
+      docs: [
+        extras: doc_guides(),
+        main: "overview",
+        source_ref: "v#{@version}",
+        source_url: @github
+      ]
     ]
   end
 
@@ -44,8 +49,7 @@ defmodule Scenic.Driver.Local.MixProject do
   defp deps do
     [
       {:input_event, "~> 0.4"},
-      {:scenic, git: "https://github.com/boydm/scenic.git", branch: "v0.11"},
-      # {:scenic, path: "../scenic"},
+      {:scenic, "~> 0.11.0-beta.0"},
       {:elixir_make, "~> 0.6", runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false}
@@ -54,7 +58,7 @@ defmodule Scenic.Driver.Local.MixProject do
 
   defp description() do
     """
-    Scenic.Driver.Nerves - Scenic driver for Nerves devices
+    Scenic.Driver.Local - Scenic driver for locally rendered devices
     """
   end
 
@@ -99,6 +103,12 @@ defmodule Scenic.Driver.Local.MixProject do
         "lib/**/*.ex",
         "mix.exs"
       ]
+    ]
+  end
+
+  defp doc_guides do
+    [
+      "guides/overview.md"
     ]
   end
 end
