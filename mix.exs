@@ -99,6 +99,7 @@ defmodule Scenic.Driver.Local.MixProject do
         "LICENSE",
         # only include *.c and *.h files
         "c_src/**/*.[ch]",
+        "c_src/**/LICENSE*",
         # only include *.ex files
         "lib/**/*.ex",
         "mix.exs"
