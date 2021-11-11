@@ -79,6 +79,8 @@ defmodule Scenic.Driver.Local.FromPort do
       |> Scenic.Driver.Local.set_global_tx()
       |> Driver.request_update()
 
+    send_input(driver, {:viewport, {:reshappe, {win_width, win_height}}})
+
     {:noreply, driver}
   end
 
