@@ -94,7 +94,7 @@ The easiest way to install on Ubuntu is to use apt-get. Just run the following:
 
 ```bash
 apt-get update
-apt-get install pkgconf libglfw3 libglfw3-dev libglew2.1 libglew-dev
+apt-get install pkgconf libglfw3 libglfw3-dev libglew2.2 libglew-dev
 ```
 
 Once these components have been installed, you should be able to build the `scenic_driver_glfw` driver.
