@@ -15,7 +15,7 @@ by adding `scenic_driver_local` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:scenic_driver_local, "~> 0.11.0-beta.0"}
+    {:scenic_driver_local, "~> 0.11.0"}
   ]
 end
 ```
@@ -75,7 +75,7 @@ brew install glfw3 glew pkg-config
 ```
 
 
-Once these components have been installed, you should be able to build the `scenic_driver_glfw` driver.
+Once these components have been installed, you should be able to build the `scenic_driver_local` driver.
 
 ### Installing on Ubuntu 18.04
 
@@ -86,7 +86,7 @@ apt-get update
 apt-get install pkgconf libglfw3 libglfw3-dev libglew2.0 libglew-dev
 ```
 
-Once these components have been installed, you should be able to build the `scenic_driver_glfw` driver.
+Once these components have been installed, you should be able to build the `scenic_driver_local` driver.
 
 ### Installing on Ubuntu 20.04
 
@@ -97,7 +97,7 @@ apt-get update
 apt-get install pkgconf libglfw3 libglfw3-dev libglew2.2 libglew-dev
 ```
 
-Once these components have been installed, you should be able to build the `scenic_driver_glfw` driver.
+Once these components have been installed, you should be able to build the `scenic_driver_local` driver.
 
 ### Installing on Arch Linux
 
@@ -126,7 +126,7 @@ Open the GLFW package you downloaded. Extract the contents of the packaged `incl
 
 Lastly, install the GLEW package. Find the packaged `include` folder and extract its contents to your **Include** folder as well. You should now have two new folders in your **Include** folder: `GL` and `GLFW`. Now navigate to `lib\Release\x64` in the GLEW package. Copy all `*.lib` files to your **Lib** folder. Finally, navigate to `bin\Release\x64` and copy `glew32.dll` to your `Windows\system32` folder.
 
-Once these components have been installed, you should be able to build the `scenic_driver_glfw` driver.
+Once these components have been installed, you should be able to build the `scenic_driver_local` driver.
 
 
 ## Documentation
