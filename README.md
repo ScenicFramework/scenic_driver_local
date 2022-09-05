@@ -15,7 +15,7 @@ by adding `scenic_driver_local` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:scenic_driver_local, "~> 0.11.0-beta.0"}
+    {:scenic_driver_local, "~> 0.11.0"}
   ]
 end
 ```
