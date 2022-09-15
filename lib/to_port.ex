@@ -164,6 +164,7 @@ defmodule Scenic.Driver.Local.ToPort do
 
   @doc false
   def render(port) do
+    :telemetry.execute([:render, :start], %{timestamp: :erlang.system_time()})
     Port.command(port, <<@cmd_render::unsigned-integer-size(32)-native>>)
   end
 

@@ -61,6 +61,7 @@ defmodule Scenic.Driver.Local.FromPort do
         >>,
         driver
       ) do
+    :telemetry.execute([:render, :finish], %{timestamp: :erlang.system_time()})
     {:noreply, set_busy(driver, false)}
   end
 

@@ -52,7 +52,8 @@ defmodule Scenic.Driver.Local.MixProject do
       {:scenic, "~> 0.11.0"},
       {:elixir_make, "~> 0.6", runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.1", only: :dev, runtime: false}
+      {:dialyxir, "~> 1.1", only: :dev, runtime: false},
+      {:telemetry, "~> 1.1"}
     ]
   end
 
