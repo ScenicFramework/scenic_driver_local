@@ -213,8 +213,7 @@ void render_text( char* p_text, unsigned int size, NVGcontext* p_ctx )
   int        nrows, i;
 
   // up to this code to break the lines...
-  int breakRowWidth = 1000;
-  while ((nrows = nvgTextBreakLines(p_ctx, start, end, breakRowWidth, rows, 3)))
+  while ((nrows = nvgTextBreakLines(p_ctx, start, end, 1000, rows, 3)))
   {
     for (i = 0; i < nrows; i++)
     {
