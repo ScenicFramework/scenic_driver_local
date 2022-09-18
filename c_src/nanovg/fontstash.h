@@ -383,7 +383,8 @@ struct FONSglyph
 	int next;
 	short size, blur;
 	short x0,y0,x1,y1;
-	short xadv,xoff,yoff;
+	short xoff,yoff;
+	float xadv;
 };
 typedef struct FONSglyph FONSglyph;
 
@@ -1155,7 +1156,7 @@ static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned in
 	glyph->y0 = (short)gy;
 	glyph->x1 = (short)(glyph->x0+gw);
 	glyph->y1 = (short)(glyph->y0+gh);
-	glyph->xadv = (short)(scale * advance * 10.0f);
+	glyph->xadv = scale * advance * 10.0f;
 	glyph->xoff = (short)(x0 - pad);
 	glyph->yoff = (short)(y0 - pad);
 
@@ -1211,7 +1212,7 @@ static void fons__getQuad(FONScontext* stash, FONSfont* font,
 
 	if (prevGlyphIndex != -1) {
 		float adv = fons__tt_getGlyphKernAdvance(&font->font, prevGlyphIndex, glyph->index) * scale;
-		*x += (int)(adv + spacing + 0.5f);
+		*x += (adv + spacing);
 	}
 
 	// Each glyph has 2px border to allow good interpolation,
@@ -1252,7 +1253,7 @@ static void fons__getQuad(FONScontext* stash, FONSfont* font,
 		q->t1 = y1 * stash->ith;
 	}
 
-	*x += (int)(glyph->xadv / 10.0f + 0.5f);
+	*x += (glyph->xadv / 10.0f);
 }
 
 static void fons__flush(FONScontext* stash)
