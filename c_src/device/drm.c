@@ -54,7 +54,7 @@ static void page_flip_handler(int fd, unsigned int frame,
 uint8_t DISP_ID = 0;
 uint8_t all_display = 0;
 int8_t connector_id = -1;
-char* device = "/dev/dri/card0";
+char* device = "/dev/dri/card1";
 
 fd_set fds;
 drmEventContext evctx = {
