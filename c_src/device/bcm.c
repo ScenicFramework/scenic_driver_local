@@ -157,7 +157,7 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   // create the screen element (will be full-screen)
   VC_DISPMANX_ALPHA_T alpha =
   {
-      DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS,
+      DISPMANX_FLAGS_ALPHA_FROM_SOURCE,
       p_opts->global_opacity, /*alpha 0->255*/
       0
   };
