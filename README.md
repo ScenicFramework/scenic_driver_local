@@ -37,7 +37,7 @@ There are quite a few new options as well. It uses `NimbleOptions` to confirm th
 
 ## Targets
 
-This driver does it's best to figure out what underlying graphics technology to use depending on whhat your MIX_TARGET is set to.
+This driver does its best to figure out what underlying graphics technology to use depending on what your MIX_TARGET is set to.
 
 For example, for apps running on a Mac/PC/Linux, it is usually set to `host`, which causes the driver to use `glfw` as the underlying tech.
 
