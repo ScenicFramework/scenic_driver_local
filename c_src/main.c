@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
 
   int err = device_init( &opts, &g_device_info );
   if ( err ) {
-    send_puts( "Failed to initilize the device" );
+    send_puts( "Failed to initialize the device" );
     return err;
   }
   data.p_ctx = g_device_info.p_ctx;
