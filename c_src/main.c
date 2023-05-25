@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
   int err = device_init(&g_opts, &g_device_info, &data);
   if (err) {
-    log_error("Failed to initilize the device: %d", err);
+    log_error("Failed to initialize the device: %d", err);
     return err;
   }
 
