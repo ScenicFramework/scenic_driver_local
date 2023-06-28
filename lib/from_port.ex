@@ -121,8 +121,7 @@ defmodule Scenic.Driver.Local.FromPort do
         <<@msg_puts_id::unsigned-integer-size(32)-native>> <> msg,
         driver
       ) do
-    IO.inspect(msg, label: "scenic_driver_local puts")
-    Logger.info("scenic_driver_local: #{inspect(msg)}")
+    Logger.info("scenic_driver_local puts: #{inspect(msg)}")
     {:noreply, driver}
   end
 
@@ -131,8 +130,7 @@ defmodule Scenic.Driver.Local.FromPort do
         <<@msg_info_id::unsigned-integer-size(32)-native>> <> msg,
         driver
       ) do
-    IO.inspect(msg, label: "scenic_driver_local info")
-    Logger.info("scenic_driver_local: #{inspect(msg)}")
+    Logger.info("scenic_driver_local: #{msg}")
     {:noreply, driver}
   end
 
@@ -141,8 +139,7 @@ defmodule Scenic.Driver.Local.FromPort do
         <<@msg_warn_id::unsigned-integer-size(32)-native>> <> msg,
         driver
       ) do
-    IO.inspect(msg, label: "scenic_driver_local warn")
-    Logger.warn("scenic_driver_local: #{inspect(msg)}")
+    Logger.warn("scenic_driver_local: #{msg}")
     {:noreply, driver}
   end
 
@@ -151,8 +148,7 @@ defmodule Scenic.Driver.Local.FromPort do
         <<@msg_error_id::unsigned-integer-size(32)-native>> <> msg,
         driver
       ) do
-    IO.inspect(msg, label: "scenic_driver_local error")
-    Logger.error("scenic_driver_local: #{inspect(msg)}")
+    Logger.error("scenic_driver_local: #{msg}")
     {:noreply, driver}
   end
 

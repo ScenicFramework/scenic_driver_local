@@ -6,6 +6,10 @@
 
 #pragma once
 
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdarg.h>
+
 #ifndef bool
 #include <stdbool.h>
 #endif
@@ -53,7 +57,38 @@
 #define INPUT_CURSOR_SCROLL_MASK 0x0010
 #define INPUT_CURSOR_ENTER_MASK 0x0020
 
+typedef enum {
+  msg_out_close = 0x00,
+  msg_out_stats = 0x01,
+  msg_out_puts  = 0x02,
+  msg_out_write = 0x03,
+  msg_out_inspect = 0x04,
+  msg_out_reshape = 0x05,
+  msg_out_ready = 0x06,
+  msg_out_draw_ready = 0x07,
 
+  msg_out_key = 0x0a,
+  msg_out_codepoint = 0x0b,
+  msg_out_cursor_pos = 0x0c,
+  msg_out_mouse_button = 0x0d,
+  msg_out_mouse_scroll = 0x0e,
+  msg_out_cursor_enter = 0x0f,
+  msg_out_drop_paths = 0x10,
+  msg_out_static_texture_miss = 0x20,
+  msg_out_dynamic_texture_miss = 0x21,
+
+  msg_out_font_miss = 0x22,
+  msg_out_img_miss = 0x23,
+
+  msg_out_new_tx_id = 0x31,
+  msg_out_new_font_id = 0x32,
+
+  msg_out_info = 0xa0,
+  msg_out_warn = 0xa1,
+  msg_out_error = 0xa2,
+
+  _msg_out_SIZE_ = 0xffffffff,
+} msg_out_t;
 
 int read_exact(byte* buf, int len);
 int write_exact(byte* buf, int len);
@@ -64,19 +99,30 @@ bool read_bytes_down(void* p_buff, int bytes_to_read,
                      int* p_bytes_to_remaining);
 
 // basic events to send up to the caller
-void send_puts(const char* msg);
+void send_puts(const char* msg, ...);
 void send_write(const char* msg);
 void send_inspect(void* data, int length);
 
-void put_sp( const char* msg, void* p );
-void put_sn( const char* msg, int n );
-void put_sf( const char* msg, float f );
+typedef enum {
+  log_level_info,
+  log_level_warn,
+  log_level_error,
+} log_level_t;
 
-void log_info(const char* msg);
-void log_warn(const char* msg);
-void log_error(const char* msg);
+void log_message(log_level_t level, const char* msg, ...);
+void log_info(const char* msg, ...);
+void log_warn(const char* msg, ...);
+void log_error(const char* msg, ...);
 
-void send_image_miss( unsigned int img_id );
+void set_global_tx(int* p_msg_length, driver_data_t* p_data);
+void set_cursor_tx(int* p_msg_length, driver_data_t* p_data);
+void update_cursor(int* p_msg_length, driver_data_t* p_data);
+void clear_color(int* p_msg_length);
+void receive_crash();
+void receive_quit(driver_data_t* p_data);
+void render(driver_data_t* p_data);
+
+void send_image_miss(unsigned int img_id);
 
 // void send_static_texture_miss(const char* key);
 // void send_dynamic_texture_miss(const char* key);
@@ -97,8 +143,4 @@ void send_ready();
 // void* comms_thread(void* window);
 void handle_stdio_in(driver_data_t* p_data);
 
-// void* comms_thread(void* window);
-// bool handle_stdio_in( driver_data_t* p_data )
-
-
-uint64_t get_time_stamp();
+int64_t monotonic_time();
