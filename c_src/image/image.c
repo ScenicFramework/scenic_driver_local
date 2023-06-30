@@ -4,34 +4,22 @@
 #
 */
 
+#include <math.h>
 #include <string.h>
+
 #include "common.h"
-
-#include "stb_image.h"
-
 #include "comms.h"
-
+#include "image.h"
 #include "scenic_types.h"
 #include "utils.h"
-#include "image.h"
-#include "comms.h"
+#include "image_ops.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #define HASH_ID(id) tommy_hash_u32(0, id.p_data, id.size)
 
-#define REPEAT_XY (NVG_IMAGE_REPEATX | NVG_IMAGE_REPEATY)
-
 tommy_hashlin images = {0};
-
-//---------------------------------------------------------
-typedef struct _image_t {
-  sid_t id;
-  uint32_t nvg_id;
-  uint32_t width;
-  uint32_t height;
-  uint32_t format;
-  void* p_pixels;
-  tommy_hashlin_node  node;
-} image_t;
 
 //---------------------------------------------------------
 void init_images(void) {
@@ -55,7 +43,6 @@ static int _comparator(const void* p_arg, const void* p_obj)
 
 
 //---------------------------------------------------------
-// image_t* get_image( uint32_t driver_id ) {
 image_t* get_image(sid_t id)
 {
   return tommy_hashlin_search(&images,
@@ -65,11 +52,11 @@ image_t* get_image(sid_t id)
 }
 
 //---------------------------------------------------------
-void image_free(NVGcontext* p_ctx, image_t* p_image)
+void image_free(void* v_ctx, image_t* p_image)
 {
   if (p_image) {
     tommy_hashlin_remove_existing(&images, &p_image->node);
-    nvgDeleteImage(p_ctx, p_image->nvg_id);
+    image_ops_delete(v_ctx, p_image->image_id);
 
     if (p_image->p_pixels) {
       free(p_image->p_pixels);
@@ -80,20 +67,11 @@ void image_free(NVGcontext* p_ctx, image_t* p_image)
 }
 
 //---------------------------------------------------------
-void delete_image(sid_t id, NVGcontext* p_ctx)
-{
-  image_t* p_image = get_image( id );
-  if ( p_image ) {
-    image_free( p_ctx, p_image );
-  }
-}
-
-//---------------------------------------------------------
-void reset_images(NVGcontext* p_ctx)
+void reset_images(void* v_ctx)
 {
   // deallocates all the objects iterating the hashtable
   tommy_hashlin_foreach_arg(&images,
-                            (tommy_foreach_arg_func*)image_free, p_ctx);
+                            (tommy_foreach_arg_func*)image_free, v_ctx);
 
   // deallocates the hashtable
   tommy_hashlin_done(&images);
@@ -105,7 +83,7 @@ void reset_images(NVGcontext* p_ctx)
 //---------------------------------------------------------
 int read_pixels(void* p_pixels,
                 uint32_t width, uint32_t height,
-                uint32_t format_in,
+                image_format_t format_in,
                 int* p_msg_length)
 {
   // read incoming data into a temporary buffer
@@ -124,7 +102,7 @@ int read_pixels(void* p_pixels,
   void* p_temp = NULL;
 
   switch (format_in) {
-  case 0: // encoded file format
+  case IMAGE_FORMAT_FILE:
     p_temp = (void*)stbi_load_from_memory(p_buffer, buffer_size, &x, &y, &comp, 4);
     if (p_temp && (x != width || y != height)) {
       send_puts("Image size mismatch!!");
@@ -136,7 +114,7 @@ int read_pixels(void* p_pixels,
     p_temp = NULL;
     break;
 
-  case 1: // gray scale
+  case IMAGE_FORMAT_GRAY:
     for (unsigned int i = 0; i < pixel_count; i++) {
       dst_i = i * 4;
       ((char*)p_pixels)[dst_i] = ((char*)p_buffer)[i];
@@ -146,7 +124,7 @@ int read_pixels(void* p_pixels,
     }
     break;
 
-  case 2: // gray + alpha
+  case IMAGE_FORMAT_GRAY_ALPHA:
     for (unsigned int i = 0; i < pixel_count; i++) {
       dst_i = i * 4;
       src_i = i * 2;
@@ -157,7 +135,7 @@ int read_pixels(void* p_pixels,
     }
     break;
 
-  case 3: // rgb
+  case IMAGE_FORMAT_RGB:
     for (unsigned int i = 0; i < pixel_count; i++) {
       dst_i = i * 4;
       src_i = i * 3;
@@ -168,7 +146,7 @@ int read_pixels(void* p_pixels,
     }
     break;
 
-  case 4: // rgba
+  case IMAGE_FORMAT_RGBA:
     memcpy(p_pixels, p_buffer, pixel_count * 4);
     break;
   }
@@ -180,14 +158,14 @@ int read_pixels(void* p_pixels,
 }
 
 //---------------------------------------------------------
-void put_image(int* p_msg_length, NVGcontext* p_ctx)
+void put_image(int* p_msg_length, void* v_ctx)
 {
   // read in the fixed size data
   uint32_t id_length;
   uint32_t blob_size;
   uint32_t width;
   uint32_t height;
-  uint32_t format;
+  image_format_t format;
   read_bytes_down(&id_length, sizeof(uint32_t), p_msg_length);
   read_bytes_down(&blob_size, sizeof(uint32_t), p_msg_length);
   read_bytes_down(&width, sizeof(uint32_t), p_msg_length);
@@ -251,8 +229,8 @@ void put_image(int* p_msg_length, NVGcontext* p_ctx)
     // get the image data in pixel format
     read_pixels(p_image->p_pixels, width, height, format, p_msg_length);
 
-    // create an nvg texture from the pixel data
-    p_image->nvg_id = nvgCreateImageRGBA( p_ctx, width, height, REPEAT_XY, p_image->p_pixels );
+    // create a texture from the pixel data
+    p_image->image_id = image_ops_create(v_ctx, width, height, p_image->p_pixels);
 
     // save the image record into the tommyhash
     tommy_hashlin_insert(&images, &p_image->node, p_image, HASH_ID(p_image->id));
@@ -261,82 +239,8 @@ void put_image(int* p_msg_length, NVGcontext* p_ctx)
     // the image already exists and is the right size.
     // can save some bit of work by replacing the pixels of the existing image
     read_pixels(p_image->p_pixels, width, height, format, p_msg_length);
-    nvgUpdateImage( p_ctx, p_image->nvg_id, p_image->p_pixels );
+    image_ops_update(v_ctx, p_image->image_id, p_image->p_pixels);
   }
 
   free(p_temp_id);
-}
-
-
-//=============================================================================
-// called when rendering scripts
-
-//---------------------------------------------------------
-void set_fill_image(NVGcontext* p_ctx, sid_t id)
-{
-  // get the mapped nvg_id for this image_id
-  image_t* p_image = get_image(id);
-  if (!p_image) return;
-
-  // get the dimensions of the image
-  int w,h;
-  nvgImageSize(p_ctx, p_image->nvg_id, &w, &h);
-
-
-  // the image is loaded and ready for use
-  nvgFillPaint(p_ctx,
-               nvgImagePattern(p_ctx, 0, 0, w, h, 0, p_image->nvg_id, 1.0));
-}
-
-//---------------------------------------------------------
-void set_stroke_image(NVGcontext* p_ctx, sid_t id)
-{
-  // get the mapped nvg_id for this image_id
-  image_t* p_image = get_image( id );
-  if (!p_image) return;
-
-  // get the dimensions of the image
-  int w,h;
-  nvgImageSize(p_ctx, p_image->nvg_id, &w, &h);
-
-  // the image is loaded and ready for use
-  nvgStrokePaint(p_ctx,
-                 nvgImagePattern(p_ctx, 0, 0, w, h, 0, p_image->nvg_id, 1.0));
-}
-
-//---------------------------------------------------------
-// see: https://github.com/memononen/nanovg/issues/348
-void draw_image(NVGcontext* p_ctx, sid_t id,
-                float sx, float sy, float sw, float sh,
-                float dx, float dy, float dw, float dh)
-{
-  float ax, ay;
-  NVGpaint img_pattern;
-  
-  // get the mapped nvg_id for this driver_id
-  image_t* p_image = get_image(id);
-  if (!p_image) return;
-
-  // get the dimensions of the image
-  int iw,ih;
-  nvgImageSize(p_ctx, p_image->nvg_id, &iw, &ih);
-
-  // Aspect ration of pixel in x an y dimensions. This allows us to scale
-  // the sprite to fill the whole rectangle.
-  ax = dw / sw;
-  ay = dh / sh;
-
-  // create the temporary pattern
-  img_pattern = nvgImagePattern(p_ctx,
-                                dx - sx*ax, dy - sy*ay, (float)iw*ax, (float)ih*ay,
-                                0, p_image->nvg_id, 1.0);
-
-  // draw the image into a rect
-  nvgBeginPath(p_ctx);
-  nvgRect(p_ctx, dx, dy, dw, dh);
-  nvgFillPaint(p_ctx, img_pattern);
-  nvgFill(p_ctx);
-
-  // the data for the paint pattern is a struct on the stack.
-  // no need to clean it up
 }
