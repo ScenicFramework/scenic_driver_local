@@ -3,7 +3,7 @@
 #  Copyright 2018-2021 Kry10 Limited
 #
 
-defmodule Scenic.Driver.Local.Calbacks do
+defmodule Scenic.Driver.Local.Callbacks do
   @moduledoc false
 
   alias Scenic.Driver

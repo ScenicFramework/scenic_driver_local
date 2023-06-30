@@ -58,7 +58,7 @@ defmodule Scenic.Driver.Local do
 
   alias Scenic.Driver
 
-  alias Scenic.Driver.Local.Calbacks
+  alias Scenic.Driver.Local.Callbacks
   alias Scenic.Driver.Local.Input
   alias Scenic.Driver.Local.ToPort
   alias Scenic.Driver.Local.FromPort
@@ -285,19 +285,19 @@ defmodule Scenic.Driver.Local do
 
   @doc false
   @impl Scenic.Driver
-  defdelegate reset_scene(driver), to: Calbacks
+  defdelegate reset_scene(driver), to: Callbacks
 
   @doc false
   @impl Scenic.Driver
-  defdelegate update_scene(ids, driver), to: Calbacks
+  defdelegate update_scene(ids, driver), to: Callbacks
 
   @doc false
   @impl Scenic.Driver
-  defdelegate del_scripts(ids, driver), to: Calbacks
+  defdelegate del_scripts(ids, driver), to: Callbacks
 
   @doc false
   @impl Scenic.Driver
-  defdelegate clear_color(color, driver), to: Calbacks
+  defdelegate clear_color(color, driver), to: Callbacks
 
   # --------------------------------------------------------
 
