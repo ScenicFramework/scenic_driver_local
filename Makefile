@@ -36,6 +36,24 @@ ifdef SCENIC_LOCAL_GL
 $(info SCENIC_LOCAL_GL: $(SCENIC_LOCAL_GL))
 endif
 
+DEVICE_SRCS =
+
+FONT_SRCS = \
+	c_src/font/font.c
+
+IMAGE_SRCS = \
+	c_src/image/image.c
+
+TOMMYDS_SRCS = \
+	c_src/tommyds/src/tommyhashlin.c \
+	c_src/tommyds/src/tommyhash.c
+
+SCENIC_SRCS = \
+	c_src/scenic/comms.c \
+	c_src/scenic/script.c \
+	c_src/scenic/unix_comms.c \
+	c_src/scenic/utils.c
+
 ifeq ($(SCENIC_LOCAL_TARGET),glfw)
 	CFLAGS = -O3 -std=c99
 
@@ -60,22 +78,33 @@ ifeq ($(SCENIC_LOCAL_TARGET),glfw)
 		ifeq ($(shell uname),Darwin)
 			LDFLAGS += -framework Cocoa -framework OpenGL -Wno-deprecated
 		else
-		  LDFLAGS += -lGL -lm -lrt
+			LDFLAGS += -lGL -lm -lrt
 		endif
 	endif
-	SRCS = c_src/device/glfw.c
+
+	DEVICE_SRCS += \
+		c_src/device/glfw.c \
+		c_src/nanovg/nanovg.c
+
 else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -lbcm_host
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
-	SRCS = c_src/device/bcm.c
+
+	DEVICE_SRCS += \
+		c_src/device/bcm.c \
+		c_src/nanovg/nanovg.c
+
 else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 	# drm is the forward looking default
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
-  CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
-	SRCS = c_src/device/drm.c
+	CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
+
+	DEVICE_SRCS += \
+		c_src/device/drm.c \
+		c_src/nanovg/nanovg.c
 
 	ifeq ($(SCENIC_LOCAL_GL),gles2)
 		CFLAGS += -DSCENIC_GLES2
@@ -108,10 +137,22 @@ endif
 # endif
 
 # $(info $(shell printenv))
+CFLAGS += \
+	-Ic_src \
+	-Ic_src/device \
+	-Ic_src/font \
+	-Ic_src/image \
+	-Ic_src/nanovg \
+	-Ic_src/scenic \
+	-Ic_src/tommyds/src
 
-SRCS += c_src/main.c c_src/nanovg/nanovg.c c_src/comms.c c_src/unix_comms.c \
-c_src/utils.c c_src/script.c c_src/image.c c_src/font.c \
-c_src/tommyds/src/tommyhashlin.c c_src/tommyds/src/tommyhash.c
+SRCS = \
+	$(DEVICE_SRCS) \
+	$(FONT_SRCS) \
+	$(IMAGE_SRCS) \
+	$(TOMMYDS_SRCS) \
+	$(SCENIC_SRCS) \
+	c_src/main.c
 
 calling_from_make:
 	mix compile

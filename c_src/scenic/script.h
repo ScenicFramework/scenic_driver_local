@@ -6,9 +6,8 @@
 
 #pragma once
 
-#include "types.h"
+#include "scenic_types.h"
 #include "tommyds/src/tommyhashlin.h"
-
 
 void init_scripts( void );
 

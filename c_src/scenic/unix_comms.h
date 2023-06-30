@@ -12,5 +12,5 @@
   #include <stdint.h>
   #include <string.h>
 
-  #include "types.h"
+  #include "scenic_types.h"
   // #include "utils.h"

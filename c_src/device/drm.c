@@ -26,11 +26,11 @@
   #define NANOVG_GLES3_IMPLEMENTATION
 #endif
 #include <EGL/egl.h>
-#include "../nanovg/nanovg.h"
-#include "../nanovg/nanovg_gl.h"
+#include "nanovg.h"
+#include "nanovg_gl.h"
 
-#include "../types.h"
-#include "../comms.h"
+#include "scenic_types.h"
+#include "comms.h"
 #include "device.h"
 
 #define DEFAULT_SCREEN    0
@@ -783,7 +783,7 @@ char* device_gl_error() {
     case GL_STACK_OVERFLOW:
       return "GL_STACK_OVERFLOW";
 #endif
-      
+
     case GL_INVALID_FRAMEBUFFER_OPERATION:
       return "GL_INVALID_FRAMEBUFFER_OPERATION";
 

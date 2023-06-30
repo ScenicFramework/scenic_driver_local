@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "common.h"
-#include "types.h"
+#include "scenic_types.h"
 #include "utils.h"
 #include "comms.h"
 #include "font.h"

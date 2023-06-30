@@ -7,12 +7,12 @@
 #include <string.h>
 #include "common.h"
 
-#include "nanovg/stb_image.h"
-// #include "nanovg/nanovg_gl.h"
+#include "stb_image.h"
+// #include "nanovg_gl.h"
 
 #include "comms.h"
 
-#include "types.h"
+#include "scenic_types.h"
 #include "utils.h"
 #include "image.h"
 #include "comms.h"

@@ -14,15 +14,15 @@
 #include <assert.h>
 
 #include "comms.h"
-#include "types.h"
+#include "scenic_types.h"
 #include "image.h"
 #include "font.h"
 #include "script.h"
 
-#include "device/device.h"
+#include "device.h"
 
-#include "nanovg/nanovg.h"
-#include "nanovg/nanovg_gl.h"
+#include "nanovg.h"
+#include "nanovg_gl.h"
 
 
 #define STDIN_FILENO 0

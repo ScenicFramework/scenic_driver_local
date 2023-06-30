@@ -16,7 +16,7 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #include "font.h"
 #include "image.h"
 #include "utils.h"
-#include "device/device.h"
+#include "device.h"
 
 
 #define MSG_OUT_CLOSE 0x00
@@ -581,7 +581,7 @@ void render( driver_data_t* p_data )
   // set the global transform
   nvgTransform(
     p_ctx,
-    p_data->global_tx[0], p_data->global_tx[1], 
+    p_data->global_tx[0], p_data->global_tx[1],
     p_data->global_tx[2], p_data->global_tx[3],
     p_data->global_tx[4], p_data->global_tx[5]
   );

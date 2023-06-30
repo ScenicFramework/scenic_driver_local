@@ -16,7 +16,7 @@
 
 
 #ifndef NANOVG_H
-#include "nanovg/nanovg.h"
+#include "nanovg.h"
 #endif
 
 

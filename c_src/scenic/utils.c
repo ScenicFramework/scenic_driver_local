@@ -8,7 +8,7 @@ Functions to load fonts and render text
 
 
 #include "common.h"
-#include "device/device.h"
+#include "device.h"
 
 // #include <stdio.h>
 // #include <string.h>

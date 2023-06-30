@@ -18,12 +18,12 @@
 #include <GLFW/glfw3.h>
 
 #define NANOVG_GL2_IMPLEMENTATION
-#include "../nanovg/nanovg.h"
-#include "../nanovg/nanovg_gl.h"
+#include "nanovg.h"
+#include "nanovg_gl.h"
 
-#include "../types.h"
-#include "../utils.h"
-#include "../comms.h"
+#include "scenic_types.h"
+#include "utils.h"
+#include "comms.h"
 #include "device.h"
 
 #define STDIN_FILENO 0
@@ -348,7 +348,7 @@ char* device_gl_error() {
         send_puts( "GL_STACK_OVERFLOW" );
         break;
 #endif
-        
+
       case GL_INVALID_FRAMEBUFFER_OPERATION:
         send_puts( "GL_INVALID_FRAMEBUFFER_OPERATION" );
         break;

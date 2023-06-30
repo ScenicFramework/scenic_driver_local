@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "types.h"
-#include "tommyds/src/tommyhashlin.h"
+#include "scenic_types.h"
+#include "tommyhashlin.h"
 
 void init_fonts( void );
 void put_font( int* p_msg_length, NVGcontext* p_ctx );
