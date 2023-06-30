@@ -22,7 +22,6 @@
 #include <memory.h>
 
 #include "nanovg.h"
-#define FONTSTASH_IMPLEMENTATION
 #include "fontstash.h"
 
 #ifndef NVG_NO_STB

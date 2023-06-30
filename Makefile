@@ -85,6 +85,7 @@ ifeq ($(SCENIC_LOCAL_TARGET),glfw)
 	DEVICE_SRCS += \
 		c_src/device/glfw.c \
 		c_src/nanovg/nanovg.c
+	FONT_SRCS += c_src/font/nvg_font_ops.c
 
 else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -lbcm_host
@@ -94,6 +95,7 @@ else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 	DEVICE_SRCS += \
 		c_src/device/bcm.c \
 		c_src/nanovg/nanovg.c
+	FONT_SRCS += c_src/font/nvg_font_ops.c
 
 else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 	# drm is the forward looking default
@@ -105,6 +107,7 @@ else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 	DEVICE_SRCS += \
 		c_src/device/drm.c \
 		c_src/nanovg/nanovg.c
+	FONT_SRCS += c_src/font/nvg_font_ops.c
 
 	ifeq ($(SCENIC_LOCAL_GL),gles2)
 		CFLAGS += -DSCENIC_GLES2
