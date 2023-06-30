@@ -112,7 +112,7 @@ int read_pixels(void* p_pixels,
   int buffer_size = *p_msg_length;
   void* p_buffer = malloc(buffer_size);
   if (!p_buffer) {
-    send_puts("Unable to alloc temporary pixel buffer!!");
+    log_error("Unable to alloc temporary pixel buffer!!");
     return -1;
   }
   read_bytes_down(p_buffer, buffer_size, p_msg_length);
@@ -197,7 +197,7 @@ void put_image(int* p_msg_length, NVGcontext* p_ctx)
   // read the id into a temp buffer
   void* p_temp_id = calloc(1, id_length + 1);
   if (!p_temp_id) {
-    send_puts( "Unable to allocate image p_temp_id" );
+    log_error("Unable to allocate image p_temp_id");
     return;
   }
 
@@ -229,7 +229,7 @@ void put_image(int* p_msg_length, NVGcontext* p_ctx)
 
     p_image = malloc(alloc_size);
     if (!p_image) {
-      send_puts( "Unable to allocate image struct" );
+      log_error("Unable to allocate image struct");
       free(p_temp_id);
       return;
     }

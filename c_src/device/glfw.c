@@ -53,7 +53,7 @@ glfw_data_t g_glfw_data = {0};
 
 void errorcb(int error, const char* desc)
 {
-  put_sn( desc, error );
+  log_error("%s: %d", desc, error);
 }
 
 //---------------------------------------------------------
@@ -323,39 +323,36 @@ char* device_gl_error()
     // check if there was a gl error
     switch (err)
     {
-      case GL_NO_ERROR:
-        return NULL;
-      case GL_INVALID_ENUM:
-        send_puts("GL_INVALID_ENUM");
-        break;
-      case GL_INVALID_VALUE:
-        send_puts("GL_INVALID_VALUE");
-        break;
-      case GL_INVALID_OPERATION:
-        send_puts("GL_INVALID_OPERATION");
-        break;
-      case GL_OUT_OF_MEMORY:
-        send_puts("GL_OUT_OF_MEMORY");
-        break;
-
+    case GL_NO_ERROR:
+      return NULL;
+    case GL_INVALID_ENUM:
+      log_error("GL_INVALID_ENUM");
+      break;
+    case GL_INVALID_VALUE:
+      log_error("GL_INVALID_VALUE");
+      break;
+    case GL_INVALID_OPERATION:
+      log_error("GL_INVALID_OPERATION");
+      break;
+    case GL_OUT_OF_MEMORY:
+      log_error("GL_OUT_OF_MEMORY");
+      break;
 #ifdef GL_STACK_UNDERFLOW
-      case GL_STACK_UNDERFLOW:
-        send_puts("GL_STACK_UNDERFLOW");
-        break;
+    case GL_STACK_UNDERFLOW:
+      log_error("GL_STACK_UNDERFLOW");
+      break;
 #endif
-
 #ifdef GL_STACK_OVERFLOW
-      case GL_STACK_OVERFLOW:
-        send_puts("GL_STACK_OVERFLOW");
-        break;
+    case GL_STACK_OVERFLOW:
+      log_error("GL_STACK_OVERFLOW");
+      break;
 #endif
-
-      case GL_INVALID_FRAMEBUFFER_OPERATION:
-        send_puts("GL_INVALID_FRAMEBUFFER_OPERATION");
-        break;
-      default:
-        put_sn("GL_OTHER:", err);
-        break;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      log_error("GL_INVALID_FRAMEBUFFER_OPERATION");
+      break;
+    default:
+      log_error("GL_OTHER: %d", err);
+      break;
     }
   }
 }

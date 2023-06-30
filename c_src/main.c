@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
   int err = device_init(&opts, &g_device_info);
   if (err) {
-    send_puts( "Failed to initilize the device" );
+    log_error("Failed to initilize the device: %d", err);
     return err;
   }
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   send_ready();
 
 #ifdef SCENIC_GLES2
-  send_puts("~~~~~~~~~~~~~SCENIC_GLES2 was defined!");
+  log_info("~~~~~~~~~~~~~SCENIC_GLES2 was defined!");
 #endif
 
   /* Loop until the calling app closes the window */

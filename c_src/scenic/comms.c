@@ -417,7 +417,7 @@ void receive_quit(driver_data_t* p_data)
 //---------------------------------------------------------
 void receive_crash()
 {
-  send_puts("receive_crash - exit");
+  log_error("receive_crash - exit");
   exit(EXIT_FAILURE);
 }
 
@@ -575,15 +575,15 @@ void dispatch_message(int msg_length, driver_data_t* p_data)
       break;
 
     default:
-      put_sn("Unknown message:", msg_id);
+      log_error("Unknown message: %d", msg_id);
   }
 
   // if there are any bytes left to read in the message, need to get rid of them
   // here...
   if (msg_length > 0)
   {
-    put_sn("Excess message bytes:", msg_length);
-    put_sn("message id:", msg_id);
+    log_error("Excess message bytes: %d", msg_length);
+    log_error("|      message id: %d", msg_id);
     void* p = malloc(msg_length);
     read_bytes_down(p, msg_length, &msg_length);
     free(p);

@@ -72,7 +72,7 @@ void put_font(int* p_msg_length, NVGcontext* p_ctx)
   int alloc_size = struct_size + id_size + blob_size;
   font_t* p_font = calloc(1, alloc_size);
   if (!p_font) {
-    send_puts("Unable to allocate font font");
+    log_error("Unable to allocate font");
     return;
   }
 
@@ -98,7 +98,7 @@ void put_font(int* p_msg_length, NVGcontext* p_ctx)
     false // tells nvg to NOT free p_font->blob.p_data when releasing font
   );
   if ( p_font->nvg_id < 0 ) {
-    send_puts( "Unable to create nvg font" );
+    log_error("Unable to create font");
     free(p_font);
     return;
   };

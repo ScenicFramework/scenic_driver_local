@@ -80,7 +80,7 @@ void put_script(int* p_msg_length)
   int alloc_size = struct_size + id_size + *p_msg_length;
   script_t *p_script = malloc(alloc_size);
   if ( !p_script ) {
-    send_puts( "Unable to allocate script" );
+    log_error("Unable to allocate script");
     return;
   }
 
@@ -115,7 +115,7 @@ void delete_script(int* p_msg_length)
   // create a temporary buffer and read the id into it
   id.p_data = malloc(id.size);
   if (!id.p_data) {
-    send_puts( "Unable to allocate buffer for the id" );
+    log_error("Unable to allocate buffer for the id");
     return;
   }
 
@@ -143,12 +143,6 @@ void reset_scripts() {
 
 //=============================================================================
 // rendering
-
-static void put_msg_i( char* msg, int n ) {
-  char buff[200];
-  sprintf(buff, "%s %d", msg, n);
-  send_puts(buff);
-}
 
 static inline byte get_byte( void* p, uint32_t offset ) {
   return *((byte*)(p + offset));
@@ -602,7 +596,7 @@ void render_script(sid_t id, NVGcontext* p_ctx)
         break;
 
       default:
-        put_msg_i( "Unknown OP: ", op );
+        log_error("Unknown script_op: %d", op);
         break;
     }
   }
@@ -613,4 +607,3 @@ void render_script(sid_t id, NVGcontext* p_ctx)
     nvgRestore(p_ctx);
   }
 }
-

@@ -10,6 +10,6 @@
 void check_gl_error() {
   char* p_err_str;
   while((p_err_str = device_gl_error()) != NULL) {
-    send_puts( p_err_str );
+    log_error("%s", p_err_str);
   }
 }

@@ -107,7 +107,7 @@ static uint32_t drm_fmt_to_gbm_fmt(uint32_t fmt)
     case DRM_FORMAT_RGB565:
       return GBM_FORMAT_RGB565;
     default:
-      fprintf(stderr, "Unsupported DRM format: 0x%x", fmt);
+      log_error("Unsupported DRM format: 0x%x", fmt);
       return GBM_FORMAT_XRGB8888;
   }
 }
@@ -145,7 +145,7 @@ static struct drm_fb * drm_fb_get_from_bo(struct gbm_bo *bo)
 
   ret = drmModeAddFB2(drm.fd, width, height, format, bo_handles, pitches, offsets, &fb->fb_id, 0);
   if (ret) {
-    printf("failed to create fb: %s\n", strerror(errno));
+    log_error("failed to create fb: %s", strerror(errno));
     free(fb);
     return NULL;
   }
@@ -184,7 +184,7 @@ int get_drm_prop_val(int fd, drmModeObjectPropertiesPtr props,
   }
 
   if (!prop_id) {
-    fprintf(stderr, "Could not find %s property\n", name);
+    log_error("Could not find %s property", name);
     return(-1);
   }
 
@@ -207,7 +207,7 @@ static bool set_drm_format(void)
   plane_res  = drmModeGetPlaneResources(drm.fd);
 
   if (!plane_res) {
-    fprintf(stderr, "drmModeGetPlaneResources failed: %s\n", strerror(errno));
+    log_error("drmModeGetPlaneResources failed: %s", strerror(errno));
     drmSetClientCap(drm.fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 0);
     return false;
   }
@@ -228,14 +228,14 @@ static bool set_drm_format(void)
     props = drmModeObjectGetProperties(drm.fd, plane->plane_id, DRM_MODE_OBJECT_PLANE);
 
     if(props == NULL){
-      fprintf(stderr, "plane (%d) properties not found\n",  plane->plane_id);
+      log_error("plane (%d) properties not found",  plane->plane_id);
       drmModeFreePlane(plane);
       continue;
     }
 
     if(get_drm_prop_val(drm.fd, props, "type",  &plane_type) < 0)
     {
-      fprintf(stderr, "plane (%d) type value not found\n",  plane->plane_id);
+      log_error("plane (%d) type value not found",  plane->plane_id);
       drmModeFreeObjectProperties(props);
       drmModeFreePlane(plane);
       continue;
@@ -291,13 +291,13 @@ static int init_drm(const device_opts_t* p_opts, device_info_t* p_info)
   /* Open default dri device */
   drm.fd = open(device, O_RDWR | O_CLOEXEC);
   if (drm.fd < 0) {
-    fprintf(stderr, "could not open drm device %s\n", device);
+    log_error("could not open drm device %s", device);
     return -1;
   }
 
   resources = drmModeGetResources(drm.fd);
   if (!resources) {
-    fprintf(stderr, "drmModeGetResources failed: %s\n", strerror(errno));
+    log_error("drmModeGetResources failed: %s", strerror(errno));
     return -1;
   }
   // drm.resource_id = (uint32_t) resources;
@@ -334,7 +334,7 @@ static int init_drm(const device_opts_t* p_opts, device_info_t* p_info)
 
             if (!encoder->crtc_id)
             {
-              fprintf(stderr, "Encoder(%d): no CRTC find!\n", encoder->encoder_id);
+              log_error("Encoder(%d): no CRTC find!", encoder->encoder_id);
               drmModeFreeEncoder(encoder);
               encoder = NULL;
               continue;
@@ -349,7 +349,7 @@ static int init_drm(const device_opts_t* p_opts, device_info_t* p_info)
       }
 
       if (!encoder) {
-        fprintf(stderr, "Connector (%d): no encoder!\n", connector->connector_id);
+        log_error("Connector (%d): no encoder!", connector->connector_id);
         drmModeFreeConnector(connector);
         continue;
       }
@@ -390,14 +390,14 @@ static int init_drm(const device_opts_t* p_opts, device_info_t* p_info)
       if (!set_drm_format())
       {
         // Error handling
-        fprintf(stderr, "No desired pixel format found!\n");
+        log_error("No desired pixel format found!");
         return -1;
       }
 
-      fprintf(stderr, "### Display [%d]: CRTC = %d, Connector = %d, format = 0x%x\n", drm.ndisp, drm.crtc_id[drm.ndisp], drm.connector_id[drm.ndisp], drm.format[drm.ndisp]);
-      fprintf(stderr, "\tMode chosen [%s] : Clock => %d, Vertical refresh => %d, Type => %d\n", drm.mode[drm.ndisp]->name, drm.mode[drm.ndisp]->clock, drm.mode[drm.ndisp]->vrefresh, drm.mode[drm.ndisp]->type);
-      fprintf(stderr, "\tHorizontal => %d, %d, %d, %d, %d\n", drm.mode[drm.ndisp]->hdisplay, drm.mode[drm.ndisp]->hsync_start, drm.mode[drm.ndisp]->hsync_end, drm.mode[drm.ndisp]->htotal, drm.mode[drm.ndisp]->hskew);
-      fprintf(stderr, "\tVertical => %d, %d, %d, %d, %d\n", drm.mode[drm.ndisp]->vdisplay, drm.mode[drm.ndisp]->vsync_start, drm.mode[drm.ndisp]->vsync_end, drm.mode[drm.ndisp]->vtotal, drm.mode[drm.ndisp]->vscan);
+      log_info("### Display [%d]: CRTC = %d, Connector = %d, format = 0x%x", drm.ndisp, drm.crtc_id[drm.ndisp], drm.connector_id[drm.ndisp], drm.format[drm.ndisp]);
+      log_info("    Mode chosen [%s] : Clock => %d, Vertical refresh => %d, Type => %d", drm.mode[drm.ndisp]->name, drm.mode[drm.ndisp]->clock, drm.mode[drm.ndisp]->vrefresh, drm.mode[drm.ndisp]->type);
+      log_info("    Horizontal => %d, %d, %d, %d, %d", drm.mode[drm.ndisp]->hdisplay, drm.mode[drm.ndisp]->hsync_start, drm.mode[drm.ndisp]->hsync_end, drm.mode[drm.ndisp]->htotal, drm.mode[drm.ndisp]->hskew);
+      log_info("    Vertical => %d, %d, %d, %d, %d", drm.mode[drm.ndisp]->vdisplay, drm.mode[drm.ndisp]->vsync_start, drm.mode[drm.ndisp]->vsync_end, drm.mode[drm.ndisp]->vtotal, drm.mode[drm.ndisp]->vscan);
       g_egl_data.screen_width = drm.mode[drm.ndisp]->hdisplay;
       g_egl_data.screen_height = drm.mode[drm.ndisp]->vdisplay;
       p_info->width = drm.mode[drm.ndisp]->hdisplay;
@@ -429,7 +429,7 @@ static int init_drm(const device_opts_t* p_opts, device_info_t* p_info)
     /* we could be fancy and listen for hotplug events and wait for
      * a connector..
      */
-    fprintf(stderr, "no connected connector!\n");
+    log_error("no connected connector!");
     return -1;
   }
 
@@ -446,7 +446,7 @@ static int init_gbm(void)
                                    drm_fmt_to_gbm_fmt(drm.format[DISP_ID]),
                                    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
   if (!gbm.surface) {
-    fprintf(stderr, "failed to create gbm surface\n");
+    log_error("failed to create gbm surface");
     return -1;
   }
 
@@ -478,38 +478,38 @@ int init_egl(const device_opts_t* p_opts, device_info_t* p_info)
 
   g_egl_data.display = eglGetDisplay(gbm.dev);
   if (!eglInitialize(g_egl_data.display, &g_egl_data.major_version, &g_egl_data.minor_version)) {
-    fprintf(stderr, "failed to initialize egl\n");
+    log_error("failed to initialize egl");
     return -1;
   }
 
   if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-    fprintf(stderr, "failed to bind api EGL_OPENGL_ES_API\n");
+    log_error("failed to bind api EGL_OPENGL_ES_API");
     return -1;
   }
 
   EGLConfig config = NULL;
   if ( eglChooseConfig(g_egl_data.display, config_attribs, &config, 1, &n) != EGL_TRUE ) {
-    fprintf( stderr, "failed to choose config\n" );
+    log_error("failed to choose config");
     return -1;
   }
 
   g_egl_data.context = eglCreateContext(g_egl_data.display, config,
       EGL_NO_CONTEXT, context_attribs);
   if (g_egl_data.context == NULL) {
-    fprintf(stderr, "failed to create context\n");
+    log_error("failed to create context");
     return -1;
   }
 
   g_egl_data.surface = eglCreateWindowSurface(g_egl_data.display, config, gbm.surface, NULL);
   if (g_egl_data.surface == EGL_NO_SURFACE) {
-    fprintf(stderr, "failed to create egl surface\n");
+    log_error("failed to create egl surface");
     return -1;
   }
 
   /* connect the context to the surface */
   eglMakeCurrent(g_egl_data.display, g_egl_data.surface, g_egl_data.surface, g_egl_data.context);
 
-  fprintf(stderr, "connected surface\n");
+  log_info("connected surface");
   //-------------------
   // config gles
 
@@ -535,7 +535,7 @@ int init_egl(const device_opts_t* p_opts, device_info_t* p_info)
   // don't have code to detect that.  Easy to do if we need it!
   glEnable (GL_BLEND);
   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  fprintf(stderr, "configured gles\n");
+  log_info("configured gles");
 
   uint32_t nvg_opts = 0;
   if (p_opts->antialias) nvg_opts |= NVG_ANTIALIAS;
@@ -549,7 +549,7 @@ int init_egl(const device_opts_t* p_opts, device_info_t* p_info)
 
   if (p_info->p_ctx == NULL)
   {
-    fprintf(stderr, "Failed to create nvg\n");
+    log_error("Failed to create nvg");
     send_puts("EGL driver error: failed nvgCreateGLES2");
     return -1;
   }
@@ -567,26 +567,26 @@ int device_init(const device_opts_t* p_opts,
   // initialize
   ret = init_drm(p_opts, p_info);
   if (ret) {
-    fprintf(stderr, "failed to initialize DRM\n");
+    log_error("failed to initialize DRM");
     return ret;
   }
 
-  fprintf(stderr, "### Primary display => ConnectorId = %d, Resolution = %dx%d\n",
-    drm.connector_id[DISP_ID], drm.mode[DISP_ID]->hdisplay,
-    drm.mode[DISP_ID]->vdisplay);
+  log_info("### Primary display => ConnectorId = %d, Resolution = %dx%d",
+           drm.connector_id[DISP_ID], drm.mode[DISP_ID]->hdisplay,
+           drm.mode[DISP_ID]->vdisplay);
 
   FD_ZERO(&fds);
   FD_SET(drm.fd, &fds);
 
   ret = init_gbm();
   if (ret) {
-    fprintf(stderr, "failed to initialize GBM\n");
+    log_error("failed to initialize GBM");
     return ret;
   }
 
   ret = init_egl( p_opts, p_info );
   if (ret) {
-    fprintf(stderr, "failed to initialize EGL\n");
+    log_error("failed to initialize EGL");
     return ret;
   }
 
@@ -604,7 +604,7 @@ int device_init(const device_opts_t* p_opts,
   ret = drmModeSetCrtc(drm.fd, drm.crtc_id[DISP_ID], drm.fb[g_egl_data.frame_idx]->fb_id,
                        0, 0, &drm.connector_id[DISP_ID], 1, drm.mode[DISP_ID]);
   if (ret) {
-    printf("display %d failed to set mode: %s", DISP_ID, strerror(errno));
+    log_error("display %d failed to set mode: %s", DISP_ID, strerror(errno));
     return ret;
   }
 
@@ -639,16 +639,14 @@ void device_end_render()
   ret = drmModeSetCrtc(drm.fd, drm.crtc_id[DISP_ID], drm.fb[next_idx]->fb_id,
                        0, 0, &drm.connector_id[DISP_ID], 1, drm.mode[DISP_ID]);
   if (ret) {
-    log_error("device_swap_buffers display failed to set mode");
-    printf("display %d failed to set mode: %s\n", DISP_ID, strerror(errno));
+    log_error("display %d failed to set mode: %s", DISP_ID, strerror(errno));
     return;
   }
 
   ret = drmModePageFlip(drm.fd, drm.crtc_id[DISP_ID], drm.fb[next_idx]->fb_id,
                         DRM_MODE_PAGE_FLIP_EVENT, &waiting_for_flip);
   if (ret) {
-    log_error("failed to queue page flip");
-    fprintf(stderr, "failed to queue page flip: %s\n", strerror(errno));
+    log_error("failed to queue page flip: %s", strerror(errno));
     return;
   }
 
@@ -657,12 +655,10 @@ void device_end_render()
   while (waiting_for_flip) {
     ret = select(drm.fd + 1, &fds, NULL, NULL, NULL);
     if (ret < 0) {
-      log_error("select err");
-      fprintf(stderr, "select err: %s\n", strerror(errno));
+      log_error("select err: %s", strerror(errno));
       return;
     } else if (ret == 0) {
       log_error("select timeout!");
-      fprintf(stderr, "select timeout!\n");
       return;
     } else if (FD_ISSET(0, &fds)) {
       continue;
