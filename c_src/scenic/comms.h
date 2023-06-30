@@ -133,4 +133,4 @@ void send_ready();
 
 void handle_stdio_in(driver_data_t* p_data);
 
-uint64_t get_time_stamp();
+int64_t monotonic_time();

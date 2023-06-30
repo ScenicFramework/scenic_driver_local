@@ -11,6 +11,8 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "script.h"
 #include "font.h"
@@ -597,22 +599,24 @@ void dispatch_message(int msg_length, driver_data_t* p_data)
 //=============================================================================
 // non-threaded command reading
 
-uint64_t get_time_stamp()
+int64_t monotonic_time()
 {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    int64_t mt_msecs = (int64_t)(ts.tv_sec) * 1000;
+    double temp = ((double)(ts.tv_nsec) / 1000000.0) + 0.5;
+    mt_msecs += (int64_t)temp;
+    return mt_msecs;
 }
 
 // read from the stdio in buffer and act on one message.
 void handle_stdio_in(driver_data_t* p_data)
 {
+  int64_t start = monotonic_time();
   int64_t time_remaining = STDIO_TIMEOUT;
-  int64_t end_time = get_time_stamp() + STDIO_TIMEOUT;
-  struct timeval tv;
 
-  while (time_remaining > 0)
-  {
+  struct timeval tv;
+  while (time_remaining > 0) {
     tv.tv_sec  = 0;
     tv.tv_usec = time_remaining;
 
@@ -623,7 +627,6 @@ void handle_stdio_in(driver_data_t* p_data)
     dispatch_message(len, p_data);
 
     // see if time is remaining, so we can process another one
-    time_remaining = end_time - get_time_stamp();
+    time_remaining -= monotonic_time() - start;
   }
 }
-
