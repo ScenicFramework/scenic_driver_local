@@ -9,12 +9,10 @@
 #include "scenic_types.h"
 #include "tommyds/src/tommyhashlin.h"
 
-void init_scripts( void );
+void init_scripts(void);
 
-void put_script( int* p_msg_length );
-void delete_script( int* p_msg_length );
+void put_script(int* p_msg_length);
+void delete_script(int* p_msg_length);
 
-// script_t* get_script( uint32_t id );
 void reset_scripts();
-
-void render_script( sid_t id, NVGcontext* p_ctx );
+void render_script(sid_t id, NVGcontext* p_ctx);

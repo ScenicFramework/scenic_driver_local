@@ -1,4 +1,3 @@
-// #define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/select.h>
@@ -12,7 +11,6 @@
 #include <signal.h>
 #include <poll.h>
 
-// #include <drm.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
@@ -65,7 +63,6 @@ drmEventContext evctx = {
 
 typedef struct {
   EGLDisplay display;
-  // EGLConfig config;
   EGLSurface surface;
   EGLContext context;
   int screen_width;
@@ -76,58 +73,6 @@ typedef struct {
 } egl_data_t;
 
 egl_data_t g_egl_data = {0};
-
-
-/*
-void test_draw(NVGcontext* p_ctx) {
-  //-----------------------------------
-  // Set background color and clear buffers
-  // glClearColor(0.15f, 0.25f, 0.35f, 1.0f);
-  glClearColor(0.098f, 0.098f, 0.439f, 1.0f);    // midnight blue
-  // glClearColor(0.545f, 0.000f, 0.000f, 1.0f);    // dark red
-  // glClearColor(0.184f, 0.310f, 0.310f, 1.0f);       // dark slate gray
-  // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);       // black
-  // glClearColor(0.5f, 0.1f, 0.7f, 1.0f);
-  // glClear(GL_COLOR_BUFFER_BIT);
-
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  // int width = g_egl_data.screen_width;
-  // int height = g_egl_data.screen_height;
-  // int ratio = 1;
-
-  // nvgBeginFrame(p_ctx, width, height, ratio);
-
-  //   // Next, draw graph line
-  // nvgBeginPath(p_ctx);
-  // nvgMoveTo(p_ctx, 0, 0);
-  // nvgLineTo(p_ctx, width, height);
-  // nvgStrokeColor(p_ctx, nvgRGBA(0, 160, 192, 255));
-  // nvgStrokeWidth(p_ctx, 3.0f);
-  // nvgStroke(p_ctx);
-
-  // nvgBeginPath(p_ctx);
-  // nvgMoveTo(p_ctx, width, 0);
-  // nvgLineTo(p_ctx, 0, height);
-  // nvgStrokeColor(p_ctx, nvgRGBA(0, 160, 192, 255));
-  // nvgStrokeWidth(p_ctx, 3.0f);
-  // nvgStroke(p_ctx);
-
-  // nvgBeginPath(p_ctx);
-  // nvgCircle(p_ctx, width / 2, height / 2, 50);
-  // nvgFillColor(p_ctx, nvgRGBAf(0.545f, 0.000f, 0.000f, 1.0f));
-  // nvgFill(p_ctx);
-  // nvgStroke(p_ctx);
-
-  // nvgEndFrame(p_ctx);
-}
-*/
-
-
-
-
-
-
 
 static struct {
   struct gbm_device *dev;
@@ -140,7 +85,6 @@ static struct {
   uint32_t ndisp;
   uint32_t crtc_id[MAX_DISPLAYS];
   uint32_t connector_id[MAX_DISPLAYS];
-  // uint32_t resource_id;
   drmModeEncoder* encoder[MAX_DISPLAYS];
   uint32_t format[MAX_DISPLAYS];
   drmModeModeInfo *mode[MAX_DISPLAYS];
@@ -225,13 +169,14 @@ static bool search_plane_format(uint32_t desired_format, int formats_count, uint
 }
 
 int get_drm_prop_val(int fd, drmModeObjectPropertiesPtr props,
-                   const char *name, unsigned int *p_val) {
+                     const char *name, unsigned int *p_val)
+{
   drmModePropertyPtr p;
   unsigned int i, prop_id = 0; /* Property ID should always be > 0 */
 
   for (i = 0; !prop_id && i < props->count_props; i++) {
     p = drmModeGetProperty(fd, props->props[i]);
-    if (!strcmp(p->name, name)){
+    if (!strcmp(p->name, name)) {
       prop_id = p->prop_id;
       break;
     }
@@ -333,7 +278,7 @@ static bool set_drm_format(void)
 }
 
 
-static int init_drm( const device_opts_t* p_opts, device_info_t* p_info )
+static int init_drm(const device_opts_t* p_opts, device_info_t* p_info)
 {
   drmModeRes *resources;
   drmModeConnector *connector = NULL;
@@ -496,9 +441,10 @@ static int init_gbm(void)
   gbm.dev = gbm_create_device(drm.fd);
 
   gbm.surface = gbm_surface_create(gbm.dev,
-      drm.mode[DISP_ID]->hdisplay, drm.mode[DISP_ID]->vdisplay,
-      drm_fmt_to_gbm_fmt(drm.format[DISP_ID]),
-      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+                                   drm.mode[DISP_ID]->hdisplay,
+                                   drm.mode[DISP_ID]->vdisplay,
+                                   drm_fmt_to_gbm_fmt(drm.format[DISP_ID]),
+                                   GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
   if (!gbm.surface) {
     fprintf(stderr, "failed to create gbm surface\n");
     return -1;
@@ -510,7 +456,7 @@ static int init_gbm(void)
 
 
 
-int init_egl( const device_opts_t* p_opts, device_info_t* p_info )
+int init_egl(const device_opts_t* p_opts, device_info_t* p_info)
 {
   EGLint major, minor, n;
   GLint ret;
@@ -535,11 +481,6 @@ int init_egl( const device_opts_t* p_opts, device_info_t* p_info )
     fprintf(stderr, "failed to initialize egl\n");
     return -1;
   }
-
-  // fprintf(stderr, "Using display %p with EGL version %d.%d\n", g_egl_data.display, g_egl_data.major_version, g_egl_data.minor_version);
-  // fprintf(stderr, "EGL Version \"%s\"\n", eglQueryString(g_egl_data.display, EGL_VERSION));
-  // fprintf(stderr, "EGL Vendor \"%s\"\n", eglQueryString(g_egl_data.display, EGL_VENDOR));
-  // fprintf(stderr, "EGL Extensions \"%s\"\n", eglQueryString(g_egl_data.display, EGL_EXTENSIONS));
 
   if (!eglBindAPI(EGL_OPENGL_ES_API)) {
     fprintf(stderr, "failed to bind api EGL_OPENGL_ES_API\n");
@@ -597,13 +538,13 @@ int init_egl( const device_opts_t* p_opts, device_info_t* p_info )
   fprintf(stderr, "configured gles\n");
 
   uint32_t nvg_opts = 0;
-  if ( p_opts->antialias ) nvg_opts |= NVG_ANTIALIAS;
-  if ( p_opts->debug_mode ) nvg_opts |= NVG_DEBUG;
+  if (p_opts->antialias) nvg_opts |= NVG_ANTIALIAS;
+  if (p_opts->debug_mode) nvg_opts |= NVG_DEBUG;
 
 #ifdef SCENIC_GLES2
-  p_info->p_ctx = nvgCreateGLES2( nvg_opts );
+  p_info->p_ctx = nvgCreateGLES2(nvg_opts);
 #else
-  p_info->p_ctx = nvgCreateGLES3( nvg_opts );
+  p_info->p_ctx = nvgCreateGLES3(nvg_opts);
 #endif
 
   if (p_info->p_ctx == NULL)
@@ -618,11 +559,13 @@ int init_egl( const device_opts_t* p_opts, device_info_t* p_info )
 
 
 
-int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
+int device_init(const device_opts_t* p_opts,
+                device_info_t* p_info)
+{
   int ret;
 
   // initialize
-  ret = init_drm( p_opts, p_info );
+  ret = init_drm(p_opts, p_info);
   if (ret) {
     fprintf(stderr, "failed to initialize DRM\n");
     return ret;
@@ -650,10 +593,7 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
 
   g_egl_data.frame_idx = 0;
 
-  // test_draw( p_info->p_ctx );
   glClearColor(0.5f, 0.1f, 0.7f, 1.0f);
-  // glClear(GL_COLOR_BUFFER_BIT);
-  // test_draw( p_info->p_ctx );
 
   eglSwapBuffers(g_egl_data.display, g_egl_data.surface);
   struct gbm_bo *bo = gbm_surface_lock_front_buffer(gbm.surface);
@@ -662,46 +602,42 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
 
   drm.fb[g_egl_data.frame_idx] = drm_fb_get_from_bo(bo);
   ret = drmModeSetCrtc(drm.fd, drm.crtc_id[DISP_ID], drm.fb[g_egl_data.frame_idx]->fb_id,
-        0, 0, &drm.connector_id[DISP_ID], 1, drm.mode[DISP_ID]);
-    if (ret) {
-      printf("display %d failed to set mode: %s\n", DISP_ID, strerror(errno));
-      return ret;
-    }
-
-  // test_draw( p_info->p_ctx );
-  // device_swap_buffers();
+                       0, 0, &drm.connector_id[DISP_ID], 1, drm.mode[DISP_ID]);
+  if (ret) {
+    printf("display %d failed to set mode: %s", DISP_ID, strerror(errno));
+    return ret;
+  }
 
   return 0;
 }
 
-
-int device_close( device_info_t* p_info ) {
+int device_close(device_info_t* p_info)
+{
   return 0;
 }
 
-
-
-void device_begin_render() {
+void device_begin_render()
+{
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void device_end_render() {
-
+void device_end_render()
+{
   int waiting_for_flip;
   int cc, ret;
   int next_idx;
   if (g_egl_data.frame_idx == (MAX_BUFFERS - 1)) {
-      next_idx = 0;
-    } else {
-      next_idx = g_egl_data.frame_idx + 1;
-    }
+    next_idx = 0;
+  } else {
+    next_idx = g_egl_data.frame_idx + 1;
+  }
 
-  eglSwapBuffers( g_egl_data.display, g_egl_data.surface );
+  eglSwapBuffers(g_egl_data.display, g_egl_data.surface);
 
   gbm.bo[next_idx] = gbm_surface_lock_front_buffer(gbm.surface);
-    drm.fb[next_idx] = drm_fb_get_from_bo(gbm.bo[next_idx]);
+  drm.fb[next_idx] = drm_fb_get_from_bo(gbm.bo[next_idx]);
   ret = drmModeSetCrtc(drm.fd, drm.crtc_id[DISP_ID], drm.fb[next_idx]->fb_id,
-      0, 0, &drm.connector_id[DISP_ID], 1, drm.mode[DISP_ID]);
+                       0, 0, &drm.connector_id[DISP_ID], 1, drm.mode[DISP_ID]);
   if (ret) {
     log_error("device_swap_buffers display failed to set mode");
     printf("display %d failed to set mode: %s\n", DISP_ID, strerror(errno));
@@ -709,7 +645,7 @@ void device_end_render() {
   }
 
   ret = drmModePageFlip(drm.fd, drm.crtc_id[DISP_ID], drm.fb[next_idx]->fb_id,
-      DRM_MODE_PAGE_FLIP_EVENT, &waiting_for_flip);
+                        DRM_MODE_PAGE_FLIP_EVENT, &waiting_for_flip);
   if (ret) {
     log_error("failed to queue page flip");
     fprintf(stderr, "failed to queue page flip: %s\n", strerror(errno));
@@ -740,54 +676,42 @@ void device_end_render() {
   g_egl_data.frame_idx = next_idx;
 }
 
-
-
-
-void device_poll() {}
+void device_poll()
+{
+}
 
 // these case are factored out mostly so that they can be driven by different
 // GL includes as appropriate
-void device_clear() {
-  glClear( GL_COLOR_BUFFER_BIT );
+void device_clear()
+{
+  glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void device_clear_color( float red, float green, float blue, float alpha ) {
-  glClearColor( red, green, blue, alpha );
+void device_clear_color(float red,
+                        float green,
+                        float blue,
+                        float alpha)
+{
+  glClearColor(red, green, blue, alpha);
 }
 
-char* device_gl_error() {
+char* device_gl_error()
+{
   GLenum err  = glGetError();
   switch (err)
   {
-    case GL_NO_ERROR:
-      return NULL;
-
-    case GL_INVALID_ENUM:
-      return "GL_INVALID_ENUM";
-
-    case GL_INVALID_VALUE:
-      return "GL_INVALID_VALUE";
-
-    case GL_INVALID_OPERATION:
-      return "GL_INVALID_OPERATION";
-
-    case GL_OUT_OF_MEMORY:
-      return "GL_OUT_OF_MEMORY";
-
+  case GL_NO_ERROR: return NULL;
+  case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+  case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+  case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+  case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
 #ifdef GL_STACK_UNDERFLOW
-    case GL_STACK_UNDERFLOW:
-      return "GL_STACK_UNDERFLOW";
+  case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
 #endif
-
 #ifdef GL_STACK_OVERFLOW
-    case GL_STACK_OVERFLOW:
-      return "GL_STACK_OVERFLOW";
+  case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
 #endif
-
-    case GL_INVALID_FRAMEBUFFER_OPERATION:
-      return "GL_INVALID_FRAMEBUFFER_OPERATION";
-
-    default:
-      return "GL_OTHER";
+  case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
+  default: return "GL_OTHER";
   }
 }

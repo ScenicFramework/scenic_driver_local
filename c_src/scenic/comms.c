@@ -117,9 +117,6 @@ int write_cmd(byte* buf, unsigned int len)
 {
   int written = 0;
 
-  // since this can be called from both the main and comms thread, need to
-  // synchronize it
-  // if ( pthread_rwlock_wrlock(&comms_out_lock) == 0 ) {
   uint32_t cmd_len = len;
   cmd_len = hton_ui32(cmd_len);
   write_exact((byte*) &cmd_len, sizeof(uint32_t));
@@ -133,6 +130,7 @@ bool read_bytes_down(void* p_buff, int bytes_to_read, int* p_bytes_to_remaining)
 {
   if (p_bytes_to_remaining <= 0)
     return false;
+
   if (bytes_to_read > *p_bytes_to_remaining)
   {
     // read in the remaining bytes
@@ -385,9 +383,6 @@ void send_mouse_button(int button, int action, int mods, float xpos, float ypos)
   };
   write_cmd((byte*) &msg, sizeof(msg_mouse_button_t));
 }
-  // #define hton_ui16(x) (ntoh_ui16(x))
-  // #define hton_ui32(x) (ntoh_ui32(x))
-  // #define hton_f32(x) (ntoh_f32(x))
 
 //---------------------------------------------------------
 PACK(typedef struct msg_scroll_t
@@ -426,6 +421,7 @@ PACK(typedef struct msg_close_t
   uint32_t msg_id;
   uint32_t reaspn;
 }) msg_close_t;
+
 void send_close( int reason )
 {
   msg_close_t msg = { MSG_OUT_CLOSE, reason };
@@ -438,6 +434,7 @@ PACK(typedef struct img_miss_t
   uint32_t msg_id;
   uint32_t img_id;
 }) img_miss_t;
+
 void send_image_miss( unsigned int img_id )
 {
   img_miss_t msg = { MSG_IMG_MISS, img_id };
@@ -451,99 +448,8 @@ void send_ready()
   write_cmd((byte*) &msg_id, sizeof(msg_id));
 }
 
-// //---------------------------------------------------------
-// PACK(typedef struct msg_draw_ready_t
-// {
-//   uint32_t msg_id;
-//   uint32_t id;
-// }) msg_draw_ready_t;
-
-// void send_draw_ready(unsigned int id)
-// {
-//   msg_ready_t msg = {MSG_OUT_DRAW_READY, id};
-//   write_cmd((byte*) &msg, sizeof(msg_draw_ready_t));
-// }
-
 //=============================================================================
 // incoming messages
-/*
-//---------------------------------------------------------
-PACK(typedef struct msg_stats_t
-{
-  uint32_t msg_id;
-  uint32_t input_flags;
-  int      xpos;
-  int      ypos;
-  int      width;
-  int      height;
-  bool     focused;
-  bool     resizable;
-  bool     iconified;
-  bool     maximized;
-  bool     visible;
-}) msg_stats_t;
-void receive_query_stats(GLFWwindow* window)
-{
-  msg_stats_t    msg;
-  int            a, b;
-  window_data_t* p_window_data = glfwGetWindowUserPointer(window);
-
-  msg.msg_id      = MSG_OUT_STATS;
-  msg.input_flags = p_window_data->input_flags;
-
-  // can't point into packed structure...
-  glfwGetWindowPos(window, &a, &b);
-  msg.xpos = a;
-  msg.ypos = b;
-
-  // can't point into packed structure...
-  glfwGetWindowSize(window, &a, &b);
-  msg.width  = a;
-  msg.height = b;
-
-  msg.focused   = glfwGetWindowAttrib(window, GLFW_FOCUSED);
-  msg.resizable = glfwGetWindowAttrib(window, GLFW_RESIZABLE);
-  msg.iconified = glfwGetWindowAttrib(window, GLFW_ICONIFIED);
-  msg.maximized = false;
-  msg.visible   = glfwGetWindowAttrib(window, GLFW_VISIBLE);
-
-  write_cmd((byte*) &msg, sizeof(msg_stats_t));
-}
-
-//---------------------------------------------------------
-void receive_input(int* p_msg_length, GLFWwindow* window)
-{
-  window_data_t* p_window_data = glfwGetWindowUserPointer(window);
-  read_bytes_down(&p_window_data->input_flags, sizeof(uint32_t), p_msg_length);
-}
-
-//---------------------------------------------------------
-PACK(typedef struct cmd_move_t
-{
-  int32_t x_w;
-  int32_t y_h;
-}) cmd_move_t;
-void receive_reshape(int* p_msg_length, GLFWwindow* window)
-{
-  cmd_move_t move_data;
-  if (read_bytes_down(&move_data, sizeof(cmd_move_t), p_msg_length))
-  {
-    // act on the data
-    glfwSetWindowSize(window, move_data.x_w, move_data.y_h);
-  }
-}
-
-//---------------------------------------------------------
-void receive_position(int* p_msg_length, GLFWwindow* window)
-{
-  cmd_move_t move_data;
-  if (read_bytes_down(&move_data, sizeof(cmd_move_t), p_msg_length))
-  {
-    // act on the data
-    glfwSetWindowPos(window, move_data.x_w, move_data.y_h);
-  }
-}
-*/
 //---------------------------------------------------------
 void receive_quit(driver_data_t* p_data)
 {
@@ -560,101 +466,93 @@ void receive_crash()
 
 
 //---------------------------------------------------------
-void render( driver_data_t* p_data )
+void render(driver_data_t* p_data)
 {
   NVGcontext* p_ctx = p_data->p_ctx;
-
-// log_info("------ rendering ------");
 
   // prep the id to the root scene
   sid_t id;
   id.p_data = "_root_";
   id.size = strlen(id.p_data);
 
-  uint64_t time;
-
   // render the scene
   device_begin_render();
 
-  nvgBeginFrame( p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio );
+  nvgBeginFrame(p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio);
 
   // set the global transform
-  nvgTransform(
-    p_ctx,
-    p_data->global_tx[0], p_data->global_tx[1],
-    p_data->global_tx[2], p_data->global_tx[3],
-    p_data->global_tx[4], p_data->global_tx[5]
-  );
+  nvgTransform(p_ctx,
+               p_data->global_tx[0], p_data->global_tx[1],
+               p_data->global_tx[2], p_data->global_tx[3],
+               p_data->global_tx[4], p_data->global_tx[5]);
 
   // render the root script
-  render_script( id, p_ctx );
+  render_script(id, p_ctx);
 
   // render the cursor if one is provided
-  if ( p_data->f_show_cursor ) {
-    nvgTranslate( p_ctx, p_data->cursor_pos[0], p_data->cursor_pos[1] );
+  if (p_data->f_show_cursor) {
+    nvgTranslate(p_ctx, p_data->cursor_pos[0], p_data->cursor_pos[1]);
 
     id.p_data = "_cursor_";
     id.size = strlen(id.p_data);
-    render_script( id, p_ctx );
+    render_script(id, p_ctx);
   }
 
   // End frame and swap front and back buffers
-// time = get_time_stamp();
-  nvgEndFrame( p_ctx );
-// put_sn("nvgEndFrame: ", get_time_stamp() - time );
-
+  nvgEndFrame(p_ctx);
 
   // device_swap_buffers();
-// time = get_time_stamp();
   device_end_render();
-// put_sn("device_end_render: ", get_time_stamp() - time );
 
   // all done
   send_ready();
 }
 
-
 //---------------------------------------------------------
-void render_cursor( driver_data_t* p_data ) {
-  render( p_data );
-}
-
-//---------------------------------------------------------
-void set_global_tx( int* p_msg_length, driver_data_t* p_data ) {
-  for ( int i = 0; i < 6; i++ ) {
-    read_bytes_down( &p_data->global_tx[i], sizeof(float), p_msg_length );
-  }
-}
-
-//---------------------------------------------------------
-void set_cursor_tx( int* p_msg_length, driver_data_t* p_data ) {
-  for ( int i = 0; i < 6; i++ ) {
-    read_bytes_down( &p_data->cursor_tx[i], sizeof(float), p_msg_length );
-  }
-}
-
-//---------------------------------------------------------
-void update_cursor( int* p_msg_length, driver_data_t* p_data ) {
-  read_bytes_down( &p_data->f_show_cursor, sizeof(uint32_t), p_msg_length );
-  for ( int i = 0; i < 2; i++ ) {
-    read_bytes_down( &p_data->cursor_pos[i], sizeof(float), p_msg_length );
-  }
-}
-
-//---------------------------------------------------------
-void clear_color( int* p_msg_length ) {
-  byte r, g, b, a;
-  read_bytes_down( &r, 1, p_msg_length );
-  read_bytes_down( &g, 1, p_msg_length );
-  read_bytes_down( &b, 1, p_msg_length );
-  read_bytes_down( &a, 1, p_msg_length );
-  device_clear_color( r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f );
-}
-
-//---------------------------------------------------------
-void dispatch_message( int msg_length, driver_data_t* p_data )
+void render_cursor(driver_data_t* p_data)
 {
+  render(p_data);
+}
 
+//---------------------------------------------------------
+void set_global_tx(int* p_msg_length, driver_data_t* p_data)
+{
+  for (int i = 0; i < 6; i++) {
+    read_bytes_down(&p_data->global_tx[i], sizeof(float), p_msg_length);
+  }
+}
+
+//---------------------------------------------------------
+void set_cursor_tx(int* p_msg_length, driver_data_t* p_data)
+{
+  for (int i = 0; i < 6; i++) {
+    read_bytes_down(&p_data->cursor_tx[i], sizeof(float), p_msg_length);
+  }
+}
+
+//---------------------------------------------------------
+void update_cursor(int* p_msg_length, driver_data_t* p_data)
+{
+  read_bytes_down(&p_data->f_show_cursor, sizeof(uint32_t), p_msg_length);
+  for (int i = 0; i < 2; i++) {
+    read_bytes_down(&p_data->cursor_pos[i], sizeof(float), p_msg_length);
+  }
+}
+
+//---------------------------------------------------------
+void clear_color(int* p_msg_length)
+{
+  byte r, g, b, a;
+  read_bytes_down(&r, 1, p_msg_length);
+  read_bytes_down(&g, 1, p_msg_length);
+  read_bytes_down(&b, 1, p_msg_length);
+  read_bytes_down(&a, 1, p_msg_length);
+  device_clear_color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+}
+
+//---------------------------------------------------------
+void dispatch_message(int msg_length, driver_data_t* p_data)
+{
   // read the message id
   uint32_t msg_id;
   read_bytes_down(&msg_id, sizeof(uint32_t), &msg_length);
@@ -664,15 +562,15 @@ void dispatch_message( int msg_length, driver_data_t* p_data )
   switch (msg_id)
   {
     case CMD_QUIT:
-      receive_quit( p_data );
+      receive_quit(p_data);
       return;
 
     case CMD_PUT_SCRIPT:
-      put_script( &msg_length );
+      put_script(&msg_length);
       break;
 
     case CMD_DEL_SCRIPT:
-      delete_script( &msg_length );
+      delete_script(&msg_length);
       break;
 
     case CMD_RESET:
@@ -684,21 +582,19 @@ void dispatch_message( int msg_length, driver_data_t* p_data )
       break;
 
     case CMD_RENDER:
-      render( p_data );
+      render(p_data);
       break;
 
-
-
     case CMD_CURSOR_TX:
-      set_cursor_tx( &msg_length, p_data );
+      set_cursor_tx(&msg_length, p_data);
       break;
 
     case CMD_UPDATE_CURSOR:
-      update_cursor( &msg_length, p_data );
+      update_cursor(&msg_length, p_data);
       break;
 
     case CMD_CLEAR_COLOR:
-      clear_color( &msg_length );
+      clear_color(&msg_length);
       break;
 
   //   case CMD_INPUT:
@@ -706,11 +602,11 @@ void dispatch_message( int msg_length, driver_data_t* p_data )
   //     break;
 
     case CMD_PUT_FONT:
-      put_font( &msg_length, p_data->p_ctx );
+      put_font(&msg_length, p_data->p_ctx);
       break;
 
     case CMD_PUT_IMG:
-      put_image( &msg_length, p_data->p_ctx );
+      put_image(&msg_length, p_data->p_ctx);
       break;
 
     case CMD_CRASH:
@@ -718,19 +614,19 @@ void dispatch_message( int msg_length, driver_data_t* p_data )
       break;
 
     case CMD_GLOBAL_TX:
-      set_global_tx( &msg_length, p_data );
+      set_global_tx(&msg_length, p_data);
       break;
 
     default:
-      put_sn( "Unknown message:", msg_id );
+      put_sn("Unknown message:", msg_id);
   }
 
   // if there are any bytes left to read in the message, need to get rid of them
   // here...
   if (msg_length > 0)
   {
-    put_sn( "Excess message bytes:", msg_length );
-    put_sn( "message id:", msg_id );
+    put_sn("Excess message bytes:", msg_length);
+    put_sn("message id:", msg_id);
     void* p = malloc(msg_length);
     read_bytes_down(p, msg_length, &msg_length);
     free(p);
@@ -751,14 +647,12 @@ uint64_t get_time_stamp()
   return tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec;
 }
 
-// read from the stdio in buffer and act on one message. Return true
-// if we need to redraw the screen. false if we do not
+// read from the stdio in buffer and act on one message.
 void handle_stdio_in(driver_data_t* p_data)
 {
-  int64_t        time_remaining = STDIO_TIMEOUT;
-  int64_t        end_time       = get_time_stamp() + STDIO_TIMEOUT;
+  int64_t time_remaining = STDIO_TIMEOUT;
+  int64_t end_time = get_time_stamp() + STDIO_TIMEOUT;
   struct timeval tv;
-  bool           redraw = false;
 
   while (time_remaining > 0)
   {
@@ -774,7 +668,5 @@ void handle_stdio_in(driver_data_t* p_data)
     // see if time is remaining, so we can process another one
     time_remaining = end_time - get_time_stamp();
   }
-
-  return;
 }
 

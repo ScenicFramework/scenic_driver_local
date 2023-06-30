@@ -28,19 +28,17 @@
 
 #define STDIN_FILENO 0
 
-
-
 typedef struct {
-  float       last_x;
-  float       last_y;
+  float last_x;
+  float last_y;
 
-  int         window_width;
-  int         window_height;
-  int         frame_width;
-  int         frame_height;
-  float       ratio_x;
-  float       ratio_y;
-  bool        glew_ok;
+  int window_width;
+  int window_height;
+  int frame_width;
+  int frame_height;
+  float ratio_x;
+  float ratio_y;
+  bool glew_ok;
 
   GLFWwindow* p_window;
 
@@ -74,21 +72,21 @@ void reshape_window(GLFWwindow* window, int w, int h)
   g_glfw_data.window_height = h;
 
   int fw, fh;
-  glfwGetFramebufferSize( window, &fw, &fh );
+  glfwGetFramebufferSize(window, &fw, &fh);
   g_glfw_data.frame_width  = fw;
   g_glfw_data.frame_height = fh;
 
   g_glfw_data.ratio_x = (float) fw / (float) w;
   g_glfw_data.ratio_y = (float) fh / (float) h;
 
-  glViewport( 0, 0, fw, fh );
-  glClear( GL_COLOR_BUFFER_BIT );
+  glViewport(0, 0, fw, fh);
+  glClear(GL_COLOR_BUFFER_BIT);
 
   g_glfw_data.p_info->width = w;
   g_glfw_data.p_info->height = h;
   g_glfw_data.p_info->ratio = g_glfw_data.ratio_x;
 
-  send_reshape( w, h );
+  send_reshape(w, h);
 }
 
 //---------------------------------------------------------
@@ -106,7 +104,7 @@ void charmods_callback(GLFWwindow* window, unsigned int codepoint, int mods)
 //---------------------------------------------------------
 static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {
-  float          x, y;
+  float x, y;
   x = xpos;
   y = ypos;
   // only send the message if the postion changed
@@ -121,7 +119,7 @@ static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 //---------------------------------------------------------
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-  double         x, y;
+  double x, y;
   glfwGetCursorPos(window, &x, &y);
   send_mouse_button(button, action, mods, x, y);
 }
@@ -129,14 +127,14 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 //---------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-  double         x, y;
+  double x, y;
   glfwGetCursorPos(window, &x, &y);
   send_scroll(xoffset, yoffset, x, y);
 }
 //---------------------------------------------------------
 void cursor_enter_callback(GLFWwindow* window, int entered)
 {
-  double         x, y;
+  double x, y;
   glfwGetCursorPos(window, &x, &y);
   send_cursor_enter(entered, x, y);
 }
@@ -149,7 +147,7 @@ void window_close_callback(GLFWwindow* window)
   // let the calling app filter the close event. Send a message up.
   // if the app wants to let the window close, it needs to send a close back
   // down.
-  send_close( 0 );
+  send_close(0);
   glfwSetWindowShouldClose(window, false);
 }
 
@@ -176,8 +174,8 @@ void set_window_hints(bool f_resizable)
 NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
 {
   // start position tracking with values that are obviously out of the window
-  g_glfw_data.last_x      = -1.0f;
-  g_glfw_data.last_y      = -1.0f;
+  g_glfw_data.last_x = -1.0f;
+  g_glfw_data.last_y = -1.0f;
 
   g_glfw_data.window_width  = p_opts->width;
   g_glfw_data.window_height = p_opts->height;
@@ -192,20 +190,16 @@ NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
   // initialize glew - do after setting up window and making current
   g_glfw_data.glew_ok = glewInit() == GLEW_OK;
 
-  // get the actual framebuffer size to set it up
-  // glfwGetFramebufferSize(window, &g_glfw_data.frame_width, &g_glfw_data.frame_height);
-  // reshape_framebuffer(window, g_glfw_data.frame_width, g_glfw_data.frame_height);
-
-//   // get the actual window size to set it up
+  // get the actual window size to set it up
   int window_width, window_height;
   glfwGetWindowSize(window, &window_width, &window_height);
-  reshape_window( window, window_width, window_height );
+  reshape_window(window, window_width, window_height);
 
   uint32_t nvg_opts = 0;
-  if ( p_opts->antialias ) nvg_opts |= NVG_ANTIALIAS;
-  if ( p_opts->debug_mode ) nvg_opts |= NVG_DEBUG;
+  if (p_opts->antialias) nvg_opts |= NVG_ANTIALIAS;
+  if (p_opts->debug_mode) nvg_opts |= NVG_DEBUG;
   
-  NVGcontext* p_ctx = nvgCreateGL2( nvg_opts );
+  NVGcontext* p_ctx = nvgCreateGL2(nvg_opts);
 
   // set up callbacks
   glfwSetFramebufferSizeCallback(window, reshape_framebuffer);
@@ -227,11 +221,13 @@ NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
 
 
 //---------------------------------------------------------
-int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
+int device_init(const device_opts_t* p_opts,
+                device_info_t* p_info)
+{
   // Initialize GLFW
-  if ( !glfwInit() )
+  if (!glfwInit())
   {
-    log_error( "Unable to initialize GLFW" );
+    log_error("Unable to initialize GLFW");
     return -1;
   }
 
@@ -244,21 +240,19 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   );
 
   // Create a windowed mode window and its OpenGL context
-  g_glfw_data.p_window = glfwCreateWindow(
-    p_opts->width, p_opts->height,
-    p_opts->title,
-    NULL,                   // which monitor
-    NULL
-  );
-  if ( !g_glfw_data.p_window ) {
-    log_error( "Unable to create GLFW window" );
+  g_glfw_data.p_window = glfwCreateWindow(p_opts->width, p_opts->height,
+                                          p_opts->title,
+                                          NULL,          // which monitor
+                                          NULL);
+  if (!g_glfw_data.p_window) {
+    log_error("Unable to create GLFW window");
     glfwTerminate();
     return -1;
   }
 
   // set up one-time features of the window
   g_glfw_data.p_info = p_info;
-  p_info->p_ctx = setup_window( g_glfw_data.p_window, p_opts );
+  p_info->p_ctx = setup_window(g_glfw_data.p_window, p_opts);
   p_info->width = g_glfw_data.window_width;
   p_info->height = g_glfw_data.window_height;
 
@@ -281,40 +275,47 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   // see if any errors happened during startup
   check_gl_error();
 
-
   return 0;
 }
 
 
 //---------------------------------------------------------
 // tear down one-time features of the window
-int device_close( device_info_t* p_info )
+int device_close(device_info_t* p_info)
 {
   return 0;
 }
 
 //---------------------------------------------------------
-void device_clear_color( float red, float green, float blue, float alpha ) {
-  glClearColor( red, green, blue, alpha );
+void device_clear_color(float red,
+                        float green,
+                        float blue,
+                        float alpha)
+{
+  glClearColor(red, green, blue, alpha);
 }
 
 //---------------------------------------------------------
-void device_begin_render() {
-  glClear( GL_COLOR_BUFFER_BIT );
+void device_begin_render()
+{
+  glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void device_end_render() {
-  glfwSwapBuffers( g_glfw_data.p_window );
+void device_end_render()
+{
+  glfwSwapBuffers(g_glfw_data.p_window);
 }
 
 
 //---------------------------------------------------------
-void device_poll() {
+void device_poll()
+{
   glfwPollEvents();
 }
 
 //---------------------------------------------------------
-char* device_gl_error() {
+char* device_gl_error()
+{
   GLenum err;
   while (true)
   {
@@ -325,35 +326,35 @@ char* device_gl_error() {
       case GL_NO_ERROR:
         return NULL;
       case GL_INVALID_ENUM:
-        send_puts( "GL_INVALID_ENUM" );
+        send_puts("GL_INVALID_ENUM");
         break;
       case GL_INVALID_VALUE:
-        send_puts( "GL_INVALID_VALUE" );
+        send_puts("GL_INVALID_VALUE");
         break;
       case GL_INVALID_OPERATION:
-        send_puts( "GL_INVALID_OPERATION" );
+        send_puts("GL_INVALID_OPERATION");
         break;
       case GL_OUT_OF_MEMORY:
-        send_puts( "GL_OUT_OF_MEMORY" );
+        send_puts("GL_OUT_OF_MEMORY");
         break;
 
 #ifdef GL_STACK_UNDERFLOW
       case GL_STACK_UNDERFLOW:
-        send_puts( "GL_STACK_UNDERFLOW" );
+        send_puts("GL_STACK_UNDERFLOW");
         break;
 #endif
 
 #ifdef GL_STACK_OVERFLOW
       case GL_STACK_OVERFLOW:
-        send_puts( "GL_STACK_OVERFLOW" );
+        send_puts("GL_STACK_OVERFLOW");
         break;
 #endif
 
       case GL_INVALID_FRAMEBUFFER_OPERATION:
-        send_puts( "GL_INVALID_FRAMEBUFFER_OPERATION" );
+        send_puts("GL_INVALID_FRAMEBUFFER_OPERATION");
         break;
       default:
-        put_sn( "GL_OTHER:", err );
+        put_sn("GL_OTHER:", err);
         break;
     }
   }

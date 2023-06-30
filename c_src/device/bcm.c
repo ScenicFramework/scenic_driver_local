@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #include <stdio.h>
-// #include <stdlib.h>
 #include <string.h>
 #include <poll.h>
 #include <stdint.h>
@@ -44,14 +43,15 @@ egl_data_t g_egl_data = {0};
 
 //---------------------------------------------------------
 // setup the video core
-int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
-
+int device_init(const device_opts_t* p_opts,
+                device_info_t* p_info)
+{
   // initialize the bcm_host from broadcom
   bcm_host_init();
 
   // query the monitor attached to HDMI
   int width, height;
-  if ( graphics_get_display_size( DEFAULT_SCREEN, &width, &height) < 0 ) {
+  if (graphics_get_display_size(DEFAULT_SCREEN, &width, &height) < 0) {
     log_error("RPI driver error: Unable to query the default screen on HDMI");
     return -1;
   }
@@ -59,25 +59,24 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   p_info->height = height;
   p_info->ratio = 1.0f;
 
-
   //-----------------------------------
   // get an EGL display connection
   EGLBoolean result;
 
   // get a handle to the display
   EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-  if ( display == EGL_NO_DISPLAY ) {
+  if (display == EGL_NO_DISPLAY) {
     log_error("RPI driver error: Unable get handle to the default screen on HDMI");
     return -1;
   }
-    g_egl_data.display = display;
+  g_egl_data.display = display;
 
 
   // initialize the EGL display connection
   EGLint major_version;
   EGLint minor_version;
   // returns a pass/fail boolean
-  if ( eglInitialize(display, &major_version, &minor_version) == EGL_FALSE ) {
+  if (eglInitialize(display, &major_version, &minor_version) == EGL_FALSE) {
     log_error("RPI driver error: Unable initialize EGL");
     return -1;
   }
@@ -102,25 +101,22 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   EGLConfig config;
   EGLint num_config;
 
-
    // get an appropriate EGL frame buffer configuration
-  if ( eglChooseConfig(display, attribute_list, &config, 1, &num_config) == EGL_FALSE ) {
+  if (eglChooseConfig(display, attribute_list, &config, 1, &num_config) == EGL_FALSE) {
     log_error("RPI driver error: Unable to get usable display config");
     return -1;
   }
   g_egl_data.config = config;
 
-
   // use open gl es
-  if ( eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE ) {
+  if (eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE) {
     log_error("RPI driver error: Unable to bind to GLES");
     return -1;
   }
 
-
   // create an EGL graphics context
   EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attributes);
-  if ( context == EGL_NO_CONTEXT ) {
+  if (context == EGL_NO_CONTEXT) {
     log_error("RPI driver error: Failed to create EGL context");
     return -1;
   }
@@ -136,7 +132,7 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
 
   dst_rect.x = 0;
   dst_rect.y = 0;
-  if ( p_opts->debug_mode ) {
+  if (p_opts->debug_mode) {
     dst_rect.width = width / 2;
     dst_rect.height = height / 2;
   } else {
@@ -152,7 +148,6 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   // start the display manager
   DISPMANX_DISPLAY_HANDLE_T dispman_display = vc_dispmanx_display_open(0 /* LCD */);
   dispman_update = vc_dispmanx_update_start(0 /* LCD */);
-
 
   // create the screen element (will be full-screen)
   VC_DISPMANX_ALPHA_T alpha =
@@ -177,7 +172,6 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
     return -1;
   }
 
-
   // create the native window surface
   nativewindow.element = dispman_element;
   nativewindow.width = width;
@@ -190,11 +184,10 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   g_egl_data.surface = surface;
 
   // connect the context to the surface and make it current
-  if ( eglMakeCurrent(display, surface, surface, context) == EGL_FALSE ) {
+  if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
     log_error("RPI driver error: Unable make the surface current");
     return -1;
   }
-
 
   //-------------------
   // config gles
@@ -226,80 +219,66 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   //-------------------
   // initialize nanovg
 
-
   uint32_t nvg_opts = 0;
-  if ( p_opts->antialias ) nvg_opts |= NVG_ANTIALIAS;
-  if ( p_opts->debug_mode ) nvg_opts |= NVG_DEBUG;
-  p_info->p_ctx = nvgCreateGLES2( nvg_opts );
-  // p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
-  // p_info->p_ctx = nvgCreateGLES2(NVG_ANTIALIAS | NVG_DEBUG);
-  // if (p_info->p_ctx == NULL) {
-  //   log_error("RPI driver error: failed nvgCreateGLES2");
-  //   return 0;
-  // }
+  if (p_opts->antialias) nvg_opts |= NVG_ANTIALIAS;
+  if (p_opts->debug_mode) nvg_opts |= NVG_DEBUG;
+  p_info->p_ctx = nvgCreateGLES2(nvg_opts);
+  if (p_info->p_ctx == NULL) {
+    log_error("RPI driver error: failed nvgCreateGLES2");
+    return 0;
+  }
 
   // tell the elixir side about the size/shape of the window
-  send_reshape( width, height );
+  send_reshape(width, height);
 
   // success
   return 0;
 }
 
-int device_close( device_info_t* p_info ) {
+int device_close(device_info_t* p_info)
+{
   return 0;
 }
 
-void device_poll() {}
+void device_poll()
+{
+}
 
-
-
-void device_begin_render() {
+void device_begin_render()
+{
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void device_end_render() {
-  eglSwapBuffers( g_egl_data.display, g_egl_data.surface );
+void device_end_render()
+{
+  eglSwapBuffers(g_egl_data.display, g_egl_data.surface);
 }
 
-
-
-void device_clear_color( float red, float green, float blue, float alpha ) {
-  glClearColor( red, green, blue, alpha );
+void device_clear_color(float red,
+                        float green,
+                        float blue,
+                        float alpha)
+{
+  glClearColor(red, green, blue, alpha);
 }
 
-char* device_gl_error() {
+char* device_gl_error()
+{
   GLenum err  = glGetError();
   switch (err)
   {
-    case GL_NO_ERROR:
-      return NULL;
-
-    case GL_INVALID_ENUM:
-      return "GL_INVALID_ENUM";
-
-    case GL_INVALID_VALUE:
-      return "GL_INVALID_VALUE";
-
-    case GL_INVALID_OPERATION:
-      return "GL_INVALID_OPERATION";
-
-    case GL_OUT_OF_MEMORY:
-      return "GL_OUT_OF_MEMORY";
-
+  case GL_NO_ERROR: return NULL;
+  case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+  case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+  case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+  case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
 #ifdef GL_STACK_UNDERFLOW
-    case GL_STACK_UNDERFLOW:
-      return "GL_STACK_UNDERFLOW";
+  case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
 #endif
-
 #ifdef GL_STACK_OVERFLOW
-    case GL_STACK_OVERFLOW:
-      return "GL_STACK_OVERFLOW";
+  case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
 #endif
-
-    case GL_INVALID_FRAMEBUFFER_OPERATION:
-      return "GL_INVALID_FRAMEBUFFER_OPERATION";
-
-    default:
-      return "GL_OTHER";
+  case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
+  default: return "GL_OTHER";
   }
 }

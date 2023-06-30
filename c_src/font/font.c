@@ -37,7 +37,8 @@ void init_fonts( void ) {
 // isolate all knowledge of the hash table implementation to these functions
 
 //---------------------------------------------------------
-static int _comparator(const void* p_arg, const void* p_obj) {
+static int _comparator(const void* p_arg, const void* p_obj)
+{
   const sid_t* p_id = p_arg;
   const font_t* p_font = p_obj;
   return (p_id->size != p_font->id.size)
@@ -45,49 +46,48 @@ static int _comparator(const void* p_arg, const void* p_obj) {
 }
 
 //---------------------------------------------------------
-font_t* get_font( sid_t id ) {
-  return tommy_hashlin_search(
-    &fonts,
-    _comparator,
-    &id,
-    HASH_ID( id ) 
-  );
+font_t* get_font(sid_t id)
+{
+  return tommy_hashlin_search(&fonts,
+                              _comparator,
+                              &id,
+                              HASH_ID(id));
 }
 
 //---------------------------------------------------------
-void put_font( int* p_msg_length, NVGcontext* p_ctx ) {
-
+void put_font(int* p_msg_length, NVGcontext* p_ctx)
+{
   // read in the id size, which is in the first four bytes
   uint32_t id_length;
-  read_bytes_down( &id_length, sizeof(uint32_t), p_msg_length );
+  read_bytes_down(&id_length, sizeof(uint32_t), p_msg_length);
 
   // read in the blob size, which is in the next four bytes
   uint32_t blob_size;
-  read_bytes_down( &blob_size, sizeof(uint32_t), p_msg_length );
+  read_bytes_down(&blob_size, sizeof(uint32_t), p_msg_length);
 
   // initialize a record to hold the font
   int struct_size = ALIGN_UP(sizeof(font_t), 8);
   // the +1 is so the id is null terminated
   int id_size = ALIGN_UP(id_length + 1, 8);
   int alloc_size = struct_size + id_size + blob_size;
-  font_t* p_font = calloc( 1, alloc_size );
-  if ( !p_font ) {
-    send_puts( "Unable to allocate font font" );
+  font_t* p_font = calloc(1, alloc_size);
+  if (!p_font) {
+    send_puts("Unable to allocate font font");
     return;
-  };
+  }
 
   // initialize the id
   p_font->id.size = id_length;
   p_font->id.p_data = ((void*)p_font) + struct_size;
-  read_bytes_down( p_font->id.p_data, id_length, p_msg_length );
+  read_bytes_down(p_font->id.p_data, id_length, p_msg_length);
 
   // read the data into the blob buffer
   p_font->blob.size = id_length;
   p_font->blob.p_data = ((void*)p_font) + struct_size + id_size;
-  read_bytes_down( p_font->blob.p_data, blob_size, p_msg_length );
+  read_bytes_down(p_font->blob.p_data, blob_size, p_msg_length);
 
   // if there is already is a font with the same id, abort
-  if ( get_font(p_font->id) ) {
+  if (get_font(p_font->id)) {
     free(p_font);
     return;
   }
@@ -104,11 +104,12 @@ void put_font( int* p_msg_length, NVGcontext* p_ctx ) {
   };
 
   // insert the script into the tommy hash
-  tommy_hashlin_insert( &fonts, &p_font->node, p_font, HASH_ID(p_font->id) );
+  tommy_hashlin_insert(&fonts, &p_font->node, p_font, HASH_ID(p_font->id));
 }
 
 //---------------------------------------------------------
-void set_font( sid_t id, NVGcontext* p_ctx ) {
-  font_t* p_font = get_font( id );
-  if (p_font) nvgFontFaceId( p_ctx, p_font->nvg_id );
+void set_font(sid_t id, NVGcontext* p_ctx)
+{
+  font_t* p_font = get_font(id);
+  if (p_font) nvgFontFaceId(p_ctx, p_font->nvg_id);
 }

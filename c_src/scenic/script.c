@@ -13,7 +13,6 @@
 #include "image.h"
 #include "font.h"
 
-
 //---------------------------------------------------------
 typedef struct _script_t {
   sid_t id;
@@ -39,11 +38,9 @@ void init_scripts( void ) {
 
 // isolate all knowledge of the hash table implementation to these functions
 
-
-
-
 //---------------------------------------------------------
-static int _comparator(const void* p_arg, const void* p_obj) {
+static int _comparator(const void* p_arg, const void* p_obj)
+{
   const sid_t* p_id = p_arg;
   const script_t* p_script = p_obj;
   return (p_id->size != p_script->id.size)
@@ -51,83 +48,84 @@ static int _comparator(const void* p_arg, const void* p_obj) {
 }
 
 //---------------------------------------------------------
-script_t* get_script( sid_t id ) {
-  return tommy_hashlin_search(
-    &scripts,
-    _comparator,
-    &id,
-    HASH_ID( id ) 
-  );
+script_t* get_script(sid_t id)
+{
+  return tommy_hashlin_search(&scripts,
+                              _comparator,
+                              &id,
+                              HASH_ID(id));
 }
 
 //---------------------------------------------------------
-void do_delete_script( sid_t id ) {
-  script_t* p_script = get_script( id );
-  if ( p_script ) {
-    tommy_hashlin_remove_existing( &scripts, &p_script->node );
-    free( p_script );
+void do_delete_script(sid_t id)
+{
+  script_t* p_script = get_script(id);
+  if (p_script) {
+    tommy_hashlin_remove_existing(&scripts,
+                                  &p_script->node);
+    free(p_script);
   }
 }
 
-
 //---------------------------------------------------------
-void put_script( int* p_msg_length ) {
-
+void put_script(int* p_msg_length)
+{
   // read in the length of the id, which is in the first four bytes
   uint32_t id_length;
-  read_bytes_down( &id_length, sizeof(uint32_t), p_msg_length );
+  read_bytes_down(&id_length, sizeof(uint32_t), p_msg_length);
 
   // initialize a record to hold the script
   int struct_size = ALIGN_UP(sizeof(script_t), 8);
   int id_size = ALIGN_UP(id_length, 8);
   int alloc_size = struct_size + id_size + *p_msg_length;
-  script_t *p_script = malloc( alloc_size );
+  script_t *p_script = malloc(alloc_size);
   if ( !p_script ) {
     send_puts( "Unable to allocate script" );
     return;
-  };
+  }
 
   // initialize the id
   p_script->id.size = id_length;
   p_script->id.p_data = ((void*)p_script) + struct_size;
-  read_bytes_down( p_script->id.p_data, id_length, p_msg_length );
+  read_bytes_down(p_script->id.p_data, id_length, p_msg_length);
 
   // initialize the data
   p_script->script.size = *p_msg_length;
   p_script->script.p_data = ((void*)p_script) + struct_size + id_size;
-  read_bytes_down( p_script->script.p_data, *p_msg_length, p_msg_length );
+  read_bytes_down(p_script->script.p_data, *p_msg_length, p_msg_length);
 
   // if there is already is a script with the same id, delete it
-  do_delete_script( p_script->id );
+  do_delete_script(p_script->id);
 
   // insert the script into the tommy hash
-  tommy_hashlin_insert( &scripts, &p_script->node, p_script, HASH_ID(p_script->id) );
-
-  // return the completed struct
-  return;
+  tommy_hashlin_insert(&scripts,
+                       &p_script->node,
+                       p_script,
+                       HASH_ID(p_script->id));
 }
 
 //---------------------------------------------------------
-void delete_script( int* p_msg_length ) {
+void delete_script(int* p_msg_length)
+{
   sid_t id;
 
   // read in the length of the id, which is in the first four bytes
-  read_bytes_down( &id.size, sizeof(uint32_t), p_msg_length );
+  read_bytes_down(&id.size, sizeof(uint32_t), p_msg_length);
 
   // create a temporary buffer and read the id into it
   id.p_data = malloc(id.size);
-  if ( !id.p_data ) {
+  if (!id.p_data) {
     send_puts( "Unable to allocate buffer for the id" );
     return;
-  };
+  }
 
   // read in the body of the id
-  read_bytes_down( id.p_data, id.size, p_msg_length );
+  read_bytes_down(id.p_data, id.size, p_msg_length);
 
   // delete and free
-  do_delete_script( id );
+  do_delete_script(id);
 
-  free( id.p_data );
+  free(id.p_data);
 }
 
 //---------------------------------------------------------
@@ -179,38 +177,16 @@ int padded_advance( int size ) {
   };
 }
 
-
-
-/*
-//---------------------------------------------------------
-void set_font( sid_t id, NVGcontext* p_ctx ) {
-  // unfortunately, nvgFindFont expects a zero terminated C string
-  char* p_font = calloc( 1, id.size + 1 );
-  if ( !p_font ) {
-    send_puts( "Unable to alloc temp font id buffer" );
-    return;
-  }
-  memcpy( p_font, id.p_data, id.size );
-
-  int font_id = nvgFindFont(p_ctx, p_font);
-  if (font_id >= 0) {
-    nvgFontFaceId(p_ctx, font_id);
-  }
-
-  free( p_font );
-}
-*/
-
-void render_text( char* p_text, unsigned int size, NVGcontext* p_ctx )
+void render_text(char* p_text, unsigned int size, NVGcontext* p_ctx)
 {
-  float       x     = 0;
-  float       y     = 0;
+  float x = 0;
+  float y = 0;
   const char* start = p_text;
-  const char* end   = start + size;
-  float       lineh;
+  const char* end = start + size;
+  float lineh;
   nvgTextMetrics(p_ctx, NULL, NULL, &lineh);
   NVGtextRow rows[3];
-  int        nrows, i;
+  int nrows, i;
 
   // up to this code to break the lines...
   while ((nrows = nvgTextBreakLines(p_ctx, start, end, 1000, rows, 3)))
@@ -226,8 +202,8 @@ void render_text( char* p_text, unsigned int size, NVGcontext* p_ctx )
   }
 }
 
-
-int render_sprites( NVGcontext* p_ctx, void* p, int i, uint16_t  param ) {
+int render_sprites(NVGcontext* p_ctx, void* p, int i, uint16_t  param)
+{
   // get the count of rects
   uint32_t count = get_uint32(p, i);
   i += sizeof(uint32_t);
@@ -236,20 +212,20 @@ int render_sprites( NVGcontext* p_ctx, void* p, int i, uint16_t  param ) {
   sid_t id;
   id.size = param;
   id.p_data = p + i;
-  i += padded_advance( param );
+  i += padded_advance(param);
 
   // loop the draw commands and draw each
-  for ( int n = 0; n < count; n++ ) {
-    float sx = get_float( p, i );
-    float sy = get_float( p, i + 4 );
-    float sw = get_float( p, i + 8 );
-    float sh = get_float( p, i + 12 );
-    float dx = get_float( p, i + 16 );
-    float dy = get_float( p, i + 20 );
-    float dw = get_float( p, i + 24 );
-    float dh = get_float( p, i + 28 );
+  for (int n = 0; n < count; n++) {
+    float sx = get_float(p, i);
+    float sy = get_float(p, i + 4);
+    float sw = get_float(p, i + 8);
+    float sh = get_float(p, i + 12);
+    float dx = get_float(p, i + 16);
+    float dy = get_float(p, i + 20);
+    float dw = get_float(p, i + 24);
+    float dh = get_float(p, i + 28);
 
-    draw_image( p_ctx, id, sx, sy, sw, sh, dx, dy, dw, dh );
+    draw_image(p_ctx, id, sx, sy, sw, sh, dx, dy, dw, dh);
 
     i += 32;
   }
@@ -257,12 +233,11 @@ int render_sprites( NVGcontext* p_ctx, void* p, int i, uint16_t  param ) {
   return i;
 }
 
-
 //---------------------------------------------------------
-void render_script( sid_t id, NVGcontext* p_ctx ) {
+void render_script(sid_t id, NVGcontext* p_ctx)
+{
   // get the script
-
-  script_t* p_script = get_script( id );
+  script_t* p_script = get_script(id);
   if ( !p_script ) {
     return;
   }
@@ -274,12 +249,12 @@ void render_script( sid_t id, NVGcontext* p_ctx ) {
   void* p = p_script->script.p_data;
   int i = 0;
 
-  while ( i < p_script->script.size ) {
+  while (i < p_script->script.size) {
     int op = get_uint16(p, i);
     int param = get_uint16(p, i + 2);
     i += 4;
 
-    switch( op ) {
+    switch(op) {
       case 0x01:        // draw_line
         nvgBeginPath(p_ctx);
         nvgMoveTo(p_ctx, get_float(p, i), get_float(p, i+4));
@@ -633,9 +608,9 @@ void render_script( sid_t id, NVGcontext* p_ctx ) {
   }
 
   // if there are unbalanced pushes, clear them
-  while ( push_count > 0 ) {
+  while (push_count > 0) {
     push_count--;
-    nvgRestore( p_ctx );
+    nvgRestore(p_ctx);
   }
 }
 

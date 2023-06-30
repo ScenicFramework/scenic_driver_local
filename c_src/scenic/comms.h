@@ -53,8 +53,6 @@
 #define INPUT_CURSOR_SCROLL_MASK 0x0010
 #define INPUT_CURSOR_ENTER_MASK 0x0020
 
-
-
 int read_exact(byte* buf, int len);
 int write_exact(byte* buf, int len);
 int read_msg_length(struct timeval * ptv);
@@ -76,11 +74,8 @@ void log_info(const char* msg);
 void log_warn(const char* msg);
 void log_error(const char* msg);
 
-void send_image_miss( unsigned int img_id );
+void send_image_miss(unsigned int img_id);
 
-// void send_static_texture_miss(const char* key);
-// void send_dynamic_texture_miss(const char* key);
-// void send_font_miss(const char* key);
 void send_reshape( int window_width, int window_height );
 void send_key(int key, int scancode, int action, int mods);
 void send_codepoint(unsigned int codepoint, int mods);
@@ -91,14 +86,8 @@ void send_scroll(float xoffset, float yoffset, float xpos, float ypos);
 void send_cursor_enter(int entered, float xpos, float ypos);
 void send_close( int reason );
 void send_ready();
-// void send_draw_ready(unsigned int id);
 
 
-// void* comms_thread(void* window);
 void handle_stdio_in(driver_data_t* p_data);
-
-// void* comms_thread(void* window);
-// bool handle_stdio_in( driver_data_t* p_data )
-
 
 uint64_t get_time_stamp();
