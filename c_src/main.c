@@ -21,10 +21,8 @@
 
 #include "device.h"
 
-#include "nanovg.h"
-#include "nanovg_gl.h"
-
 device_info_t g_device_info = {0};
+device_opts_t g_opts = {0};
 
 //---------------------------------------------------------
 int main(int argc, char **argv)
@@ -34,40 +32,36 @@ int main(int argc, char **argv)
   // super simple arg check
   if ( argc != 10 ) {
     log_error("Wrong number of parameters");
-    return 0;
+    return -1;
   }
 
   // ingest the command line options
-  device_opts_t opts = {0};
-  opts.cursor = atoi(argv[1]);
-  opts.layer = atoi(argv[2]);
-  opts.global_opacity = atoi(argv[3]);
-  opts.antialias = atoi(argv[4]);  
-  opts.debug_mode = atoi(argv[5]);
-  opts.width = atoi(argv[6]);
-  opts.height = atoi(argv[7]);
-  opts.resizable = atoi(argv[8]);
-  opts.title = argv[9];
+  g_opts.cursor = atoi(argv[1]);
+  g_opts.layer = atoi(argv[2]);
+  g_opts.global_opacity = atoi(argv[3]);
+  g_opts.antialias = atoi(argv[4]);
+  g_opts.debug_mode = atoi(argv[5]);
+  g_opts.width = atoi(argv[6]);
+  g_opts.height = atoi(argv[7]);
+  g_opts.resizable = atoi(argv[8]);
+  g_opts.title = argv[9];
 
   // init the hashtables
   init_scripts();
   init_fonts();
   init_images();
 
-  // initialize the global transform to the identity matrix
-  nvgTransformIdentity( data.global_tx );
-  nvgTransformIdentity( data.cursor_tx );
-
   // prep the driver data
   data.keep_going = true;
 
-  int err = device_init(&opts, &g_device_info);
+  int err = device_init(&g_opts, &g_device_info, &data);
   if (err) {
     log_error("Failed to initilize the device: %d", err);
     return err;
   }
 
-  data.p_ctx = g_device_info.p_ctx;
+  data.debug_mode = g_opts.debug_mode;
+  data.v_ctx = g_device_info.v_ctx;
 
   // signal the app that the window is ready
   send_ready();

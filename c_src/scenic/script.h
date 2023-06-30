@@ -15,4 +15,4 @@ void put_script(int* p_msg_length);
 void delete_script(int* p_msg_length);
 
 void reset_scripts();
-void render_script(sid_t id, NVGcontext* p_ctx);
+void render_script(void* v_ctx, sid_t id);

@@ -560,9 +560,14 @@ int init_egl(const device_opts_t* p_opts, device_info_t* p_info)
 
 
 int device_init(const device_opts_t* p_opts,
-                device_info_t* p_info)
+                device_info_t* p_info,
+                device_data_t* p_data)
 {
   int ret;
+
+  // initialize the global transform to the identity matrix
+  nvgTransformIdentity(p_data->global_tx);
+  nvgTransformIdentity(p_data->cursor_tx);
 
   // initialize
   ret = init_drm(p_opts, p_info);
@@ -616,13 +621,33 @@ int device_close(device_info_t* p_info)
   return 0;
 }
 
-void device_begin_render()
+void device_begin_render(driver_data_t* p_data)
 {
+  NVGcontext* p_ctx = p_data->p_ctx;
+
   glClear(GL_COLOR_BUFFER_BIT);
+
+  nvgBeginFrame(p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio);
+
+  // set the global transform
+  nvgTransform(p_ctx,
+               p_data->global_tx[0], p_data->global_tx[1],
+               p_data->global_tx[2], p_data->global_tx[3],
+               p_data->global_tx[4], p_data->global_tx[5]);
 }
 
-void device_end_render()
+void device_begin_cursor_render(driver_data_t* p_data)
 {
+  NVGcontext* p_ctx = p_data->p_ctx;
+  nvgTranslate(p_ctx,
+               p_data->cursor_pos[0], p_data->cursor_pos[1]);
+}
+
+void device_end_render(driver_data_t* p_data)
+{
+  NVGcontext* p_ctx = p_data->p_ctx;
+  nvgEndFrame(p_ctx);
+
   int waiting_for_flip;
   int cc, ret;
   int next_idx;

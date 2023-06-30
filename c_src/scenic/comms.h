@@ -117,6 +117,14 @@ void log_info(const char* msg, ...);
 void log_warn(const char* msg, ...);
 void log_error(const char* msg, ...);
 
+void set_global_tx(int* p_msg_length, driver_data_t* p_data);
+void set_cursor_tx(int* p_msg_length, driver_data_t* p_data);
+void update_cursor(int* p_msg_length, driver_data_t* p_data);
+void clear_color(int* p_msg_length);
+void receive_crash();
+void receive_quit(driver_data_t* p_data);
+void render(driver_data_t* p_data);
+
 void send_image_miss(unsigned int img_id);
 
 void send_reshape( int window_width, int window_height );
@@ -129,8 +137,6 @@ void send_scroll(float xoffset, float yoffset, float xpos, float ypos);
 void send_cursor_enter(int entered, float xpos, float ypos);
 void send_close( int reason );
 void send_ready();
-
-
 void handle_stdio_in(driver_data_t* p_data);
 
 int64_t monotonic_time();

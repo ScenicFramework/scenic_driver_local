@@ -7,11 +7,13 @@
 #include <string.h>
 
 #include "common.h"
-#include "utils.h"
 #include "comms.h"
-#include "script.h"
-#include "image.h"
 #include "font.h"
+#include "image.h"
+#include "ops/script_ops.h"
+#include "script.h"
+#include "utils.h"
+
 
 //---------------------------------------------------------
 typedef struct _script_t {
@@ -171,64 +173,8 @@ int padded_advance( int size ) {
   };
 }
 
-void render_text(char* p_text, unsigned int size, NVGcontext* p_ctx)
-{
-  float x = 0;
-  float y = 0;
-  const char* start = p_text;
-  const char* end = start + size;
-  float lineh;
-  nvgTextMetrics(p_ctx, NULL, NULL, &lineh);
-  NVGtextRow rows[3];
-  int nrows, i;
-
-  // up to this code to break the lines...
-  while ((nrows = nvgTextBreakLines(p_ctx, start, end, 1000, rows, 3)))
-  {
-    for (i = 0; i < nrows; i++)
-    {
-      NVGtextRow* row = &rows[i];
-      nvgText(p_ctx, x, y, row->start, row->end);
-      y += lineh;
-    }
-    // Keep going...
-    start = rows[nrows - 1].next;
-  }
-}
-
-int render_sprites(NVGcontext* p_ctx, void* p, int i, uint16_t  param)
-{
-  // get the count of rects
-  uint32_t count = get_uint32(p, i);
-  i += sizeof(uint32_t);
-
-  // get the id
-  sid_t id;
-  id.size = param;
-  id.p_data = p + i;
-  i += padded_advance(param);
-
-  // loop the draw commands and draw each
-  for (int n = 0; n < count; n++) {
-    float sx = get_float(p, i);
-    float sy = get_float(p, i + 4);
-    float sw = get_float(p, i + 8);
-    float sh = get_float(p, i + 12);
-    float dx = get_float(p, i + 16);
-    float dy = get_float(p, i + 20);
-    float dw = get_float(p, i + 24);
-    float dh = get_float(p, i + 28);
-
-    draw_image(p_ctx, id, sx, sy, sw, sh, dx, dy, dw, dh);
-
-    i += 32;
-  }
-
-  return i;
-}
-
 //---------------------------------------------------------
-void render_script(sid_t id, NVGcontext* p_ctx)
+void render_script(void* v_ctx, sid_t id)
 {
   // get the script
   script_t* p_script = get_script(id);
@@ -244,354 +190,436 @@ void render_script(sid_t id, NVGcontext* p_ctx)
   int i = 0;
 
   while (i < p_script->script.size) {
-    int op = get_uint16(p, i);
-    int param = get_uint16(p, i + 2);
+    script_op_t op = (script_op_t)get_uint16(p, i);
+    uint16_t param = get_uint16(p, i + 2);
     i += 4;
 
     switch(op) {
-      case 0x01:        // draw_line
-        nvgBeginPath(p_ctx);
-        nvgMoveTo(p_ctx, get_float(p, i), get_float(p, i+4));
-        nvgLineTo(p_ctx, get_float(p, i + 8), get_float(p, i + 12));
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_LINE:
+        {
+          coordinates_t a = {get_float(p, i), get_float(p, i + 4)};
+          coordinates_t b = {get_float(p, i + 8), get_float(p, i + 12)};
+          script_ops_draw_line(v_ctx, a, b, (param & FLAG_FILL));
+        }
         i += 16;
         break;
-      case 0x02:        // draw_triangle
-        nvgBeginPath(p_ctx);
-        nvgMoveTo(p_ctx, get_float(p, i), get_float(p, i+4));
-        nvgLineTo(p_ctx, get_float(p, i + 8), get_float(p, i + 12));
-        nvgLineTo(p_ctx, get_float(p, i + 16), get_float(p, i + 20));
-        nvgClosePath(p_ctx);
-        if (param & 1) nvgFill(p_ctx);
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_TRIANGLE:
+        {
+          coordinates_t a = {get_float(p, i), get_float(p, i + 4)};
+          coordinates_t b = {get_float(p, i + 8), get_float(p, i + 12)};
+          coordinates_t c = {get_float(p, i + 16), get_float(p, i + 20)};
+          script_ops_draw_triangle(v_ctx, a, b, c, (param & FLAG_FILL), (param & FLAG_STROKE));
+        }
         i += 24;
         break;
-      case 0x03:        // draw_quad
-        nvgBeginPath(p_ctx);
-        nvgMoveTo(p_ctx, get_float(p, i), get_float(p, i+4));
-        nvgLineTo(p_ctx, get_float(p, i + 8), get_float(p, i + 12));
-        nvgLineTo(p_ctx, get_float(p, i + 16), get_float(p, i + 20));
-        nvgLineTo(p_ctx, get_float(p, i + 24), get_float(p, i + 28));
-        nvgClosePath(p_ctx);
-        if (param & 1) nvgFill(p_ctx);
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_QUAD:
+        {
+          coordinates_t a = {get_float(p, i), get_float(p, i + 4)};
+          coordinates_t b = {get_float(p, i + 8), get_float(p, i + 12)};
+          coordinates_t c = {get_float(p, i + 16), get_float(p, i + 20)};
+          coordinates_t d = {get_float(p, i + 24), get_float(p, i + 28)};
+          script_ops_draw_quad(v_ctx, a, b, c, d, (param & FLAG_FILL), (param & FLAG_STROKE));
+        }
         i += 32;
         break;
-      case 0x04:        // draw_rect
-        nvgBeginPath(p_ctx);
-        nvgRect(p_ctx, 0, 0, get_float(p, i), get_float(p, i+4));
-        if (param & 1) nvgFill(p_ctx);
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_RECT:
+        {
+          float w = get_float(p, i);
+          float h = get_float(p, i + 4);
+          script_ops_draw_rect(v_ctx, w, h, (param & FLAG_FILL), (param & FLAG_STROKE));
+        }
         i += 8;
         break;
-      case 0x05:        // draw_rrect
-        nvgBeginPath(p_ctx);
-        nvgRoundedRect(p_ctx, 0, 0, get_float(p, i), get_float(p, i + 4), get_float(p, i + 8));
-        if (param & 1) nvgFill(p_ctx);
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_RRECT:
+        {
+          float w = get_float(p, i);
+          float h = get_float(p, i + 4);
+          float radius = get_float(p, i + 8);
+          script_ops_draw_rrect(v_ctx, w, h, radius, (param & FLAG_FILL), (param & FLAG_STROKE));
+        }
         i += 12;
         break;
-      case 0x06:        // draw_arc
-        nvgBeginPath(p_ctx);
-        nvgArc(p_ctx,
-          0, 0,
-          get_float(p, i), 0, get_float(p, i + 4),
-          get_float(p, i + 4) > 0 ? NVG_CW : NVG_CCW
-        );
-        if (param & 1) nvgFill(p_ctx);
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_ARC:
+        {
+          float radius = get_float(p, i);
+          float radians = get_float(p, i + 4);
+          script_ops_draw_arc(v_ctx, radius, radians, (param & FLAG_FILL), (param & FLAG_STROKE));
+        }
         i += 8;
         break;
-      case 0x07:        // draw_sector
-        nvgBeginPath(p_ctx);
-        nvgMoveTo(p_ctx, 0, 0);
-        nvgLineTo(p_ctx, get_float(p, i), 0);
-        nvgArc(p_ctx,
-          0, 0,
-          get_float(p, i), 0, get_float(p, i + 4),
-          get_float(p, i + 4) > 0 ? NVG_CW : NVG_CCW
-        );
-        nvgClosePath(p_ctx);
-        if (param & 1) nvgFill(p_ctx);
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_SECTOR:
+        {
+          float radius = get_float(p, i);
+          float radians = get_float(p, i + 4);
+          script_ops_draw_sector(v_ctx, radius, radians, (param & FLAG_FILL), (param & FLAG_STROKE));
+        }
         i += 8;
         break;
-      case 0x08:        // draw_circle
-        nvgBeginPath(p_ctx);
-        nvgCircle(p_ctx, 0, 0, get_float(p, i));
-        if (param & 1) nvgFill(p_ctx);
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_CIRCLE:
+        {
+          float radius = get_float(p, i);
+          script_ops_draw_circle(v_ctx, radius, (param & FLAG_FILL), (param & FLAG_STROKE));
+        }
         i += 4;
         break;
-      case 0x09:        // draw_ellipse
-        nvgBeginPath(p_ctx);
-        nvgEllipse(p_ctx, 0, 0, get_float(p, i), get_float(p, i + 4));
-        if (param & 1) nvgFill(p_ctx);
-        if (param & 2) nvgStroke(p_ctx);
+      case SCRIPT_OP_DRAW_ELLIPSE:
+        {
+          float radius0 = get_float(p, i);
+          float radius1 = get_float(p, i + 4);
+          script_ops_draw_ellipse(v_ctx, radius0, radius1, (param & FLAG_FILL), (param & FLAG_STROKE));
+        }
         i += 8;
         break;
-      case 0x0A:        // draw_text - byte count is in param
-        render_text( p + i, param, p_ctx );
+      case SCRIPT_OP_DRAW_TEXT:
+        {
+          uint32_t size = param;
+          const char* text = p + i;
+          script_ops_draw_text(v_ctx, size, text);
+        }
         i += padded_advance( param );
         break;
-      case 0x0B:        // draw_sprites
-        i = render_sprites( p_ctx, p, i, param );
-        break;
+      case SCRIPT_OP_DRAW_SPRITES:
+        {
+          uint32_t count = get_uint32(p, i);
+          sprite_t* sprites = malloc(count * sizeof(sprites));
 
-      case 0x0F:        // render_script
+          i += sizeof(uint32_t);
+
+          // get the id
+          sid_t id;
+          id.size = param;
+          id.p_data = p + i;
+          i += padded_advance(param);
+
+          // loop the draw commands and draw each
+          for (int n = 0; n < count; n++) {
+            sprites[n] = (sprite_t){
+              .sx = get_float(p, i),
+              .sy = get_float(p, i + 4),
+              .sw = get_float(p, i + 8),
+              .sh = get_float(p, i + 12),
+              .dx = get_float(p, i + 16),
+              .dy = get_float(p, i + 20),
+              .dw = get_float(p, i + 24),
+              .dh = get_float(p, i + 28)
+            };
+
+            i += 32;
+          }
+          script_ops_draw_sprites(v_ctx, id, count, sprites);
+          free(sprites);
+        }
+        break;
+      case SCRIPT_OP_DRAW_SCRIPT:
         // we can reuse the passed in id struct
         id.size = param;
         id.p_data = p + i;
-        render_script( id, p_ctx );
-        i += padded_advance( param );
+        script_ops_draw_script(v_ctx, id);
+        i += padded_advance(param);
         break;
-
-
-
-      case 0x20:        // begin_path
-        nvgBeginPath(p_ctx);
+      case SCRIPT_OP_BEGIN_PATH:
+        script_ops_begin_path(v_ctx);
         break;
-      case 0x21:        // close_path
-        nvgClosePath(p_ctx);
+      case SCRIPT_OP_CLOSE_PATH:
+        script_ops_close_path(v_ctx);
         break;
-      case 0x22:        // fill
-        nvgFill(p_ctx);
+      case SCRIPT_OP_FILL_PATH:
+        script_ops_fill_path(v_ctx);
         break;
-      case 0x23:        // stroke
-        nvgStroke(p_ctx);
+      case SCRIPT_OP_STROKE_PATH:
+        script_ops_stroke_path(v_ctx);
         break;
-
-      case 0x26:        // move_to
-        nvgMoveTo(p_ctx, get_float(p, i), get_float(p, i+4));
+      case SCRIPT_OP_MOVE_TO:
+        {
+          coordinates_t a = {get_float(p, i), get_float(p, i + 4)};
+          script_ops_move_to(v_ctx, a);
+        }
         i += 8;
         break;
-      case 0x27:        // line_to
-        nvgLineTo(p_ctx, get_float(p, i), get_float(p, i+4));
+      case SCRIPT_OP_LINE_TO:
+        {
+          coordinates_t a = {get_float(p, i), get_float(p, i + 4)};
+          script_ops_line_to(v_ctx, a);
+        }
         i += 8;
         break;
-      case 0x28:        // arc_to
-        nvgArcTo(p_ctx,
-          get_float(p, i), get_float(p, i+4),     // x1, y1
-          get_float(p, i+8), get_float(p, i+12),  // x2, y2
-          get_float(p, i+16)                      // radius
-        );
+      case SCRIPT_OP_ARC_TO:
+        {
+          coordinates_t a = {get_float(p, i), get_float(p, i + 4)};
+          coordinates_t b = {get_float(p, i + 8), get_float(p, i + 12)};
+          float radius = get_float(p, i + 16);
+          script_ops_arc_to(v_ctx, a, b, radius);
+        }
         i += 20;
         break;
-      case 0x29:        // bezier_to
-        nvgBezierTo(p_ctx,
-          get_float(p, i), get_float(p, i+4),     // c1x, c1y
-          get_float(p, i+8), get_float(p, i+12),  // c2x, c2y
-          get_float(p, i+16), get_float(p, i+20)  // x, y
-        );
+      case SCRIPT_OP_BEZIER_TO:
+        {
+          coordinates_t c0 = {get_float(p, i), get_float(p, i + 4)};
+          coordinates_t c1 = {get_float(p, i + 8), get_float(p, i + 12)};
+          coordinates_t a = {get_float(p, i + 16), get_float(p, i + 20)};
+          script_ops_bezier_to(v_ctx, c0, c1, a);
+        }
         i += 24;
         break;
-      case 0x2A:        // quadratic_to
-        nvgQuadTo(p_ctx,
-          get_float(p, i), get_float(p, i+4),     // cx, cy
-          get_float(p, i+8), get_float(p, i+12)   // x, y
-        );
+      case SCRIPT_OP_QUADRATIC_TO:
+        {
+          coordinates_t c = {get_float(p, i), get_float(p, i + 4)};
+          coordinates_t a = {get_float(p, i + 8), get_float(p, i + 12)};
+          script_ops_quadratic_to(v_ctx, c, a);
+        }
         i += 16;
         break;
-
-      case 0x40:        // push_state
-        push_count++;
-        nvgSave(p_ctx);
-        break;
-      case 0x41:        // pop_state
-        if ( push_count > 0 ) {
+      case SCRIPT_OP_POP_STATE:
+        if (push_count > 0) {
           push_count--;
-          nvgRestore( p_ctx );
+          script_ops_pop_state(v_ctx);
         }
         break;
-      case 0x42:        // pop_push_state
-        if ( push_count > 0 ) {
+      case SCRIPT_OP_POP_PUSH_STATE:
+        if (push_count > 0) {
           push_count--;
-          nvgRestore( p_ctx );
+          script_ops_pop_state(v_ctx);
         }
+        // [[fallthrough]];
+      case SCRIPT_OP_PUSH_STATE:
         push_count++;
-        nvgSave(p_ctx);
+        script_ops_push_state(v_ctx);
         break;
 
       // case 0x43:        // clear
-      case 0x44:        // scissor
-        nvgScissor(p_ctx, 0, 0, get_float(p, i), get_float(p, i+4));
+      case SCRIPT_OP_SCISSOR:
+        {
+          float w = get_float(p, i);
+          float h = get_float(p, i + 4);
+          script_ops_scissor(v_ctx, w, h);
+        }
         i += 8;
         break;
 
-      case 0x50:        // transform
-        nvgTransform(
-          p_ctx,
-          get_float(p, i), get_float(p, i+4), 
-          get_float(p, i+8), get_float(p, i+12),
-          get_float(p, i+16), get_float(p, i+20)
-        );
+      case SCRIPT_OP_TRANSFORM:
+        {
+          float a = get_float(p, i);
+          float b = get_float(p, i + 4);
+          float c = get_float(p, i + 8);
+          float d = get_float(p, i + 12);
+          float e = get_float(p, i + 16);
+          float f = get_float(p, i + 20);
+          script_ops_transform(v_ctx, a, b, c, d, e, f);
+        }
         i += 24;
         break;
-      case 0x51:        // scale
-        nvgScale(p_ctx, get_float(p, i), get_float(p, i+4));
+      case SCRIPT_OP_SCALE:
+        {
+          float x = get_float(p, i);
+          float y = get_float(p, i + 4);
+          script_ops_scale(v_ctx, x, y);
+        }
         i += 8;
         break;
-      case 0x52:        // rotate
-        nvgRotate(p_ctx, get_float(p, i));
+      case SCRIPT_OP_ROTATE:
+        {
+          float radians = get_float(p, i);
+          script_ops_rotate(v_ctx, radians);
+        }
         i += 4;
         break;
-      case 0x53:        // translate
-        nvgTranslate(p_ctx, get_float(p, i), get_float(p, i+4));
+      case SCRIPT_OP_TRANSLATE:
+        {
+          float x = get_float(p, i);
+          float y = get_float(p, i + 4);
+          script_ops_translate(v_ctx, x, y);
+        }
         i += 8;
         break;
-
-
-      case 0x60:        // fill_color
-        nvgFillColor(p_ctx, nvgRGBA(
-          get_byte(p,i), get_byte(p,i+1), get_byte(p,i+2), get_byte(p,i+3)
-        ));
+      case SCRIPT_OP_FILL_COLOR:
+        {
+          color_rgba_t color = {
+            get_byte(p,i),
+            get_byte(p,i+1),
+            get_byte(p,i+2),
+            get_byte(p,i+3)
+          };
+          script_ops_fill_color(v_ctx, color);
+        }
         i += 4;
         break;
-      case 0x61:        // fill_linear
-        nvgFillPaint(p_ctx,
-          nvgLinearGradient(
-            p_ctx,
-            get_float(p, i), get_float(p, i+4), get_float(p, i+8), get_float(p, i+12),
-            nvgRGBA(get_byte(p,i+16), get_byte(p,i+17), get_byte(p,i+18), get_byte(p,i+19)),
-            nvgRGBA(get_byte(p,i+20), get_byte(p,i+21), get_byte(p,i+22), get_byte(p,i+23))
-          )
-        );
+      case SCRIPT_OP_FILL_LINEAR:
+        {
+          coordinates_t start = {get_float(p, i), get_float(p, i + 4)};
+          coordinates_t end = {get_float(p, i + 8), get_float(p, i + 12)};
+          color_rgba_t color_start = {
+            get_byte(p, i + 16),
+            get_byte(p, i + 17),
+            get_byte(p, i + 18),
+            get_byte(p, i + 19)
+          };
+          color_rgba_t color_end = {
+            get_byte(p, i + 20),
+            get_byte(p, i + 21),
+            get_byte(p, i + 22),
+            get_byte(p, i + 23)
+          };
+          script_ops_fill_linear(v_ctx,
+                                 start, end,
+                                 color_start, color_end);
+        }
         i += 24;
         break;
-      case 0x62:        // fill_radial
-        nvgFillPaint(p_ctx,
-          nvgRadialGradient(
-            p_ctx,
-            get_float(p, i), get_float(p, i+4), get_float(p, i+8), get_float(p, i+12),
-            nvgRGBA(get_byte(p,i+16), get_byte(p,i+17), get_byte(p,i+18), get_byte(p,i+19)),
-            nvgRGBA(get_byte(p,i+20), get_byte(p,i+21), get_byte(p,i+22), get_byte(p,i+23))
-          )
-        );
+      case SCRIPT_OP_FILL_RADIAL:
+        {
+          coordinates_t center = {get_float(p, i), get_float(p, i + 4)};
+          float inner_radius = get_float(p, i + 8);
+          float outer_radius = get_float(p, i + 12);
+          color_rgba_t color_start = {
+            get_byte(p, i + 16),
+            get_byte(p, i + 17),
+            get_byte(p, i + 18),
+            get_byte(p, i + 19)
+          };
+          color_rgba_t color_end = {
+            get_byte(p, i + 20),
+            get_byte(p, i + 21),
+            get_byte(p, i + 22),
+            get_byte(p, i + 23)
+          };
+          script_ops_fill_radial(v_ctx, center,
+                                 inner_radius,
+                                 outer_radius,
+                                 color_start, color_end);
+        }
         i += 24;
         break;
-      case 0x63:        // fill_image
+      case SCRIPT_OP_FILL_IMAGE:
         // we can reuse the passed in id struct
         id.size = param;
         id.p_data = p + i;
-        set_fill_image( p_ctx, id );
-        i += padded_advance( param );
+        script_ops_fill_image(v_ctx, id);
+        i += padded_advance(param);
       break;
-      case 0x64:        // fill_stream
+      case SCRIPT_OP_FILL_STREAM:
         // we can reuse the passed in id struct
         id.size = param;
         id.p_data = p + i;
-        set_fill_image( p_ctx, id );
-        i += padded_advance( param );
+        script_ops_fill_stream(v_ctx, id);
+        i += padded_advance(param);
       break;
 
-
-      case 0x70:        // stroke width
-        nvgStrokeWidth(p_ctx, param / 4.0);
+      case SCRIPT_OP_STROKE_WIDTH:
+        {
+          float w = param / 4.0;
+          script_ops_stroke_width(v_ctx, w);
+        }
         break;
-      case 0x71:        // stroke color
-        nvgStrokeColor(p_ctx, nvgRGBA(
-          get_byte(p,i), get_byte(p,i+1), get_byte(p,i+2), get_byte(p,i+3)
-        ));
+      case SCRIPT_OP_STROKE_COLOR:
+        {
+          color_rgba_t color = {
+            get_byte(p, i),
+            get_byte(p, i + 1),
+            get_byte(p, i + 2),
+            get_byte(p, i + 3)
+          };
+          script_ops_stroke_color(v_ctx, color);
+        }
         i += 4;
         break;
-      case 0x72:        // stroke_linear
-        nvgStrokePaint(p_ctx,
-          nvgLinearGradient(
-            p_ctx,
-            get_float(p, i), get_float(p, i+4), get_float(p, i+8), get_float(p, i+12),
-            nvgRGBA(get_byte(p,i+16), get_byte(p,i+17), get_byte(p,i+18), get_byte(p,i+19)),
-            nvgRGBA(get_byte(p,i+20), get_byte(p,i+21), get_byte(p,i+22), get_byte(p,i+23))
-          )
-        );
+      case SCRIPT_OP_STROKE_LINEAR:
+        {
+          coordinates_t start = {get_float(p, i), get_float(p, i + 4)};
+          coordinates_t end = {get_float(p, i + 8), get_float(p, i + 12)};
+          color_rgba_t color_start = {
+            get_byte(p, i + 16),
+            get_byte(p, i + 17),
+            get_byte(p, i + 18),
+            get_byte(p, i + 19)
+          };
+          color_rgba_t color_end = {
+            get_byte(p, i + 20),
+            get_byte(p, i + 21),
+            get_byte(p, i + 22),
+            get_byte(p, i + 23)
+          };
+          script_ops_stroke_linear(v_ctx,
+                                   start, end,
+                                   color_start, color_end);
+        }
         i += 24;
         break;
-      case 0x73:        // stroke_radial
-        nvgStrokePaint(p_ctx,
-          nvgRadialGradient(
-            p_ctx,
-            get_float(p, i), get_float(p, i+4), get_float(p, i+8), get_float(p, i+12),
-            nvgRGBA(get_byte(p,i+16), get_byte(p,i+17), get_byte(p,i+18), get_byte(p,i+19)),
-            nvgRGBA(get_byte(p,i+20), get_byte(p,i+21), get_byte(p,i+22), get_byte(p,i+23))
-          )
-        );
+      case SCRIPT_OP_STROKE_RADIAL:
+        {
+          coordinates_t center = {get_float(p, i), get_float(p, i + 4)};
+          float inner_radius = get_float(p, i + 8);
+          float outer_radius = get_float(p, i + 12);
+          color_rgba_t color_start = {
+            get_byte(p, i + 16),
+            get_byte(p, i + 17),
+            get_byte(p, i + 18),
+            get_byte(p, i + 19)
+          };
+          color_rgba_t color_end = {
+            get_byte(p, i + 20),
+            get_byte(p, i + 21),
+            get_byte(p, i + 22),
+            get_byte(p, i + 23)
+          };
+          script_ops_stroke_radial(v_ctx, center,
+                                   inner_radius,
+                                   outer_radius,
+                                   color_start, color_end);
+        }
         i += 24;
         break;
-      case 0x74:        // stroke_image
+      case SCRIPT_OP_STROKE_IMAGE:
         // we can reuse the passed in id struct
         id.size = param;
         id.p_data = p + i;
-        set_stroke_image( p_ctx, id );
-        i += padded_advance( param );
+        script_ops_stroke_image(v_ctx, id);
+        i += padded_advance(param);
       break;
-      case 0x75:        // stroke_stream
+      case SCRIPT_OP_STROKE_STREAM:
         // we can reuse the passed in id struct
         id.size = param;
         id.p_data = p + i;
-        set_stroke_image( p_ctx, id );
-        i += padded_advance( param );
+        script_ops_stroke_stream(v_ctx, id);
+        i += padded_advance(param);
       break;
-
-
-
-
-      case 0x80:        // line cap
-        switch(param) {
-          case 0x00: nvgLineCap(p_ctx, NVG_BUTT); break;
-          case 0x01: nvgLineCap(p_ctx, NVG_ROUND); break;
-          case 0x02: nvgLineCap(p_ctx, NVG_SQUARE); break;
+      case SCRIPT_OP_LINE_CAP:
+        {
+          line_cap_t line_cap = (line_cap_t)param;
+          script_ops_line_cap(v_ctx, line_cap);
         }
         break;
-      case 0x81:        // line join
-        switch(param) {
-          case 0x00: nvgLineJoin(p_ctx, NVG_BEVEL); break;
-          case 0x01: nvgLineJoin(p_ctx, NVG_ROUND); break;
-          case 0x02: nvgLineJoin(p_ctx, NVG_MITER); break;
+      case SCRIPT_OP_LINE_JOIN:
+        {
+          line_join_t line_join = (line_join_t)param;
+          script_ops_line_join(v_ctx, line_join);
         }
         break;
-      case 0x82:        // miter limit
-        nvgMiterLimit(p_ctx, param);
+      case SCRIPT_OP_MITER_LIMIT:
+        script_ops_miter_limit(v_ctx, param);
         break;
-
-
-      case 0x90:        // font
+      case SCRIPT_OP_FONT:
         // we can reuse the passed in id struct
         id.size = param;
         id.p_data = p + i;
-        set_font( id, p_ctx );
-        i += padded_advance( param );
+        script_ops_font(v_ctx, id);
+        i += padded_advance(param);
         break;
-      case 0x91:        // font_size
-          nvgFontSize( p_ctx, param / 4.0 );
-        // font_size = param / 4
-        // ctx.font = `${font_size}px ${font}`
-        break;
-      case 0x92:        // text_align
-        switch( param ) {
-          case 0x00:    // left
-            nvgTextAlignH(p_ctx, NVG_ALIGN_LEFT);
-            break;
-          case 0x01:    // center
-            nvgTextAlignH(p_ctx, NVG_ALIGN_CENTER);
-            break;
-          case 0x02:    // right
-            nvgTextAlignH(p_ctx, NVG_ALIGN_RIGHT);
-            break;
+      case SCRIPT_OP_FONT_SIZE:
+        {
+          float size = param / 4.0;
+          script_ops_font_size(v_ctx, size);
         }
         break;
-      case 0x93:        // text_base
-        switch( param ) {
-          case 0x00:    // top
-            nvgTextAlignV(p_ctx, NVG_ALIGN_TOP);
-            break;
-          case 0x01:    // middle
-            nvgTextAlignV(p_ctx, NVG_ALIGN_MIDDLE);
-            break;
-          case 0x02:    // alphabetic
-            nvgTextAlignV(p_ctx, NVG_ALIGN_BASELINE);
-            break;
-          case 0x03:    // bottom
-            nvgTextAlignV(p_ctx, NVG_ALIGN_BOTTOM);
-            break;
+      case SCRIPT_OP_TEXT_ALIGN:
+        {
+          text_align_t text_align = (text_align_t)param;
+          script_ops_text_align(v_ctx, text_align);
+        }
+        break;
+      case SCRIPT_OP_TEXT_BASE:
+        {
+          text_base_t text_base = (text_base_t)param;
+          script_ops_text_base(v_ctx, text_base);
         }
         break;
 
@@ -604,6 +632,6 @@ void render_script(sid_t id, NVGcontext* p_ctx)
   // if there are unbalanced pushes, clear them
   while (push_count > 0) {
     push_count--;
-    nvgRestore(p_ctx);
+    script_ops_pop_state(v_ctx);
   }
 }

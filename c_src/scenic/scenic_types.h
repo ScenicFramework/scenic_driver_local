@@ -14,10 +14,6 @@
 
 #include <stdint.h>
 
-#ifndef NANOVG_H
-#include "nanovg.h"
-#endif
-
 #ifndef PACK
   #ifdef _MSC_VER
     #define PACK( __Declaration__ ) \
@@ -47,7 +43,7 @@ typedef struct {
   int root_script;
   void* p_tx_ids;
   void* p_fonts;
-  void* p_ctx;
+  void* v_ctx;
   float global_tx[6];
   float cursor_tx[6];
   float cursor_pos[2];
@@ -61,7 +57,7 @@ typedef struct {
   int width;
   int height;
   float ratio;
-  NVGcontext* p_ctx;
+  void* v_ctx;
 } device_info_t;
 
 typedef struct {

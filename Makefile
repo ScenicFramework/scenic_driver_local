@@ -50,6 +50,8 @@ TOMMYDS_SRCS = \
 
 SCENIC_SRCS = \
 	c_src/scenic/comms.c \
+	c_src/scenic/ops/scenic_ops.c \
+	c_src/scenic/ops/script_ops.c \
 	c_src/scenic/script.c \
 	c_src/scenic/unix_comms.c \
 	c_src/scenic/utils.c
@@ -87,6 +89,7 @@ ifeq ($(SCENIC_LOCAL_TARGET),glfw)
 		c_src/nanovg/nanovg.c
 	FONT_SRCS += c_src/font/nvg_font_ops.c
 	IMAGE_SRCS += c_src/image/nvg_image_ops.c
+	SCENIC_SRCS += c_src/scenic/ops/nvg_script_ops.c
 
 else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -lbcm_host
@@ -98,6 +101,7 @@ else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 		c_src/nanovg/nanovg.c
 	FONT_SRCS += c_src/font/nvg_font_ops.c
 	IMAGE_SRCS += c_src/image/nvg_image_ops.c
+	SCENIC_SRCS += c_src/scenic/ops/nvg_script_ops.c
 
 else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 	# drm is the forward looking default
@@ -111,6 +115,7 @@ else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 		c_src/nanovg/nanovg.c
 	FONT_SRCS += c_src/font/nvg_font_ops.c
 	IMAGE_SRCS += c_src/image/nvg_image_ops.c
+	SCENIC_SRCS += c_src/scenic/ops/nvg_script_ops.c
 
 	ifeq ($(SCENIC_LOCAL_GL),gles2)
 		CFLAGS += -DSCENIC_GLES2

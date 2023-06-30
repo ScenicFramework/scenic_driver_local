@@ -32,10 +32,3 @@ void init_images(void);
 void put_image(int* p_msg_length, void* v_ctx);
 void reset_images(void* v_ctx);
 image_t* get_image(sid_t id);
-
-void set_fill_image(void* v_ctx, sid_t id);
-void set_stroke_image(void* v_ctx, sid_t id);
-
-void draw_image(void* v_ctx, sid_t id,
-                float sx, float sy, float sw, float sh,
-                float dx, float dy, float dw, float dh);

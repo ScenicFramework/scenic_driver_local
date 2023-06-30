@@ -14,50 +14,12 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #include <time.h>
 #include <unistd.h>
 
-#include "script.h"
+#include "device.h"
 #include "font.h"
 #include "image.h"
+#include "ops/scenic_ops.h"
+#include "script.h"
 #include "utils.h"
-#include "device.h"
-
-#define CMD_PUT_SCRIPT    0x01
-#define CMD_DEL_SCRIPT    0x02
-#define CMD_RESET         0x03
-#define CMD_GLOBAL_TX     0x04
-#define CMD_CURSOR_TX     0x05
-#define CMD_RENDER        0x06
-#define CMD_UPDATE_CURSOR 0x07
-#define CMD_CLEAR_COLOR   0x08
-
-#define CMD_INPUT 0x0A
-
-#define CMD_QUIT 0x20
-
-#define CMD_PUT_FONT 0x40
-#define CMD_PUT_IMG 0x41
-
-
-// #define CMD_QUERY_STATS 0x21
-// #define CMD_RESHAPE 0x22
-// #define CMD_POSITION 0x23
-// #define CMD_FOCUS 0x24
-// #define CMD_ICONIFY 0x25
-// #define CMD_MAXIMIZE 0x26
-// #define CMD_RESTORE 0x27
-// #define CMD_SHOW 0x28
-// #define CMD_HIDE 0x29
-
-// #define CMD_NEW_TX_ID 0x32
-// #define CMD_FREE_TX_ID 0x33
-// #define CMD_PUT_TX_BLOB 0x34
-// #define CMD_PUT_TX_RAW 0x35
-
-// #define CMD_LOAD_FONT_FILE 0X37
-// #define CMD_LOAD_FONT_BLOB 0X38
-// #define CMD_FREE_FONT 0X39
-
-// here to test recovery
-#define CMD_CRASH 0xFE
 
 // handy time definitions in microseconds
 #define MILLISECONDS_8 8000
@@ -427,50 +389,30 @@ void receive_crash()
 //---------------------------------------------------------
 void render(driver_data_t* p_data)
 {
-  NVGcontext* p_ctx = p_data->p_ctx;
-
   // prep the id to the root scene
   sid_t id;
   id.p_data = "_root_";
   id.size = strlen(id.p_data);
 
   // render the scene
-  device_begin_render();
-
-  nvgBeginFrame(p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio);
-
-  // set the global transform
-  nvgTransform(p_ctx,
-               p_data->global_tx[0], p_data->global_tx[1],
-               p_data->global_tx[2], p_data->global_tx[3],
-               p_data->global_tx[4], p_data->global_tx[5]);
+  device_begin_render(p_data);
 
   // render the root script
-  render_script(id, p_ctx);
+  render_script(p_data->v_ctx, id);
 
   // render the cursor if one is provided
   if (p_data->f_show_cursor) {
-    nvgTranslate(p_ctx, p_data->cursor_pos[0], p_data->cursor_pos[1]);
+    device_begin_cursor_render(p_data);
 
     id.p_data = "_cursor_";
     id.size = strlen(id.p_data);
-    render_script(id, p_ctx);
+    render_script(p_data->v_ctx, id);
   }
 
-  // End frame and swap front and back buffers
-  nvgEndFrame(p_ctx);
-
-  // device_swap_buffers();
-  device_end_render();
+  device_end_render(p_data);
 
   // all done
   send_ready();
-}
-
-//---------------------------------------------------------
-void render_cursor(driver_data_t* p_data)
-{
-  render(p_data);
 }
 
 //---------------------------------------------------------
@@ -509,93 +451,6 @@ void clear_color(int* p_msg_length)
   device_clear_color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }
 
-//---------------------------------------------------------
-void dispatch_message(int msg_length, driver_data_t* p_data)
-{
-  // read the message id
-  uint32_t msg_id;
-  read_bytes_down(&msg_id, sizeof(uint32_t), &msg_length);
-
-  // put_sn( "dispatch_message:", msg_id );
-
-  switch (msg_id)
-  {
-    case CMD_QUIT:
-      receive_quit(p_data);
-      return;
-
-    case CMD_PUT_SCRIPT:
-      put_script(&msg_length);
-      break;
-
-    case CMD_DEL_SCRIPT:
-      delete_script(&msg_length);
-      break;
-
-    case CMD_RESET:
-      reset_scripts();
-      // resetting images turns out to be bad for nvg, which
-      // doesn't handle ever increasing image id ranges very well.
-      // it tries to keep a big static table of all images in mem
-      // reset_images( p_data->p_ctx );
-      break;
-
-    case CMD_RENDER:
-      render(p_data);
-      break;
-
-    case CMD_CURSOR_TX:
-      set_cursor_tx(&msg_length, p_data);
-      break;
-
-    case CMD_UPDATE_CURSOR:
-      update_cursor(&msg_length, p_data);
-      break;
-
-    case CMD_CLEAR_COLOR:
-      clear_color(&msg_length);
-      break;
-
-  //   case CMD_INPUT:
-  //     receive_input(&msg_length, window);
-  //     break;
-
-    case CMD_PUT_FONT:
-      put_font(&msg_length, p_data->p_ctx);
-      break;
-
-    case CMD_PUT_IMG:
-      put_image(&msg_length, p_data->p_ctx);
-      break;
-
-    case CMD_CRASH:
-      receive_crash();
-      break;
-
-    case CMD_GLOBAL_TX:
-      set_global_tx(&msg_length, p_data);
-      break;
-
-    default:
-      log_error("Unknown message: %d", msg_id);
-  }
-
-  // if there are any bytes left to read in the message, need to get rid of them
-  // here...
-  if (msg_length > 0)
-  {
-    log_error("Excess message bytes: %d", msg_length);
-    log_error("|      message id: %d", msg_id);
-    void* p = malloc(msg_length);
-    read_bytes_down(p, msg_length, &msg_length);
-    free(p);
-  }
-
-  check_gl_error();
-
-  return;
-}
-
 //=============================================================================
 // non-threaded command reading
 
@@ -624,7 +479,7 @@ void handle_stdio_in(driver_data_t* p_data)
     if (len <= 0) break;
 
     // process the message
-    dispatch_message(len, p_data);
+    dispatch_scenic_ops(len, p_data);
 
     // see if time is remaining, so we can process another one
     time_remaining -= monotonic_time() - start;

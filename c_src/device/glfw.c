@@ -47,6 +47,8 @@ typedef struct {
 
 glfw_data_t g_glfw_data = {0};
 
+extern device_info_t g_device_info;
+
 
 //=============================================================================
 // window callbacks
@@ -222,8 +224,13 @@ NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
 
 //---------------------------------------------------------
 int device_init(const device_opts_t* p_opts,
-                device_info_t* p_info)
+                device_info_t* p_info,
+                driver_data_t* p_data)
 {
+  // initialize the global transform to the identity matrix
+  nvgTransformIdentity(p_data->global_tx);
+  nvgTransformIdentity(p_data->cursor_tx);
+
   // Initialize GLFW
   if (!glfwInit())
   {
@@ -252,7 +259,7 @@ int device_init(const device_opts_t* p_opts,
 
   // set up one-time features of the window
   g_glfw_data.p_info = p_info;
-  p_info->p_ctx = setup_window(g_glfw_data.p_window, p_opts);
+  p_info->v_ctx = setup_window(g_glfw_data.p_window, p_opts);
   p_info->width = g_glfw_data.window_width;
   p_info->height = g_glfw_data.window_height;
 
@@ -296,14 +303,40 @@ void device_clear_color(float red,
 }
 
 //---------------------------------------------------------
-void device_begin_render()
+void device_begin_render(driver_data_t* p_data)
 {
+  NVGcontext* p_ctx = (NVGcontext*)p_data->v_ctx;
+
   glClear(GL_COLOR_BUFFER_BIT);
+
+  nvgBeginFrame(p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio);
+
+  // set the global transform
+  nvgTransform(p_ctx,
+               p_data->global_tx[0], p_data->global_tx[1],
+               p_data->global_tx[2], p_data->global_tx[3],
+               p_data->global_tx[4], p_data->global_tx[5]);
 }
 
-void device_end_render()
+void device_begin_cursor_render(driver_data_t* p_data)
 {
+  NVGcontext* p_ctx = (NVGcontext*)p_data->v_ctx;
+  nvgTranslate(p_ctx,
+               p_data->cursor_pos[0], p_data->cursor_pos[1]);
+}
+
+void device_end_render(driver_data_t* p_data)
+{
+  NVGcontext* p_ctx = (NVGcontext*)p_data->v_ctx;
+
+  // End frame and swap front and back buffers
+  //uint64_t time = monotonic_time();
+  nvgEndFrame(p_ctx);
+  //log_info("nvgEndFrame: %" PRId64, monotonic_time() - time);
+
+  //time = monotonic_time();
   glfwSwapBuffers(g_glfw_data.p_window);
+  //log_info("device_end_render: %" PRId64, monotonic_time() - time);
 }
 
 
