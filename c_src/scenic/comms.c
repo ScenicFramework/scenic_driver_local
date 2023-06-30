@@ -18,38 +18,6 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #include "utils.h"
 #include "device.h"
 
-
-#define MSG_OUT_CLOSE 0x00
-#define MSG_OUT_STATS 0x01
-#define MSG_OUT_PUTS 0x02
-#define MSG_OUT_WRITE 0x03
-#define MSG_OUT_INSPECT 0x04
-#define MSG_OUT_RESHAPE 0x05
-#define MSG_OUT_READY 0x06
-#define MSG_OUT_DRAW_READY 0x07
-
-#define MSG_OUT_KEY 0x0A
-#define MSG_OUT_CODEPOINT 0x0B
-#define MSG_OUT_CURSOR_POS 0x0C
-#define MSG_OUT_MOUSE_BUTTON 0x0D
-#define MSG_OUT_MOUSE_SCROLL 0x0E
-#define MSG_OUT_CURSOR_ENTER 0x0F
-#define MSG_OUT_DROP_PATHS 0x10
-#define MSG_OUT_STATIC_TEXTURE_MISS 0x20
-#define MSG_OUT_DYNAMIC_TEXTURE_MISS 0x21
-
-#define MSG_OUT_FONT_MISS 0x22
-#define MSG_IMG_MISS 0x23
-
-#define MSG_OUT_NEW_TX_ID 0x31
-#define MSG_OUT_NEW_FONT_ID 0x32
-
-#define MSG_OUT_INFO 0xA0
-#define MSG_OUT_WARN 0xA1
-#define MSG_OUT_ERROR 0xA2
-
-
-
 #define CMD_PUT_SCRIPT    0x01
 #define CMD_DEL_SCRIPT    0x02
 #define CMD_RESET         0x03
@@ -151,87 +119,76 @@ bool read_bytes_down(void* p_buff, int bytes_to_read, int* p_bytes_to_remaining)
 // send messages up to caller
 
 //---------------------------------------------------------
-void send_puts(const char* msg)
+void logv(uint32_t cmd, const char* msg, va_list args)
 {
-  uint32_t msg_len = strlen(msg);
-  uint32_t cmd_len = msg_len + sizeof(uint32_t);
-  uint32_t cmd     = MSG_OUT_PUTS;
-
-  cmd_len = ntoh_ui32(cmd_len);
+  char* output;
+  uint32_t msg_len = vasprintf(&output, msg, args);
+  uint32_t cmd_len = ntoh_ui32(msg_len + sizeof(uint32_t));
 
   write_exact((byte*) &cmd_len, sizeof(uint32_t));
   write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) msg, msg_len);
+  write_exact((byte*) output, msg_len);
+  free(output);
 }
 
-//---------------------------------------------------------
-void log_info(const char* msg)
+void send_puts(const char* msg, ...)
 {
-  uint32_t msg_len = strlen(msg);
-  uint32_t cmd_len = msg_len + sizeof(uint32_t);
-  uint32_t cmd     = MSG_OUT_INFO;
+  va_list args;
+  va_start(args, msg);
 
-  cmd_len = ntoh_ui32(cmd_len);
-
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) msg, msg_len);
+  logv(MSG_OUT_PUTS, msg, args);
 }
 
 //---------------------------------------------------------
-void log_warn(const char* msg)
+void log_message(log_level_t level, const char* msg, ...)
 {
-  uint32_t msg_len = strlen(msg);
-  uint32_t cmd_len = msg_len + sizeof(uint32_t);
-  uint32_t cmd     = MSG_OUT_WARN;
+  va_list args;
+  va_start(args, msg);
+  uint32_t cmd = MSG_OUT_ERROR;
+  switch(level) {
+  case log_level_debug: cmd = MSG_OUT_DEBUG; break;
+  case log_level_info: cmd = MSG_OUT_INFO; break;
+  case log_level_warn: cmd = MSG_OUT_WARN; break;
+  case log_level_error: cmd = MSG_OUT_ERROR; break;
+  }
 
-  cmd_len = ntoh_ui32(cmd_len);
-
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) msg, msg_len);
+  logv(cmd, msg, args);
 }
-
 //---------------------------------------------------------
-void log_error(const char* msg)
+void log_debug(const char* msg, ...)
 {
-  uint32_t msg_len = strlen(msg);
-  uint32_t cmd_len = msg_len + sizeof(uint32_t);
-  uint32_t cmd     = MSG_OUT_ERROR;
+  va_list args;
+  va_start(args, msg);
 
-  cmd_len = ntoh_ui32(cmd_len);
-
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) msg, msg_len);
-}
-
-
-
-
-
-//---------------------------------------------------------
-void put_sp( const char* msg, void* p ) {
-  char buff[400];
-  sprintf(buff, "%s %p", msg, p);
-  send_puts(buff);
+  logv(MSG_OUT_DEBUG, msg, args);
 }
 
 //---------------------------------------------------------
-void put_sn( const char* msg, int n ) {
-  char buff[400];
-  sprintf(buff, "%s %d", msg, n);
-  send_puts(buff);
+void log_info(const char* msg, ...)
+{
+  va_list args;
+  va_start(args, msg);
+
+  logv(MSG_OUT_INFO, msg, args);
 }
 
 //---------------------------------------------------------
-void put_sf( const char* msg, float f ) {
-  char buff[400];
-  sprintf(buff, "%s %f", msg, f);
-  send_puts(buff);
+void log_warn(const char* msg, ...)
+{
+  va_list args;
+  va_start(args, msg);
+
+  logv(MSG_OUT_WARN, msg, args);
 }
 
+//---------------------------------------------------------
+void log_error(const char* msg, ...)
+{
+  va_list args;
+  va_start(args, msg);
 
+  logv(MSG_OUT_ERROR, msg, args);
+}
 
 //---------------------------------------------------------
 void send_write(const char* msg)
@@ -328,7 +285,7 @@ PACK(typedef struct msg_key_t
 
 void send_key(int key, int scancode, int action, int mods)
 {
-  msg_key_t msg = {MSG_OUT_KEY, key, scancode, action, mods};
+  msg_key_t msg = { MSG_OUT_KEY, key, scancode, action, mods };
   write_cmd((byte*) &msg, sizeof(msg_key_t));
 }
 
@@ -342,7 +299,7 @@ PACK(typedef struct msg_codepoint_t
 
 void send_codepoint(unsigned int codepoint, int mods)
 {
-  msg_codepoint_t msg = {MSG_OUT_CODEPOINT, codepoint, mods};
+  msg_codepoint_t msg = { MSG_OUT_CODEPOINT, codepoint, mods };
   write_cmd((byte*) &msg, sizeof(msg_codepoint_t));
 }
 
@@ -356,7 +313,7 @@ PACK(typedef struct msg_cursor_pos_t
 
 void send_cursor_pos(float xpos, float ypos)
 {
-  msg_cursor_pos_t msg = {MSG_OUT_CURSOR_POS, xpos, ypos};
+  msg_cursor_pos_t msg = { MSG_OUT_CURSOR_POS, xpos, ypos };
   write_cmd((byte*) &msg, sizeof(msg_cursor_pos_t));
 }
 
@@ -396,7 +353,7 @@ PACK(typedef struct msg_scroll_t
 
 void send_scroll(float xoffset, float yoffset, float xpos, float ypos)
 {
-  msg_scroll_t msg = {MSG_OUT_MOUSE_SCROLL, xoffset, yoffset, xpos, ypos};
+  msg_scroll_t msg = { MSG_OUT_MOUSE_SCROLL, xoffset, yoffset, xpos, ypos };
   write_cmd((byte*) &msg, sizeof(msg_scroll_t));
 }
 
@@ -411,7 +368,7 @@ PACK(typedef struct msg_cursor_enter_t
 
 void send_cursor_enter(int entered, float xpos, float ypos)
 {
-  msg_cursor_enter_t msg = {MSG_OUT_CURSOR_ENTER, entered, xpos, ypos};
+  msg_cursor_enter_t msg = { MSG_OUT_CURSOR_ENTER, entered, xpos, ypos };
   write_cmd((byte*) &msg, sizeof(msg_cursor_enter_t));
 }
 
@@ -437,7 +394,7 @@ PACK(typedef struct img_miss_t
 
 void send_image_miss( unsigned int img_id )
 {
-  img_miss_t msg = { MSG_IMG_MISS, img_id };
+  img_miss_t msg = { MSG_OUT_IMG_MISS, img_id };
   write_cmd((byte*) &msg, sizeof(img_miss_t));
 }
 

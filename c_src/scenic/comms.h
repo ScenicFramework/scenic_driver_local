@@ -6,6 +6,10 @@
 
 #pragma once
 
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdarg.h>
+
 #ifndef bool
 #include <stdbool.h>
 #endif
@@ -53,6 +57,40 @@
 #define INPUT_CURSOR_SCROLL_MASK 0x0010
 #define INPUT_CURSOR_ENTER_MASK 0x0020
 
+typedef enum {
+  MSG_OUT_CLOSE = 0X00,
+  MSG_OUT_STATS = 0X01,
+  MSG_OUT_PUTS  = 0X02,
+  MSG_OUT_WRITE = 0X03,
+  MSG_OUT_INSPECT = 0X04,
+  MSG_OUT_RESHAPE = 0X05,
+  MSG_OUT_READY = 0X06,
+  MSG_OUT_DRAW_READY = 0X07,
+
+  MSG_OUT_KEY = 0X0A,
+  MSG_OUT_CODEPOINT = 0X0B,
+  MSG_OUT_CURSOR_POS = 0X0C,
+  MSG_OUT_MOUSE_BUTTON = 0X0D,
+  MSG_OUT_MOUSE_SCROLL = 0X0E,
+  MSG_OUT_CURSOR_ENTER = 0X0F,
+  MSG_OUT_DROP_PATHS = 0X10,
+  MSG_OUT_STATIC_TEXTURE_MISS = 0X20,
+  MSG_OUT_DYNAMIC_TEXTURE_MISS = 0X21,
+
+  MSG_OUT_FONT_MISS = 0X22,
+  MSG_OUT_IMG_MISS = 0X23,
+
+  MSG_OUT_NEW_TX_ID = 0X31,
+  MSG_OUT_NEW_FONT_ID = 0X32,
+
+  MSG_OUT_INFO = 0XA0,
+  MSG_OUT_WARN = 0XA1,
+  MSG_OUT_ERROR = 0XA2,
+  MSG_OUT_DEBUG = 0XA3,
+
+  _MSG_OUT_SIZE_ = 0XFFFFFFFF,
+} msg_out_t;
+
 int read_exact(byte* buf, int len);
 int write_exact(byte* buf, int len);
 int read_msg_length(struct timeval * ptv);
@@ -62,17 +100,22 @@ bool read_bytes_down(void* p_buff, int bytes_to_read,
                      int* p_bytes_to_remaining);
 
 // basic events to send up to the caller
-void send_puts(const char* msg);
+void send_puts(const char* msg, ...);
 void send_write(const char* msg);
 void send_inspect(void* data, int length);
 
-void put_sp( const char* msg, void* p );
-void put_sn( const char* msg, int n );
-void put_sf( const char* msg, float f );
+typedef enum {
+  log_level_debug,
+  log_level_info,
+  log_level_warn,
+  log_level_error,
+} log_level_t;
 
-void log_info(const char* msg);
-void log_warn(const char* msg);
-void log_error(const char* msg);
+void log_message(log_level_t level, const char* msg, ...);
+void log_debug(const char* msg, ...);
+void log_info(const char* msg, ...);
+void log_warn(const char* msg, ...);
+void log_error(const char* msg, ...);
 
 void send_image_miss(unsigned int img_id);
 
