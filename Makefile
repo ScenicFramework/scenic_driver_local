@@ -86,6 +86,7 @@ ifeq ($(SCENIC_LOCAL_TARGET),glfw)
 
 	DEVICE_SRCS += \
 		c_src/device/glfw.c \
+		c_src/device/gl_helpers.c \
 		c_src/nanovg/nanovg.c
 	FONT_SRCS += c_src/font/nvg_font_ops.c
 	IMAGE_SRCS += c_src/image/nvg_image_ops.c
@@ -98,6 +99,7 @@ else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 
 	DEVICE_SRCS += \
 		c_src/device/bcm.c \
+		c_src/device/gl_helpers.c \
 		c_src/nanovg/nanovg.c
 	FONT_SRCS += c_src/font/nvg_font_ops.c
 	IMAGE_SRCS += c_src/image/nvg_image_ops.c
@@ -112,6 +114,7 @@ else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 
 	DEVICE_SRCS += \
 		c_src/device/drm.c \
+		c_src/device/gl_helpers.c \
 		c_src/nanovg/nanovg.c
 	FONT_SRCS += c_src/font/nvg_font_ops.c
 	IMAGE_SRCS += c_src/image/nvg_image_ops.c
