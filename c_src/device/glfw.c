@@ -239,9 +239,7 @@ int device_init( const device_opts_t* p_opts, device_info_t* p_info ) {
   glfwSetErrorCallback(errorcb);
 
   // set the glfw window hints - done before window creation
-  set_window_hints(
-    true           // resizable?
-  );
+  set_window_hints(p_opts->resizable);
 
   // Create a windowed mode window and its OpenGL context
   g_glfw_data.p_window = glfwCreateWindow(
