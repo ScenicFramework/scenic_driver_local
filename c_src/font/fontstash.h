@@ -105,6 +105,8 @@ int fonsResetAtlas(FONScontext* stash, int width, int height);
 int fonsAddFont(FONScontext* s, const char* name, const char* path, int fontIndex);
 int fonsAddFontMem(FONScontext* s, const char* name, unsigned char* data, int ndata, int freeData, int fontIndex);
 int fonsGetFontByName(FONScontext* s, const char* name);
+int fonsAddFallbackFont(FONScontext* stash, int base, int fallback);
+void fonsResetFallbackFont(FONScontext* stash, int base);
 
 // State handling
 void fonsPushState(FONScontext* s);

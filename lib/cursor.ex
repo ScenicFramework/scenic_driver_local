@@ -23,7 +23,7 @@ defmodule Scenic.Driver.Local.Cursor do
   alias Scenic.Driver
   alias Scenic.Script
   alias Scenic.Driver.Local.ToPort
-  # alias Scenic.Driver.Local.Calbacks
+  # alias Scenic.Driver.Local.Callbacks
 
   require Logger
 

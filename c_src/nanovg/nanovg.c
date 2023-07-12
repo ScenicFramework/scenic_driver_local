@@ -22,11 +22,9 @@
 #include <memory.h>
 
 #include "nanovg.h"
-#define FONTSTASH_IMPLEMENTATION
 #include "fontstash.h"
 
 #ifndef NVG_NO_STB
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #endif 
 

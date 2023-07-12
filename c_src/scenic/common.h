@@ -8,4 +8,4 @@
 
 #include "utils.h"
 #include "comms.h"
-#include "types.h"
+#include "scenic_types.h"
