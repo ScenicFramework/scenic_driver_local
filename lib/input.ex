@@ -44,6 +44,9 @@ defmodule Scenic.Driver.Local.Input do
 
     input_state =
       inputs
+      |> Enum.reject(fn {_, info} ->
+        Enum.find(driver.assigns.input_blacklist, &(&1 == info.name))
+      end)
       |> Enum.reduce(%{}, fn {path, info}, acc ->
         {:ok, pid} = InputEvent.start_link(path)
 
