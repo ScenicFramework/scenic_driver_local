@@ -39,7 +39,8 @@ defmodule Scenic.Driver.Local do
       type:
         {:or, [:mfa, {:in, [:restart, :stop_driver, :stop_viewport, :stop_system, :halt_system]}]},
       default: :restart
-    ]
+    ],
+    input_blacklist: [type: {:list, :string}, default: []]
   ]
 
   # @mix_target Mix.Tasks.Compile.ScenicDriverLocal.target()
@@ -262,7 +263,8 @@ defmodule Scenic.Driver.Local do
         cursor_update: false,
         rel_x: 0,
         rel_y: 0,
-        dirty_streams: []
+        dirty_streams: [],
+        input_blacklist: opts[:input_blacklist]
       )
 
     # send message to set up the cursor later
