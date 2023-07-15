@@ -93,7 +93,7 @@ defmodule Scenic.Driver.Local.MixProject do
   defp package do
     [
       name: @app_name,
-      contributors: ["Boyd Multerer"],
+      contributors: ["Boyd Multerer", "Jon Ringle"],
       maintainers: ["Boyd Multerer"],
       licenses: ["Apache-2.0"],
       links: %{Github: @github},
