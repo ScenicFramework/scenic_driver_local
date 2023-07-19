@@ -58,10 +58,6 @@ void image_free(void* v_ctx, image_t* p_image)
     tommy_hashlin_remove_existing(&images, &p_image->node);
     image_ops_delete(v_ctx, p_image->image_id);
 
-    if (p_image->p_pixels) {
-      free(p_image->p_pixels);
-    }
-
     free(p_image);
   }
 }
@@ -190,7 +186,6 @@ void put_image(int* p_msg_length, void* v_ctx)
   // if the height or width have changed, then we fail
   if (p_image
       && ((width != p_image->width) || (height != p_image->height))) {
-    // send_puts("Cannot change image size");
     log_error("Cannot change image size");
     free(p_temp_id);
     return;

@@ -77,6 +77,8 @@ int main(int argc, char **argv)
     device_poll();
   }
 
+  reset_images(data.v_ctx);
+
   device_close(&g_device_info);
   return 0;
 }
