@@ -709,7 +709,7 @@ void script_ops_line_join(void* v_ctx,
   case LINE_JOIN_BEVEL:
     nvgLineJoin(p_ctx, NVG_BEVEL);
     break;
-  case LINE_CAP_ROUND:
+  case LINE_JOIN_ROUND:
     nvgLineJoin(p_ctx, NVG_ROUND);
     break;
   case LINE_JOIN_MITER:
