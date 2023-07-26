@@ -3,7 +3,11 @@
 #ifdef SCENIC_GLES2
   #include <GLES3/gl2.h>
 #else
-  #include <GLES3/gl3.h>
+  #ifdef __APPLE__
+    #include <OpenGL/gl3.h>
+  #else
+    #include <GLES3/gl3.h>
+  #endif
 #endif
 
 #include "comms.h"
