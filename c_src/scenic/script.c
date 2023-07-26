@@ -199,7 +199,7 @@ void render_script(void* v_ctx, sid_t id)
         {
           coordinates_t a = {get_float(p, i), get_float(p, i + 4)};
           coordinates_t b = {get_float(p, i + 8), get_float(p, i + 12)};
-          script_ops_draw_line(v_ctx, a, b, (param & FLAG_FILL));
+          script_ops_draw_line(v_ctx, a, b, (param & FLAG_STROKE));
         }
         i += 16;
         break;
