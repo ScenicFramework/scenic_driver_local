@@ -176,6 +176,7 @@ defmodule Scenic.Driver.Local.FromPort do
         <<@msg_inspect_id::unsigned-integer-size(32)-native>> <> msg,
         driver
       ) do
+    # credo:disable-for-next-line Credo.Check.Warning.IoInspect
     IO.inspect(msg)
     Logger.info("scenic_driver_local inspect: #{inspect(msg)}")
     {:noreply, driver}
