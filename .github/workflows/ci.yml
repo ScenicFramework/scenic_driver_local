@@ -38,6 +38,10 @@ jobs:
           _build
           priv/plts
         key: ${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+
+    - name: Install build-deps
+      run: sudo apt update && sudo apt install libglfw3 libglfw3-dev libglew2.1 libglew-dev
+
     - name: Install Dependencies
       run: |
         mix local.rebar --force
