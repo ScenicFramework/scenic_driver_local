@@ -31,6 +31,6 @@ defmodule Scenic.Driver.LocalTest do
   test "validate_opts/1 with invalid opts" do
     assert {:error, validation_error} = Scenic.Driver.Local.validate_opts(name: 'Bob')
 
-    assert validation_error.message =~ "expected :name option"
+    assert validation_error.message =~ "expected :name"
   end
 end
