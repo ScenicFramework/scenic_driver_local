@@ -49,7 +49,7 @@ defmodule Scenic.Driver.Local.MixProject do
   defp deps do
     [
       {:input_event, "~> 1.0 or ~> 0.4"},
-      {:scenic, github: "ScenicFramework/scenic"},
+      {:scenic, "~> 0.11.0"},
 
       # Tools
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
@@ -93,7 +93,7 @@ defmodule Scenic.Driver.Local.MixProject do
   defp package do
     [
       name: @app_name,
-      contributors: ["Boyd Multerer"],
+      contributors: ["Boyd Multerer", "Jon Ringle"],
       maintainers: ["Boyd Multerer"],
       licenses: ["Apache-2.0"],
       links: %{Github: @github},
