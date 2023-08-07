@@ -113,6 +113,34 @@ void log_script_ops_draw_rrect(const char* prefix, const char* func, log_level_t
 }
 
 __attribute__((weak))
+void script_ops_draw_rrectv(void *v_ctx, float w, float h, float ulr, float urr, float lrr, float llr, bool fill, bool stroke)
+{
+  log_script_ops_draw_rrectv(log_prefix, __func__, log_level_warn, w, h, ulr, urr, lrr, llr, fill, stroke);
+}
+void log_script_ops_draw_rrectv(const char *prefix, const char *func, log_level_t level, float w, float h, float ulr, float urr, float lrr, float llr, bool fill, bool stroke)
+{
+  log_message(level, "%s %s: %{"
+              "w: %.1f, "
+              "h: %.1f, "
+              "ulr: %.1f, "
+              "urr: %.1f, "
+              "lrr: %.1f, "
+              "llr: %.1f, "
+              "fill: %s, "
+              "stroke: %s"
+              "}",
+              prefix, func,
+              w,
+              h,
+              ulr,
+              urr,
+              lrr,
+              llr,
+              (fill) ? "true" : "false",
+              (stroke) ? "true" : "false");
+}
+
+__attribute__((weak))
 void script_ops_draw_arc(void* v_ctx, float radius, float radians, bool fill, bool stroke)
 {
   log_script_ops_draw_arc(log_prefix, __func__, log_level_warn, radius, radians, fill, stroke);
@@ -797,6 +825,7 @@ const char* script_op_to_string(script_op_t op)
   case SCRIPT_OP_DRAW_QUAD: return "script_op_draw_quad";
   case SCRIPT_OP_DRAW_RECT: return "script_op_draw_rect";
   case SCRIPT_OP_DRAW_RRECT: return "script_op_draw_rrect";
+  case SCRIPT_OP_DRAW_RRECTV: return "script_op_draw_rrectv";
   case SCRIPT_OP_DRAW_ARC: return "script_op_draw_arc";
   case SCRIPT_OP_DRAW_SECTOR: return "script_op_draw_sector";
   case SCRIPT_OP_DRAW_CIRCLE: return "script_op_draw_circle";
