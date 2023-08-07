@@ -228,7 +228,7 @@ static void draw_image(void* v_ctx,
   NVGcontext* p_ctx = (NVGcontext*)v_ctx;
   float ax, ay;
   NVGpaint img_pattern;
-  
+
   // get the mapped image_id for this driver_id
   image_t* p_image = get_image(id);
   if (!p_image) return;
@@ -377,6 +377,21 @@ void script_ops_quadratic_to(void* v_ctx,
 
   NVGcontext* p_ctx = (NVGcontext*)v_ctx;
   nvgQuadTo(p_ctx, c.x, c.y, a.x, a.y);
+}
+
+void script_ops_arc(void* v_ctx,
+                             coordinates_t c,
+                             float r,
+                             float a0, float a1,
+                             int sweep_dir)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_arc(log_prefix, __func__, log_level_info,
+                                c, r, a0, a1, sweep_dir);
+  }
+
+  NVGcontext* p_ctx = (NVGcontext*)v_ctx;
+  nvgArc(p_ctx, c.x, c.y, r, a0, a1, sweep_dir);
 }
 
 void script_ops_push_state(void* v_ctx)

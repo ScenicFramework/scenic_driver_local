@@ -341,6 +341,26 @@ void log_script_ops_quadratic_to(const char* prefix, const char* func, log_level
 }
 
 __attribute__((weak))
+void script_ops_arc(void* v_ctx, coordinates_t c, float r, float a0, float a1, int sweep_dir)
+{
+  log_script_ops_arc(log_prefix, __func__, log_level_warn, c, r, a0, a1, sweep_dir);
+}
+void log_script_ops_arc(const char *prefix, const char *func, log_level_t level, coordinates_t c, float r, float a0, float a1, int sweep_dir)
+{
+  log_message(level, "%s %s: %{"
+                     "c: {x:%.1f, y:%.1f}, "
+                     "r: %.1f, "
+                     "a0:%.1f, a1:%.1f"
+                     "s: %s"
+                     "}",
+              prefix, func,
+              c.x, c.y,
+              r,
+              a0, a1,
+              (sweep_dir == FLAG_CCW) ? "CCW" : "CW");
+}
+
+__attribute__((weak))
 void script_ops_push_state(void* v_ctx)
 {
   log_script_ops_push_state(log_prefix, __func__, log_level_warn);
@@ -772,6 +792,7 @@ const char* script_op_to_string(script_op_t op)
   case SCRIPT_OP_ARC_TO: return "script_op_arc_to";
   case SCRIPT_OP_BEZIER_TO: return "script_op_bezier_to";
   case SCRIPT_OP_QUADRATIC_TO: return "script_op_quadratic_to";
+  case SCRIPT_OP_ARC: return "script_op_arc";
 
   case SCRIPT_OP_PUSH_STATE: return "script_op_push_state";
   case SCRIPT_OP_POP_STATE: return "script_op_pop_state";
