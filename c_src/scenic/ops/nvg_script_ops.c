@@ -379,11 +379,11 @@ void script_ops_quadratic_to(void* v_ctx,
   nvgQuadTo(p_ctx, c.x, c.y, a.x, a.y);
 }
 
-void script_ops_arc(void* v_ctx,
-                             coordinates_t c,
-                             float r,
-                             float a0, float a1,
-                             int sweep_dir)
+void script_ops_arc(void *v_ctx,
+                    coordinates_t c,
+                    float r,
+                    float a0, float a1,
+                    sweep_dir_t sweep_dir)
 {
   if (g_opts.debug_mode) {
     log_script_ops_arc(log_prefix, __func__, log_level_info,

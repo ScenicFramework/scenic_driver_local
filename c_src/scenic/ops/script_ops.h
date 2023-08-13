@@ -124,8 +124,8 @@ typedef enum {
 } fill_stroke_t;
 
 typedef enum {
-  FLAG_CCW = 0X01,
-  FLAG_CW = 0X02,
+  SWEEP_DIR_CCW = 0X01,
+  SWEEP_DIR_CW = 0X02,
 } sweep_dir_t;
 
 #define SCRIPT_FUNC(name, args...) \
@@ -154,7 +154,7 @@ SCRIPT_FUNC(line_to, coordinates_t a);
 SCRIPT_FUNC(arc_to, coordinates_t a, coordinates_t b, float radius);
 SCRIPT_FUNC(bezier_to, coordinates_t c0, coordinates_t c1, coordinates_t a);
 SCRIPT_FUNC(quadratic_to, coordinates_t c, coordinates_t a);
-SCRIPT_FUNC(arc, coordinates_t c, float radius, float a0, float a1, int sweep_dir);
+SCRIPT_FUNC(arc, coordinates_t c, float radius, float a0, float a1, sweep_dir_t sweep_dir);
 
 SCRIPT_FUNC(push_state);
 SCRIPT_FUNC(pop_state);

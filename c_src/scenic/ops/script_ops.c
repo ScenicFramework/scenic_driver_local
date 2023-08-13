@@ -341,11 +341,11 @@ void log_script_ops_quadratic_to(const char* prefix, const char* func, log_level
 }
 
 __attribute__((weak))
-void script_ops_arc(void* v_ctx, coordinates_t c, float r, float a0, float a1, int sweep_dir)
+void script_ops_arc(void *v_ctx, coordinates_t c, float r, float a0, float a1, sweep_dir_t sweep_dir)
 {
   log_script_ops_arc(log_prefix, __func__, log_level_warn, c, r, a0, a1, sweep_dir);
 }
-void log_script_ops_arc(const char *prefix, const char *func, log_level_t level, coordinates_t c, float r, float a0, float a1, int sweep_dir)
+void log_script_ops_arc(const char *prefix, const char *func, log_level_t level, coordinates_t c, float r, float a0, float a1, sweep_dir_t sweep_dir)
 {
   log_message(level, "%s %s: %{"
                      "c: {x:%.1f, y:%.1f}, "
@@ -357,7 +357,7 @@ void log_script_ops_arc(const char *prefix, const char *func, log_level_t level,
               c.x, c.y,
               r,
               a0, a1,
-              (sweep_dir == FLAG_CCW) ? "CCW" : "CW");
+              (sweep_dir == SWEEP_DIR_CCW) ? "SWEEP_CCW" : "SWEEP_CW");
 }
 
 __attribute__((weak))
