@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   driver_data_t data = {0};
 
   // super simple arg check
-  if ( argc != 10 ) {
+  if (argc != 10) {
     log_error("Wrong number of parameters");
     return -1;
   }
@@ -76,6 +76,8 @@ int main(int argc, char **argv)
     handle_stdio_in(&data);
     device_poll();
   }
+
+  reset_images(data.v_ctx);
 
   device_close(&g_device_info);
   return 0;
