@@ -105,6 +105,12 @@ else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 	IMAGE_SRCS += c_src/image/nvg_image_ops.c
 	SCENIC_SRCS += c_src/scenic/ops/nvg_script_ops.c
 
+	ifeq ($(SCENIC_LOCAL_GL),gles2)
+		CFLAGS += -DSCENIC_GLES2
+	else
+		CFLAGS += -DSCENIC_GLES3
+	endif
+
 else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 	# drm is the forward looking default
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
@@ -122,7 +128,7 @@ else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 
 	ifeq ($(SCENIC_LOCAL_GL),gles2)
 		CFLAGS += -DSCENIC_GLES2
-	else 
+	else
 		CFLAGS += -DSCENIC_GLES3
 	endif
 else

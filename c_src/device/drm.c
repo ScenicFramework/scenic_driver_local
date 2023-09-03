@@ -561,7 +561,7 @@ int init_egl(const device_opts_t* p_opts, device_info_t* p_info)
 
 int device_init(const device_opts_t* p_opts,
                 device_info_t* p_info,
-                device_data_t* p_data)
+                driver_data_t* p_data)
 {
   int ret;
 
