@@ -253,14 +253,14 @@ void device_poll()
 
 void device_begin_render(driver_data_t* p_data)
 {
-  NVGcontext* v_ctx = p_data->v_ctx;
+  NVGcontext* p_ctx = p_data->v_ctx;
 
   glClear(GL_COLOR_BUFFER_BIT);
 
-  nvgBeginFrame(v_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio);
+  nvgBeginFrame(p_ctx, g_device_info.width, g_device_info.height, g_device_info.ratio);
 
   // set the global transform
-  nvgTransform(v_ctx,
+  nvgTransform(p_ctx,
                p_data->global_tx[0], p_data->global_tx[1],
                p_data->global_tx[2], p_data->global_tx[3],
                p_data->global_tx[4], p_data->global_tx[5]);
@@ -268,18 +268,18 @@ void device_begin_render(driver_data_t* p_data)
 
 void device_begin_cursor_render(driver_data_t* p_data)
 {
-  NVGcontext* v_ctx = p_data->v_ctx;
-	nvgTranslate(v_ctx,
+  NVGcontext* p_ctx = p_data->v_ctx;
+	nvgTranslate(p_ctx,
 	             p_data->cursor_pos[0], p_data->cursor_pos[1]);
 }
 
 void device_end_render(driver_data_t* p_data)
 {
-  NVGcontext* v_ctx = p_data->v_ctx;
+  NVGcontext* p_ctx = p_data->v_ctx;
 
   // End frame and swap front and back buffers
   //uint64_t time = monotonic_time();
-  nvgEndFrame(v_ctx);
+  nvgEndFrame(p_ctx);
   //log_info("nvgEndFrame: %" PRId64, monotonic_time() - time);
 
   //time = monotonic_time();
