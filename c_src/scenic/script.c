@@ -281,7 +281,7 @@ void render_script(void* v_ctx, sid_t id)
       case SCRIPT_OP_DRAW_SPRITES:
         {
           uint32_t count = get_uint32(p, i);
-          sprite_t* sprites = malloc(count * sizeof(sprites));
+          sprite_t* sprites = malloc(count * sizeof(sprite_t));
 
           i += sizeof(uint32_t);
 
