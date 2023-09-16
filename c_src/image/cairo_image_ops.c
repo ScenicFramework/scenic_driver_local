@@ -35,6 +35,7 @@ int32_t image_ops_create(void* v_ctx,
                                           width, height, stride);
 
   image_data->pattern = cairo_pattern_create_for_surface(image_data->surface);
+  cairo_pattern_set_extend(image_data->pattern, CAIRO_EXTEND_REPEAT);
 
   static cairo_user_data_key_t dummy_key;
   cairo_surface_set_user_data(image_data->surface, &dummy_key, argb_pixels, free);
@@ -57,6 +58,7 @@ void image_ops_update(void* v_ctx, uint32_t image_id, void* p_pixels)
 
   cairo_pattern_destroy(image_data->pattern);
   image_data->pattern = cairo_pattern_create_for_surface(image_data->surface);
+  cairo_pattern_set_extend(image_data->pattern, CAIRO_EXTEND_REPEAT);
 }
 
 void image_ops_delete(void* v_ctx, uint32_t image_id)
