@@ -75,6 +75,7 @@ void script_ops_draw_triangle(void* v_ctx,
   cairo_move_to(p_ctx->cr, a.x, a.y);
   cairo_line_to(p_ctx->cr, b.x, b.y);
   cairo_line_to(p_ctx->cr, c.x, c.y);
+  cairo_close_path(p_ctx->cr);
 
   do_fill_stroke(p_ctx, fill, stroke);
 }
@@ -96,6 +97,7 @@ void script_ops_draw_quad(void* v_ctx,
   cairo_line_to(p_ctx->cr, b.x, b.y);
   cairo_line_to(p_ctx->cr, c.x, c.y);
   cairo_line_to(p_ctx->cr, d.x, d.y);
+  cairo_close_path(p_ctx->cr);
 
   do_fill_stroke(p_ctx, fill, stroke);
 }
@@ -175,6 +177,8 @@ void script_ops_draw_sector(void* v_ctx,
     cairo_arc(p_ctx->cr, 0, 0, radius, 0, radians);
   else
     cairo_arc_negative(p_ctx->cr, 0, 0, radius, 0, radians);
+
+  cairo_close_path(p_ctx->cr);
 
   do_fill_stroke(p_ctx, fill, stroke);
 }
