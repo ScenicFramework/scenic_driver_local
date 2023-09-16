@@ -369,6 +369,17 @@ void render_script(void* v_ctx, sid_t id)
         }
         i += 16;
         break;
+      case SCRIPT_OP_ARC:
+        {
+          coordinates_t c = {get_float(p, i), get_float(p, i + 4)};
+          float radius = get_float(p, i + 8);
+          float a0 = get_float(p, i + 12);
+          float a1 = get_float(p, i + 16);
+          sweep_dir_t sweep_dir = get_uint32(p, i + 20);
+          script_ops_arc(v_ctx, c, radius, a0, a1, sweep_dir);
+        }
+        i += 24;
+        break;
       case SCRIPT_OP_POP_STATE:
         if (push_count > 0) {
           push_count--;

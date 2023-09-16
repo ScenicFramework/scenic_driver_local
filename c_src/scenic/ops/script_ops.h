@@ -25,6 +25,7 @@ typedef enum {
   SCRIPT_OP_ARC_TO = 0X28,
   SCRIPT_OP_BEZIER_TO = 0X29,
   SCRIPT_OP_QUADRATIC_TO = 0X2A,
+  SCRIPT_OP_ARC = 0X32,
 
   SCRIPT_OP_PUSH_STATE = 0X40,
   SCRIPT_OP_POP_STATE = 0X41,
@@ -122,6 +123,11 @@ typedef enum {
   FLAG_STROKE = 0X02,
 } fill_stroke_t;
 
+typedef enum {
+  SWEEP_DIR_CCW = 0X01,
+  SWEEP_DIR_CW = 0X02,
+} sweep_dir_t;
+
 #define SCRIPT_FUNC(name, args...) \
   void script_ops_ ## name(void* v_ctx, ##args); \
   void log_script_ops_ ## name(const char* prefix, const char* func, log_level_t level, ##args);
@@ -148,6 +154,7 @@ SCRIPT_FUNC(line_to, coordinates_t a);
 SCRIPT_FUNC(arc_to, coordinates_t a, coordinates_t b, float radius);
 SCRIPT_FUNC(bezier_to, coordinates_t c0, coordinates_t c1, coordinates_t a);
 SCRIPT_FUNC(quadratic_to, coordinates_t c, coordinates_t a);
+SCRIPT_FUNC(arc, coordinates_t c, float radius, float a0, float a1, sweep_dir_t sweep_dir);
 
 SCRIPT_FUNC(push_state);
 SCRIPT_FUNC(pop_state);
