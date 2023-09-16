@@ -2,6 +2,8 @@
 #include "script.h"
 #include "script_ops.h"
 
+extern device_opts_t g_opts;
+
 static const char* log_prefix = "Unimplemented";
 
 __attribute__((weak))
@@ -197,11 +199,11 @@ void log_script_ops_draw_text(const char* prefix, const char* func, log_level_t 
 {
   log_message(level, "%s %s: %{"
               "size: %d, "
-              "text: '%s'"
+              "text: '%.*s'"
               "}",
               prefix, func,
               size,
-              text);
+              size, text);
 }
 
 __attribute__((weak))
@@ -217,6 +219,11 @@ void log_script_ops_draw_sprites(const char* prefix, const char* func, log_level
 __attribute__((weak))
 void script_ops_draw_script(void* v_ctx, sid_t id)
 {
+  if (g_opts.debug_mode) {
+    log_debug("%s id:'%.*s'", __func__,
+              id.size, id.p_data);
+  }
+
   render_script(v_ctx, id);
 }
 
