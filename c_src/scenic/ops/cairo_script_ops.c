@@ -394,7 +394,19 @@ void script_ops_pop_state(void* v_ctx)
   pattern_stack_pop(p_ctx);
 }
 
-#warning "cairo: script_ops_scissor unimplemented"
+void script_ops_scissor(void* v_ctx,
+                        float w, float h)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_scissor(log_prefix, __func__, log_level_info,
+                           w, h);
+  }
+
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+  cairo_rectangle(p_ctx->cr, 0, 0, w, h);
+  cairo_clip(p_ctx->cr);
+}
+
 
 void script_ops_transform(void* v_ctx,
                           float a, float b,
