@@ -13,14 +13,31 @@ extern device_opts_t g_opts;
 
 static const char* log_prefix = "cairo";
 
-void do_fill_stroke(cairo_t* cr, bool fill, bool stroke)
+void set_fill_pattern(scenic_cairo_ctx_t* p_ctx, cairo_pattern_t* pattern)
 {
-  if (fill && stroke)
-    cairo_fill_preserve(cr);
-  else if (fill)
-    cairo_fill(cr);
+  p_ctx->pattern.fill = pattern;
+}
 
-  if (stroke) cairo_stroke(cr);
+void set_stroke_pattern(scenic_cairo_ctx_t* p_ctx, cairo_pattern_t* pattern)
+{
+  p_ctx->pattern.stroke = pattern;
+}
+
+void do_fill_stroke(scenic_cairo_ctx_t* p_ctx, bool fill, bool stroke)
+{
+  if (fill && stroke) {
+    cairo_set_source(p_ctx->cr, p_ctx->pattern.fill);
+    cairo_fill_preserve(p_ctx->cr);
+  }
+  else if (fill) {
+    cairo_set_source(p_ctx->cr, p_ctx->pattern.fill);
+    cairo_fill(p_ctx->cr);
+  }
+
+  if (stroke) {
+    cairo_set_source(p_ctx->cr, p_ctx->pattern.stroke);
+    cairo_stroke(p_ctx->cr);
+  }
 }
 
 void script_ops_draw_line(void* v_ctx,
@@ -37,7 +54,10 @@ void script_ops_draw_line(void* v_ctx,
   cairo_move_to(p_ctx->cr, a.x, a.y);
   cairo_line_to(p_ctx->cr, b.x, b.y);
 
-  if (stroke) cairo_stroke(p_ctx->cr);
+  if (stroke) {
+    cairo_set_source(p_ctx->cr, p_ctx->pattern.stroke);
+    cairo_stroke(p_ctx->cr);
+  }
 }
 
 void script_ops_draw_triangle(void* v_ctx,
@@ -56,7 +76,7 @@ void script_ops_draw_triangle(void* v_ctx,
   cairo_line_to(p_ctx->cr, b.x, b.y);
   cairo_line_to(p_ctx->cr, c.x, c.y);
 
-  do_fill_stroke(p_ctx->cr, fill, stroke);
+  do_fill_stroke(p_ctx, fill, stroke);
 }
 
 void script_ops_draw_quad(void* v_ctx,
@@ -77,7 +97,7 @@ void script_ops_draw_quad(void* v_ctx,
   cairo_line_to(p_ctx->cr, c.x, c.y);
   cairo_line_to(p_ctx->cr, d.x, d.y);
 
-  do_fill_stroke(p_ctx->cr, fill, stroke);
+  do_fill_stroke(p_ctx, fill, stroke);
 }
 
 void script_ops_draw_rect(void* v_ctx,
@@ -94,7 +114,7 @@ void script_ops_draw_rect(void* v_ctx,
 
   cairo_rectangle(p_ctx->cr, 0, 0, w, h);
 
-  do_fill_stroke(p_ctx->cr, fill, stroke);
+  do_fill_stroke(p_ctx, fill, stroke);
 }
 
 void script_ops_draw_rrect(void* v_ctx,
@@ -115,7 +135,7 @@ void script_ops_draw_rrect(void* v_ctx,
   cairo_arc(p_ctx->cr, 0 + radius, h - radius, radius, 1 * (M_PI/2), 2 * (M_PI/2));
   cairo_close_path(p_ctx->cr);
 
-  do_fill_stroke(p_ctx->cr, fill, stroke);
+  do_fill_stroke(p_ctx, fill, stroke);
 }
 
 void script_ops_draw_arc(void* v_ctx,
@@ -134,7 +154,7 @@ void script_ops_draw_arc(void* v_ctx,
   else
     cairo_arc_negative(p_ctx->cr, 0, 0, radius, 0, radians);
 
-  do_fill_stroke(p_ctx->cr, fill, stroke);
+  do_fill_stroke(p_ctx, fill, stroke);
 }
 
 void script_ops_draw_sector(void* v_ctx,
@@ -156,7 +176,7 @@ void script_ops_draw_sector(void* v_ctx,
   else
     cairo_arc_negative(p_ctx->cr, 0, 0, radius, 0, radians);
 
-  do_fill_stroke(p_ctx->cr, fill, stroke);
+  do_fill_stroke(p_ctx, fill, stroke);
 }
 
 void script_ops_draw_circle(void* v_ctx,
@@ -172,7 +192,7 @@ void script_ops_draw_circle(void* v_ctx,
 
   cairo_arc(p_ctx->cr, 0, 0, radius, 0, 2 * M_PI);
 
-  do_fill_stroke(p_ctx->cr, fill, stroke);
+  do_fill_stroke(p_ctx, fill, stroke);
 }
 
 #warning "cairo: script_ops_draw_ellipse unimplemented"
@@ -237,6 +257,7 @@ void script_ops_draw_text(void* v_ctx,
   }
 
   cairo_translate(p_ctx->cr, align_offset, base_offset);
+  cairo_set_source(p_ctx->cr, p_ctx->pattern.fill);
 
   if (status == CAIRO_STATUS_SUCCESS) {
     int glyph_index = 0;
@@ -288,6 +309,7 @@ void script_ops_fill_path(void* v_ctx)
   }
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+  cairo_set_source(p_ctx->cr, p_ctx->pattern.fill);
   cairo_fill(p_ctx->cr);
 }
 
@@ -298,6 +320,7 @@ void script_ops_stroke_path(void* v_ctx)
   }
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+  cairo_set_source(p_ctx->cr, p_ctx->pattern.stroke);
   cairo_stroke(p_ctx->cr);
 }
 
@@ -351,6 +374,7 @@ void script_ops_push_state(void* v_ctx)
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
 
+  pattern_stack_push(p_ctx);
   cairo_save(p_ctx->cr);
 }
 
@@ -363,6 +387,7 @@ void script_ops_pop_state(void* v_ctx)
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
 
   cairo_restore(p_ctx->cr);
+  pattern_stack_pop(p_ctx);
 }
 
 #warning "cairo: script_ops_scissor unimplemented"
@@ -436,7 +461,7 @@ void script_ops_fill_color(void* v_ctx,
                                                           color.green / 255.0f,
                                                           color.blue / 255.0f,
                                                           color.alpha / 255.0f);
-  cairo_set_source(p_ctx->cr, color_rgba);
+  set_fill_pattern(p_ctx, color_rgba);
 }
 
 void script_ops_fill_linear(void* v_ctx,
@@ -462,7 +487,7 @@ void script_ops_fill_linear(void* v_ctx,
                                     color_end.green / 255.0f,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
-  cairo_set_source(p_ctx->cr, linear_gradient);
+  set_fill_pattern(p_ctx, linear_gradient);
 }
 
 void script_ops_fill_radial(void* v_ctx,
@@ -493,7 +518,7 @@ void script_ops_fill_radial(void* v_ctx,
                                     color_end.green / 255.0f,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
-  cairo_set_source(p_ctx->cr, radial_gradient);
+  set_fill_pattern(p_ctx, radial_gradient);
 }
 
 void script_ops_fill_image(void* v_ctx, sid_t id)
@@ -512,7 +537,7 @@ void script_ops_fill_image(void* v_ctx, sid_t id)
   image_data_t* image_data = (image_data_t*)p_image->image_id;
 
   cairo_set_antialias(p_ctx->cr, CAIRO_ANTIALIAS_NONE);
-  cairo_set_source(p_ctx->cr, image_data->pattern);
+  set_fill_pattern(p_ctx, image_data->pattern);
 }
 
 #warning "cairo: script_ops_fill_stream unimplemented"
@@ -540,11 +565,11 @@ void script_ops_stroke_color(void* v_ctx,
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
 
-  cairo_set_source_rgba(p_ctx->cr,
-                        color.red / 255.0f,
-                        color.green / 255.0f,
-                        color.blue / 255.0f,
-                        color.alpha / 255.0f);
+  cairo_pattern_t* color_rgba = cairo_pattern_create_rgba(color.red / 255.0f,
+                                                          color.green / 255.0f,
+                                                          color.blue / 255.0f,
+                                                          color.alpha / 255.0f);
+  set_stroke_pattern(p_ctx, color_rgba);
 }
 
 #warning "cairo: script_ops_stroke_linear unimplemented"

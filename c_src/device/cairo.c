@@ -171,3 +171,31 @@ char* device_gl_error()
 {
   return NULL;
 }
+
+void pattern_stack_push(scenic_cairo_ctx_t* p_ctx)
+{
+  pattern_stack_t* ptr = (pattern_stack_t*)malloc(sizeof(pattern_stack_t));
+
+  ptr->pattern = p_ctx->pattern;
+
+  if (!p_ctx->pattern_stack_head) {
+    ptr->next = NULL;
+    p_ctx->pattern_stack_head = ptr;
+  } else {
+    ptr->next = p_ctx->pattern_stack_head;
+    p_ctx->pattern_stack_head = ptr;
+  }
+}
+
+void pattern_stack_pop(scenic_cairo_ctx_t* p_ctx)
+{
+  pattern_stack_t* ptr = p_ctx->pattern_stack_head;
+
+  if (!ptr) {
+    log_error("pattern stack underflow");
+  } else {
+    p_ctx->pattern = ptr->pattern;
+    p_ctx->pattern_stack_head = p_ctx->pattern_stack_head->next;
+    free(ptr);
+  }
+}
