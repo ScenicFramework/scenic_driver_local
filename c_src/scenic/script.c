@@ -14,6 +14,7 @@
 #include "script.h"
 #include "utils.h"
 
+extern device_opts_t g_opts;
 
 //---------------------------------------------------------
 typedef struct _script_t {
@@ -63,6 +64,11 @@ void do_delete_script(sid_t id)
 {
   script_t* p_script = get_script(id);
   if (p_script) {
+    if (g_opts.debug_mode) {
+      log_debug("%s id:'%.*s'", __func__,
+                id.size, id.p_data);
+    }
+
     tommy_hashlin_remove_existing(&scripts,
                                   &p_script->node);
     free(p_script);
@@ -98,6 +104,11 @@ void put_script(int* p_msg_length)
 
   // if there is already is a script with the same id, delete it
   do_delete_script(p_script->id);
+
+  if (g_opts.debug_mode) {
+    log_debug("%s id:'%.*s'", __func__,
+              p_script->id.size, p_script->id.p_data);
+  }
 
   // insert the script into the tommy hash
   tommy_hashlin_insert(&scripts,
