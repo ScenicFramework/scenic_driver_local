@@ -614,8 +614,37 @@ void script_ops_stroke_linear(void* v_ctx,
   set_stroke_pattern(p_ctx, linear_gradient);
 }
 
+void script_ops_stroke_radial(void* v_ctx,
+                              coordinates_t center,
+                              float inner_radius,
+                              float outer_radius,
+                              color_rgba_t color_start,
+                              color_rgba_t color_end)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_stroke_radial(log_prefix, __func__, log_level_info,
+                                 center, inner_radius, outer_radius, color_start, color_end);
+  }
 
-#warning "cairo: script_ops_stroke_radial unimplemented"
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+
+  cairo_pattern_t* radial_gradient = cairo_pattern_create_radial(center.x, center.y,
+                                                                 inner_radius,
+                                                                 center.x, center.y,
+                                                                 outer_radius);
+  cairo_pattern_add_color_stop_rgba(radial_gradient, 0.0,
+                                    color_start.red / 255.0f,
+                                    color_start.green / 255.0f,
+                                    color_start.blue / 255.0f,
+                                    color_start.alpha / 255.0f);
+  cairo_pattern_add_color_stop_rgba(radial_gradient, 1.0,
+                                    color_end.red / 255.0f,
+                                    color_end.green / 255.0f,
+                                    color_end.blue / 255.0f,
+                                    color_end.alpha / 255.0f);
+  set_stroke_pattern(p_ctx, radial_gradient);
+}
+
 
 #warning "cairo: script_ops_stroke_image unimplemented"
 
