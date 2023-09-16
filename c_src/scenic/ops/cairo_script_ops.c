@@ -645,8 +645,24 @@ void script_ops_stroke_radial(void* v_ctx,
   set_stroke_pattern(p_ctx, radial_gradient);
 }
 
+void script_ops_stroke_image(void* v_ctx, sid_t id)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_stroke_image(log_prefix, __func__, log_level_info,
+                                id);
+  }
 
-#warning "cairo: script_ops_stroke_image unimplemented"
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+
+  // get the mapped image_id for this image_id
+  image_t* p_image = get_image(id);
+  if (!p_image) return;
+
+  image_data_t* image_data = (image_data_t*)p_image->image_id;
+
+  cairo_set_antialias(p_ctx->cr, CAIRO_ANTIALIAS_NONE);
+  set_stroke_pattern(p_ctx, image_data->pattern);
+}
 
 #warning "cairo: script_ops_stroke_stream unimplemented"
 
