@@ -1,7 +1,7 @@
 #include <stddef.h>
 
 #ifdef SCENIC_GLES2
-  #include <GLES3/gl2.h>
+  #include <GLES2/gl2.h>
 #else
   #ifdef __APPLE__
     #include <OpenGL/gl3.h>

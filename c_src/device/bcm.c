@@ -41,11 +41,13 @@ typedef struct {
 
 egl_data_t g_egl_data = {0};
 
+extern device_info_t g_device_info;
+
 //---------------------------------------------------------
 // setup the video core
 int device_init(const device_opts_t* p_opts,
                 device_info_t* p_info,
-                device_data_t* p_data)
+                driver_data_t* p_data)
 {
   // initialize the global transform to the identity matrix
   nvgTransformIdentity(p_data->global_tx);
@@ -227,8 +229,8 @@ int device_init(const device_opts_t* p_opts,
   uint32_t nvg_opts = 0;
   if (p_opts->antialias) nvg_opts |= NVG_ANTIALIAS;
   if (p_opts->debug_mode) nvg_opts |= NVG_DEBUG;
-  p_info->p_ctx = nvgCreateGLES2(nvg_opts);
-  if (p_info->p_ctx == NULL) {
+  p_info->v_ctx = nvgCreateGLES2(nvg_opts);
+  if (p_info->v_ctx == NULL) {
     log_error("RPI driver error: failed nvgCreateGLES2");
     return 0;
   }
@@ -251,7 +253,7 @@ void device_poll()
 
 void device_begin_render(driver_data_t* p_data)
 {
-  NVGcontext* p_ctx = p_data->p_ctx;
+  NVGcontext* p_ctx = (NVGcontext*)p_data->v_ctx;
 
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -266,14 +268,14 @@ void device_begin_render(driver_data_t* p_data)
 
 void device_begin_cursor_render(driver_data_t* p_data)
 {
-  NVGcontext* p_ctx = p_data->p_ctx;
+  NVGcontext* p_ctx = (NVGcontext*)p_data->v_ctx;
 	nvgTranslate(p_ctx,
 	             p_data->cursor_pos[0], p_data->cursor_pos[1]);
 }
 
 void device_end_render(driver_data_t* p_data)
 {
-  NVGcontext* p_ctx = p_data->p_ctx;
+  NVGcontext* p_ctx = (NVGcontext*)p_data->v_ctx;
 
   // End frame and swap front and back buffers
   //uint64_t time = monotonic_time();
