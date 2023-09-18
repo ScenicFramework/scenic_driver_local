@@ -673,7 +673,16 @@ void script_ops_stroke_image(void* v_ctx, sid_t id)
   set_stroke_pattern(p_ctx, image_data->pattern);
 }
 
-#warning "cairo: script_ops_stroke_stream unimplemented"
+void script_ops_stroke_stream(void* v_ctx,
+                              sid_t id)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_stroke_stream(log_prefix, __func__, log_level_info,
+                                 id);
+  }
+
+  script_ops_stroke_image(v_ctx, id);
+}
 
 void script_ops_line_cap(void* v_ctx,
                          line_cap_t type)
