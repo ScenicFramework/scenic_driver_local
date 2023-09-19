@@ -368,7 +368,28 @@ void script_ops_bezier_to(void* v_ctx,
   cairo_curve_to(p_ctx->cr, c0.x, c0.y, c1.x, c1.y, a.x, a.y);
 }
 
-#warning "cairo: script_ops_quadratic_to unimplemented"
+void script_ops_quadratic_to(void* v_ctx,
+                             coordinates_t c,
+                             coordinates_t a)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_quadratic_to(log_prefix, __func__, log_level_info,
+                                c, a);
+  }
+
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+  if (!cairo_has_current_point(p_ctx->cr)) {
+    return;
+  }
+
+  double x0, y0;
+  cairo_get_current_point(p_ctx->cr, &x0, &y0);
+  cairo_curve_to(p_ctx->cr,
+                 x0 + 2.0f / 3.0f * (c.x - x0), y0 + 2.0f /3.0f * (c.y - y0),
+                 a.x + 2.0f / 3.0f * (c.x - a.x), a.y + 2.0f / 3.0f * (c.y - a.y),
+                 a.x, a.y);
+}
+
 
 void script_ops_push_state(void* v_ctx)
 {
