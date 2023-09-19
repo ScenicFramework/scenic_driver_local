@@ -571,7 +571,7 @@ void script_ops_fill_image(void* v_ctx, sid_t id)
   image_t* p_image = get_image(id);
   if (!p_image) return;
 
-  image_data_t* image_data = (image_data_t*)p_image->image_id;
+  image_pattern_data_t* image_data = find_image_pattern(p_ctx, p_image->image_id);
 
   cairo_set_antialias(p_ctx->cr, CAIRO_ANTIALIAS_NONE);
   set_fill_pattern(p_ctx, image_data->pattern);
@@ -688,7 +688,7 @@ void script_ops_stroke_image(void* v_ctx, sid_t id)
   image_t* p_image = get_image(id);
   if (!p_image) return;
 
-  image_data_t* image_data = (image_data_t*)p_image->image_id;
+  image_pattern_data_t* image_data = find_image_pattern(p_ctx, p_image->image_id);
 
   cairo_set_antialias(p_ctx->cr, CAIRO_ANTIALIAS_NONE);
   set_stroke_pattern(p_ctx, image_data->pattern);
