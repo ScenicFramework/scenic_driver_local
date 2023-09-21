@@ -771,8 +771,12 @@ void script_ops_font(void* v_ctx,
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
   font_t* p_font = get_font(id);
+  if (!p_font) return;
 
-  cairo_set_font_face(p_ctx->cr, (cairo_font_face_t*)p_font->font_id);
+  font_data_t* font_data = find_font(p_ctx, p_font->font_id);
+  if (!font_data) return;
+
+  cairo_set_font_face(p_ctx->cr, font_data->font_face);
 }
 
 void script_ops_font_size(void* v_ctx,

@@ -2,6 +2,52 @@
 #include "font_ops.h"
 
 #include <cairo-ft.h>
+
+static int maxi(int a, int b) { return a > b ? a : b; }
+
+static
+font_data_t* alloc_font_data(scenic_cairo_ctx_t* p_ctx, cairo_font_face_t* font_face)
+{
+  font_data_t* font = NULL;
+  int i;
+
+  for (i = 0; i < p_ctx->fonts_used; i++) {
+    if (p_ctx->fonts[i].id == 0) {
+      font = &p_ctx->fonts[i];
+      break;
+    }
+  }
+
+  if (!font) {
+    if (p_ctx->fonts_used + 1 > p_ctx->fonts_count) {
+      font_data_t* fonts;
+      int fonts_count = maxi(p_ctx->fonts_count + 1, 4) + p_ctx->fonts_used / 2; // 1.5x over allocation
+      fonts = (font_data_t*)realloc(p_ctx->fonts, sizeof(font_data_t) * fonts_count);
+      if (!fonts) return NULL;
+      p_ctx->fonts = fonts;
+      p_ctx->fonts_count = fonts_count;
+    }
+    font = &p_ctx->fonts[p_ctx->fonts_used++];
+  }
+
+  memset(font, 0, sizeof(*font));
+  font->id = ++p_ctx->highest_font_id;
+  font->font_face = font_face;
+
+  return font;
+}
+
+font_data_t* find_font(scenic_cairo_ctx_t* p_ctx, int id)
+{
+  int i;
+  for (i = 0; i < p_ctx->fonts_used; i++) {
+    if (p_ctx->fonts[i].id == id) {
+      return &p_ctx->fonts[i];
+    }
+  }
+  return NULL;
+}
+
 int32_t font_ops_create(void* v_ctx, font_t* p_font, uint32_t size)
 {
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
@@ -27,5 +73,8 @@ int32_t font_ops_create(void* v_ctx, font_t* p_font, uint32_t size)
     return -1;
   }
 
-  return (int32_t)font_face;
+  font_data_t* font_data = alloc_font_data(p_ctx, font_face);
+  if (!font_data) return -1;
+
+  return font_data->id;
 }
