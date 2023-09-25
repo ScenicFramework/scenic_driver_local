@@ -199,7 +199,34 @@ void script_ops_draw_circle(void* v_ctx,
   do_fill_stroke(p_ctx, fill, stroke);
 }
 
-#warning "cairo: script_ops_draw_ellipse unimplemented"
+void script_ops_draw_ellipse(void* v_ctx,
+                             float radius0,
+                             float radius1,
+                             bool fill, bool stroke)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_draw_ellipse(log_prefix, __func__, log_level_info,
+                                radius0, radius1, fill, stroke);
+  }
+
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+
+  // Implementation based on nvgEllipse()
+  float kappa90 = 0.5522847493f; // Length proportional to radius of a cubic bezier handle for 90deg arcs.
+
+  float cx = 0;
+  float cy = 0;
+  float rx = radius0;
+  float ry = radius1;
+  cairo_move_to(p_ctx->cr, cx-rx, cy);
+  cairo_curve_to(p_ctx->cr, cx-rx, cy+ry*kappa90, cx-rx*kappa90, cy+ry, cx, cy+ry);
+  cairo_curve_to(p_ctx->cr, cx+rx*kappa90, cy+ry, cx+rx, cy+ry*kappa90, cx+rx, cy);
+  cairo_curve_to(p_ctx->cr, cx+rx, cy-ry*kappa90, cx+rx*kappa90, cy-ry, cx, cy-ry);
+  cairo_curve_to(p_ctx->cr, cx-rx*kappa90, cy-ry, cx-rx, cy-ry*kappa90, cx-rx, cy);
+  cairo_close_path(p_ctx->cr);
+
+  do_fill_stroke(p_ctx, fill, stroke);
+}
 
 void script_ops_draw_text(void* v_ctx,
                           uint32_t size,
