@@ -454,6 +454,24 @@ void script_ops_quadratic_to(void* v_ctx,
                  a.x, a.y);
 }
 
+void script_ops_arc(void *v_ctx,
+                    coordinates_t c,
+                    float r,
+                    float a0, float a1,
+                    sweep_dir_t sweep_dir)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_arc(log_prefix, __func__, log_level_info,
+                                c, r, a0, a1, sweep_dir);
+  }
+
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+  if (sweep_dir == SWEEP_DIR_CW) {
+    cairo_arc(p_ctx->cr, c.x, c.y, r, a0, a1);
+  } else {
+    cairo_arc_negative(p_ctx->cr, c.x, c.y, r, a0, a1);
+  }
+}
 
 void script_ops_push_state(void* v_ctx)
 {
