@@ -8,6 +8,7 @@ defmodule Scenic.Driver.LocalTest do
       layer: 0,
       opacity: 1,
       debug: false,
+      debugger: "",
       antialias: true,
       calibration: [{"calibration_name", {{0, 0, 0}, {0, 0, 0}}}],
       position: [
