@@ -284,7 +284,44 @@ void script_ops_draw_text(void* v_ctx,
   p_ctx->text_base = TEXT_BASE_ALPHABETIC;
 }
 
-#warning "cairo: script_ops_draw_sprites unimplemented"
+static void draw_sprite(scenic_cairo_ctx_t* p_ctx,
+                        cairo_surface_t *surface,
+                        const sprite_t sprite)
+{
+  cairo_save(p_ctx->cr);
+
+  cairo_set_source_surface(p_ctx->cr, surface,
+                           sprite.dx - sprite.sx, sprite.dy - sprite.sy);
+
+  cairo_rectangle(p_ctx->cr, sprite.dx, sprite.dy, sprite.dw, sprite.dh);
+  cairo_scale(p_ctx->cr, sprite.dw / sprite.sw, sprite.dh / sprite.sh);
+  cairo_fill(p_ctx->cr);
+
+  cairo_restore(p_ctx->cr);
+}
+
+void script_ops_draw_sprites(void* v_ctx,
+                             sid_t id,
+                             uint32_t count,
+                             const sprite_t* sprites)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_draw_sprites(log_prefix, __func__, log_level_info,
+                                id, count, sprites);
+  }
+
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+
+  // get the mapped image_id for this driver_id
+  image_t* p_image = get_image(id);
+  if (!p_image) return;
+
+  image_pattern_data_t* image_data = find_image_pattern(p_ctx, p_image->image_id);
+
+  for (int i = 0; i < count; i++) {
+    draw_sprite(p_ctx, image_data->surface, sprites[i]);
+  }
+}
 
 void script_ops_begin_path(void* v_ctx)
 {
