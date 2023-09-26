@@ -108,6 +108,9 @@ int device_init(const device_opts_t* p_opts,
     return -1;
   }
 
+  p_ctx->ratio = 1.0f;
+  p_ctx->dist_tolerance = 0.1f * p_ctx->ratio;
+
   size_t pix_count = g_cairo_fb.var.xres * g_cairo_fb.var.yres;
   switch (g_cairo_fb.var.bits_per_pixel)
   {

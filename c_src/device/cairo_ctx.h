@@ -49,6 +49,8 @@ typedef struct {
   int fonts_used;
   int highest_font_id;
   font_data_t* fonts;
+  float dist_tolerance;
+  float ratio;
 } scenic_cairo_ctx_t;
 
 void pattern_stack_push(scenic_cairo_ctx_t* p_ctx);

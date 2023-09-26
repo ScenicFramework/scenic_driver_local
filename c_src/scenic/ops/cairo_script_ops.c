@@ -416,7 +416,98 @@ void script_ops_line_to(void* v_ctx,
   cairo_line_to(p_ctx->cr, a.x, a.y);
 }
 
-#warning "cairo: script_ops_arc_to unimplemented"
+static bool ptEquals(coordinates_t a, coordinates_t b, float tolerance)
+{
+  coordinates_t d = {(b.x-a.x), (b.y-a.y)};
+  return d.x*d.x + d.y*d.y < tolerance*tolerance;
+}
+
+static float distPtSeg(coordinates_t a, coordinates_t p, coordinates_t q)
+{
+  coordinates_t pq = {(q.x-p.x), (q.y-p.y)};
+  coordinates_t d = {(a.x-p.x), (a.y-p.y)};
+  float e = pq.x*pq.x + pq.y*pq.y;
+  float t = pq.x*d.x + pq.y*d.y;
+  if (e > 0) t /= e;
+  if (t < 0) t = 0;
+  else if (t > 1) t = 1;
+  d.x = p.x + t*pq.x - a.x;
+  d.y = p.y + t*pq.y - a.y;
+  return d.x*d.x + d.y*d.y;
+}
+
+static float normalize(coordinates_t* a)
+{
+  float d = sqrtf((a->x)*(a->x) + (a->y)*(a->y));
+  if (d > 1e-6f) {
+    float id = 1.0f / d;
+    a->x *= id;
+    a->y *= id;
+  }
+  return d;
+}
+
+static float cross(coordinates_t d0, coordinates_t d1)
+{
+  return d1.x*d0.y - d0.x*d1.y;
+}
+
+void script_ops_arc_to(void* v_ctx,
+                       coordinates_t a,
+                       coordinates_t b,
+                       float radius)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_arc_to(log_prefix, __func__, log_level_info,
+                          a, b, radius);
+  }
+
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+  if (!cairo_has_current_point(p_ctx->cr)) {
+    return;
+  }
+
+  double px, py;
+  cairo_get_current_point(p_ctx->cr, &px, &py);
+  coordinates_t p = {px, py};
+
+  if (ptEquals(p, a, p_ctx->dist_tolerance) ||
+      ptEquals(a, b, p_ctx->dist_tolerance) ||
+      distPtSeg(a, p, b) < p_ctx->dist_tolerance * p_ctx->dist_tolerance ||
+      radius < p_ctx->dist_tolerance) {
+    cairo_line_to(p_ctx->cr, a.x, a.y);
+    return;
+  }
+
+  coordinates_t d0 = {(p.x-a.x), (p.y-a.y)};
+  coordinates_t d1 = {(b.x-a.x), (b.y-a.y)};
+  normalize(&d0);
+  normalize(&d1);
+
+  float angle = acosf(d0.x*d1.x + d0.y*d1.y);
+  float diameter = radius / tanf(angle/2.0f);
+
+  if (diameter > 10000.0f) {
+    cairo_line_to(p_ctx->cr, a.x, a.y);
+    return;
+  }
+
+  coordinates_t c;
+  float a0, a1;
+  if (cross(d0, d1) > 0.0f) {
+    c.x = a.x + d0.x*diameter + d0.y*radius;
+    c.y = a.y + d0.y*diameter + -d0.x*radius;
+    a0 = atan2f(d0.x, -d0.y);
+    a1 = atan2f(-d1.x, d1.y);
+    cairo_arc(p_ctx->cr, c.x, c.y, radius, a0, a1);
+  } else {
+    c.x = a.x + d0.x*diameter + -d0.y*radius;
+    c.y = a.y + d0.y*diameter + d0.x*radius;
+    a0 = atan2f(-d0.x, d0.y);
+    a1 = atan2f(d1.x, -d1.y);
+    cairo_arc_negative(p_ctx->cr, c.x, c.y, radius, a0, a1);
+  }
+}
 
 void script_ops_bezier_to(void* v_ctx,
                           coordinates_t c0,
