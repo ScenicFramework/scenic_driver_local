@@ -18,8 +18,8 @@
 #include <GLFW/glfw3.h>
 
 #define NANOVG_GL2_IMPLEMENTATION
-#include "nanovg.h"
-#include "nanovg_gl.h"
+#include "nanovg/nanovg.h"
+#include "nanovg/nanovg_gl.h"
 
 #include "scenic_types.h"
 #include "utils.h"

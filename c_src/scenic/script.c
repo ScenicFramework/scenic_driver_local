@@ -10,7 +10,7 @@
 #include "comms.h"
 #include "font.h"
 #include "image.h"
-#include "ops/script_ops.h"
+#include "script_ops.h"
 #include "script.h"
 #include "utils.h"
 

@@ -17,7 +17,7 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #include "device.h"
 #include "font.h"
 #include "image.h"
-#include "ops/scenic_ops.h"
+#include "scenic_ops.h"
 #include "script.h"
 #include "utils.h"
 

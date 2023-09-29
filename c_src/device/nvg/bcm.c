@@ -21,8 +21,8 @@
 #include <EGL/eglext.h>
 
 #define NANOVG_GLES2_IMPLEMENTATION
-#include "nanovg.h"
-#include "nanovg_gl.h"
+#include "nanovg/nanovg.h"
+#include "nanovg/nanovg_gl.h"
 
 #include "scenic_types.h"
 #include "comms.h"

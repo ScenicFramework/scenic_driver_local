@@ -3,7 +3,7 @@
 #include <cairo.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "ops/script_ops.h"
+#include "script_ops.h"
 
 typedef struct {
   cairo_pattern_t* fill;
