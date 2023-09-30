@@ -81,6 +81,13 @@ int device_init(const device_opts_t* p_opts,
     log_info("cairo %s", __func__);
   }
 
+  scenic_cairo_ctx_t* p_ctx = scenic_cairo_init(p_opts, p_info);
+  if (!p_ctx) {
+    return -1;
+  }
+
+  p_info->v_ctx = p_ctx;
+
   if ((g_cairo_fb.fd = open(device, O_RDWR)) == -1) {
     log_error("Failed to open device %s: %s", device, strerror(errno));
     return -1;
@@ -95,20 +102,6 @@ int device_init(const device_opts_t* p_opts,
     log_error("Failed to get fb_fix_screeninfo: %s", strerror(errno));
     return -1;
   }
-
-  scenic_cairo_ctx_t* p_ctx = calloc(1, sizeof(scenic_cairo_ctx_t));
-
-  FT_Error status = FT_Init_FreeType(&p_ctx->ft_library);
-  if (status != 0) {
-    log_error("cairo: FT_Init_FreeType: Error: %d", status);
-    close(g_cairo_fb.fd);
-    free(p_ctx);
-
-    return -1;
-  }
-
-  p_ctx->ratio = 1.0f;
-  p_ctx->dist_tolerance = 0.1f * p_ctx->ratio;
 
   size_t pix_count = p_opts->width * p_opts->height;
   switch (g_cairo_fb.var.bits_per_pixel)
@@ -136,25 +129,6 @@ int device_init(const device_opts_t* p_opts,
     set332map(g_cairo_fb.fd);
   }
 
-  p_info->width = p_opts->width;
-  p_info->height = p_opts->height;
-
-  p_ctx->font_size = 10.0; // Cairo default
-  p_ctx->text_align = TEXT_ALIGN_LEFT;
-  p_ctx->text_base = TEXT_BASE_ALPHABETIC;
-
-  p_ctx->clear_color = (color_rgba_t){
-    // black opaque
-    .red = 0.0,
-    .green = 0.0,
-    .blue = 0.0,
-    .alpha = 1.0
-  };
-
-  p_info->v_ctx = p_ctx;
-
-  p_ctx->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-                                              p_info->width, p_info->height);
   return 0;
 }
 
@@ -172,8 +146,7 @@ int device_close(device_info_t* p_info)
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)p_info->v_ctx;
   free(p_ctx->fbbuff.c);
-  cairo_surface_destroy(p_ctx->surface);
-  free(p_ctx);
+  scenic_cairo_fini(p_ctx);
 }
 
 void device_poll()
@@ -188,6 +161,7 @@ void device_begin_render(driver_data_t* p_data)
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)p_data->v_ctx;
 
+  cairo_destroy(p_ctx->cr);
   p_ctx->cr = cairo_create(p_ctx->surface);
 
   // Paint surface to clear color
@@ -197,12 +171,6 @@ void device_begin_render(driver_data_t* p_data)
                         p_ctx->clear_color.blue,
                         p_ctx->clear_color.alpha);
   cairo_paint(p_ctx->cr);
-}
-
-void device_begin_cursor_render(driver_data_t* p_data)
-{
-  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)p_data->v_ctx;
-  cairo_translate(p_ctx->cr, p_data->cursor_pos[0], p_data->cursor_pos[1]);
 }
 
 inline static uint8_t to_8_color(uint8_t r, uint8_t g, uint8_t b)
@@ -351,50 +319,5 @@ void device_end_render(driver_data_t* p_data)
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)p_data->v_ctx;
   render_cairo_surface_to_fb(p_ctx);
-
-  cairo_destroy(p_ctx->cr);
 }
 
-void device_clear_color(float red, float green, float blue, float alpha)
-{
-  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)g_device_info.v_ctx;
-  p_ctx->clear_color = (color_rgba_t){
-    .red = red,
-    .green = green,
-    .blue = blue,
-    .alpha = alpha
-  };
-}
-
-char* device_gl_error()
-{
-  return NULL;
-}
-
-void pattern_stack_push(scenic_cairo_ctx_t* p_ctx)
-{
-  pattern_stack_t* ptr = (pattern_stack_t*)malloc(sizeof(pattern_stack_t));
-
-  ptr->pattern = p_ctx->pattern;
-
-  if (!p_ctx->pattern_stack_head) {
-    ptr->next = NULL;
-    p_ctx->pattern_stack_head = ptr;
-  } else {
-    ptr->next = p_ctx->pattern_stack_head;
-    p_ctx->pattern_stack_head = ptr;
-  }
-}
-
-void pattern_stack_pop(scenic_cairo_ctx_t* p_ctx)
-{
-  pattern_stack_t* ptr = p_ctx->pattern_stack_head;
-
-  if (!ptr) {
-    log_error("pattern stack underflow");
-  } else {
-    p_ctx->pattern = ptr->pattern;
-    p_ctx->pattern_stack_head = p_ctx->pattern_stack_head->next;
-    free(ptr);
-  }
-}

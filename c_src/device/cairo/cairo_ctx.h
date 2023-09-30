@@ -53,6 +53,10 @@ typedef struct {
   float ratio;
 } scenic_cairo_ctx_t;
 
+scenic_cairo_ctx_t* scenic_cairo_init(const device_opts_t* p_opts,
+                                      device_info_t* p_info);
+void scenic_cairo_fini(scenic_cairo_ctx_t* p_ctx);
+
 void pattern_stack_push(scenic_cairo_ctx_t* p_ctx);
 void pattern_stack_pop(scenic_cairo_ctx_t* p_ctx);
 

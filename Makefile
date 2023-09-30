@@ -64,6 +64,7 @@ NVG_COMMON_SRCS = \
 	c_src/device/nvg/nvg_script_ops.c
 
 CAIRO_COMMON_SRCS = \
+	c_src/device/cairo/cairo_common.c \
 	c_src/device/cairo/cairo_font_ops.c \
 	c_src/device/cairo/cairo_image_ops.c \
 	c_src/device/cairo/cairo_script_ops.c
