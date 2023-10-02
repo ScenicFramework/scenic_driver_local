@@ -32,11 +32,6 @@ typedef struct {
   float font_size;
   text_align_t text_align;
   text_base_t text_base;
-  union {
-    u_int8_t  *c;
-    u_int16_t *s;
-    u_int32_t *i;
-  } fbbuff;
   cairo_surface_t* surface;
   cairo_t* cr;
   pattern_stack_t* pattern_stack_head;

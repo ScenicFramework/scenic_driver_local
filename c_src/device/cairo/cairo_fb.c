@@ -18,6 +18,12 @@ const char* device = "/dev/fb0";
 typedef struct {
   int fd;
 
+  union {
+    u_int8_t  *c;
+    u_int16_t *s;
+    u_int32_t *i;
+  } rgb_buff;
+
   struct fb_var_screeninfo var;
   struct fb_fix_screeninfo fix;
 } cairo_fb_t;
@@ -103,30 +109,31 @@ int device_init(const device_opts_t* p_opts,
     return -1;
   }
 
-  size_t pix_count = p_opts->width * p_opts->height;
+  uint32_t width = cairo_image_surface_get_width(p_ctx->surface);
+  uint32_t height = cairo_image_surface_get_height(p_ctx->surface);
+  size_t pix_count = width * height;
+
   switch (g_cairo_fb.var.bits_per_pixel)
   {
   case 8:
-    p_ctx->fbbuff.c = (uint8_t*)malloc(pix_count * sizeof(uint8_t));
+    g_cairo_fb.rgb_buff.c = (uint8_t*)malloc(pix_count * sizeof(uint8_t));
+
+    get8map(g_cairo_fb.fd, &map_back);
+    set332map(g_cairo_fb.fd);
     break;
   case 15:
   case 16:
-    p_ctx->fbbuff.c = (uint8_t*)malloc(pix_count * sizeof(uint16_t));
+    g_cairo_fb.rgb_buff.c = (uint8_t*)malloc(pix_count * sizeof(uint16_t));
     break;
   case 24:
-    p_ctx->fbbuff.c = (uint8_t*)malloc(pix_count * 3 * sizeof(uint8_t));
+    g_cairo_fb.rgb_buff.c = (uint8_t*)malloc(pix_count * 3 * sizeof(uint8_t));
     break;
   case 32:
-    p_ctx->fbbuff.c = (uint8_t*)malloc(pix_count * sizeof(uint32_t));
+    g_cairo_fb.rgb_buff.c = (uint8_t*)malloc(pix_count * sizeof(uint32_t));
     break;
   default:
     log_error("cairo: Unsupported video mode: %dbpp", g_cairo_fb.var.bits_per_pixel);
     return -1;
-  }
-
-  if (g_cairo_fb.var.bits_per_pixel == 8) {
-    get8map(g_cairo_fb.fd, &map_back);
-    set332map(g_cairo_fb.fd);
   }
 
   return 0;
@@ -143,9 +150,9 @@ int device_close(device_info_t* p_info)
   }
 
   close(g_cairo_fb.fd);
+  free(g_cairo_fb.rgb_buff.c);
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)p_info->v_ctx;
-  free(p_ctx->fbbuff.c);
   scenic_cairo_fini(p_ctx);
 }
 
@@ -222,24 +229,24 @@ void render_cairo_surface_to_fb(scenic_cairo_ctx_t* p_ctx)
   case 8:
     cpp = 1;
     for (uint32_t i = 0, j = 0; i < pix_count; i++, j += 4) {
-      p_ctx->fbbuff.c[i] = to_8_color(cairo_buff[j+2],
-                                      cairo_buff[j+1],
-                                      cairo_buff[j+0]);
+      g_cairo_fb.rgb_buff.c[i] = to_8_color(cairo_buff[j+2],
+                                            cairo_buff[j+1],
+                                            cairo_buff[j+0]);
     }
     break;
   case 15:
     cpp = 2;
     if (is_bgr555) {
       for (uint32_t i = 0, j = 0; i < pix_count; i++, j += 4) {
-        p_ctx->fbbuff.s[i] = to_15_color_bgr(cairo_buff[j+2],
-                                             cairo_buff[j+1],
-                                             cairo_buff[j+0]);
+        g_cairo_fb.rgb_buff.s[i] = to_15_color_bgr(cairo_buff[j+2],
+                                                   cairo_buff[j+1],
+                                                   cairo_buff[j+0]);
       }
     } else {
       for (uint32_t i = 0, j = 0; i < pix_count; i++, j += 4) {
-        p_ctx->fbbuff.s[i] = to_15_color(cairo_buff[j+2],
-                                         cairo_buff[j+1],
-                                         cairo_buff[j+0]);
+        g_cairo_fb.rgb_buff.s[i] = to_15_color(cairo_buff[j+2],
+                                               cairo_buff[j+1],
+                                               cairo_buff[j+0]);
       }
     }
     break;
@@ -247,32 +254,32 @@ void render_cairo_surface_to_fb(scenic_cairo_ctx_t* p_ctx)
     cpp = 2;
     if (is_bgr555) {
       for (uint32_t i = 0, j = 0; i < pix_count; i++, j += 4) {
-        p_ctx->fbbuff.s[i] = to_15_color_bgr(cairo_buff[j+2],
-                                             cairo_buff[j+1],
-                                             cairo_buff[j+0]);
+        g_cairo_fb.rgb_buff.s[i] = to_15_color_bgr(cairo_buff[j+2],
+                                                   cairo_buff[j+1],
+                                                   cairo_buff[j+0]);
       }
     } else {
       for (uint32_t i = 0, j = 0; i < pix_count; i++, j += 4) {
-        p_ctx->fbbuff.s[i] = to_16_color(cairo_buff[j+2],
-                                         cairo_buff[j+1],
-                                         cairo_buff[j+0]);
+        g_cairo_fb.rgb_buff.s[i] = to_16_color(cairo_buff[j+2],
+                                               cairo_buff[j+1],
+                                               cairo_buff[j+0]);
       }
     }
     break;
   case 24:
     cpp = 3;
     for (uint32_t i = 0, j = 0; i < (cpp * pix_count); i += 3, j += 4) {
-      p_ctx->fbbuff.c[i+0] = cairo_buff[j+0];
-      p_ctx->fbbuff.c[i+1] = cairo_buff[j+1];
-      p_ctx->fbbuff.c[i+2] = cairo_buff[j+2];
+      g_cairo_fb.rgb_buff.c[i+0] = cairo_buff[j+0];
+      g_cairo_fb.rgb_buff.c[i+1] = cairo_buff[j+1];
+      g_cairo_fb.rgb_buff.c[i+2] = cairo_buff[j+2];
     }
     break;
   case 32:
     cpp = 4;
     for (uint32_t i = 0, j = 0; i < pix_count; i++, j += 4) {
-      p_ctx->fbbuff.i[i] = ((cairo_buff[j+2] << 16)) |
-                            (cairo_buff[j+1] << 8) |
-                            (cairo_buff[j+0]);
+      g_cairo_fb.rgb_buff.i[i] = ((cairo_buff[j+2] << 16)) |
+                                  (cairo_buff[j+1] << 8) |
+                                  (cairo_buff[j+0]);
     }
     break;
   }
@@ -303,7 +310,7 @@ void render_cairo_surface_to_fb(scenic_cairo_ctx_t* p_ctx)
   }
 
   uint8_t* p_fb = fb + (y_offs * scr_xs + x_offs) * cpp;
-  uint8_t* p_image = p_ctx->fbbuff.c;
+  uint8_t* p_image = g_cairo_fb.rgb_buff.c;
 
   for (uint32_t i = 0; i < yc; i++, p_fb += scr_xs * cpp, p_image += pic_xs * cpp)
     memcpy(p_fb, p_image, xc * cpp);
