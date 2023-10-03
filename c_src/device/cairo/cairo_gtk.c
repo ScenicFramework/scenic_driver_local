@@ -62,6 +62,44 @@ static gboolean on_delete_event(GtkWidget* widget,
   return TRUE;
 }
 
+static gboolean on_motion_event(GtkWidget* widget,
+                                GdkEventMotion* event,
+                                gpointer data)
+{
+  if ((g_cairo_gtk.last_x != event->x) && (g_cairo_gtk.last_y != event->y)) {
+    send_cursor_pos(event->x, event->y);
+    g_cairo_gtk.last_x = event->x;
+    g_cairo_gtk.last_y = event->y;
+  }
+
+  return TRUE;
+}
+
+static gboolean on_button_event(GtkWidget* widget,
+                                GdkEventButton* event,
+                                gpointer data)
+{
+  int action;
+  switch (event->type) {
+  case GDK_BUTTON_PRESS:
+    action = 1;
+    break;
+  case GDK_BUTTON_RELEASE:
+    action = 0;
+    break;
+  default:
+    return FALSE;
+  }
+
+  int mods = 0; // TODO: decipher event->state (GdkModifierType)
+
+  guint button = event->button - 1;
+
+  send_mouse_button(button, action, mods, event->x, event->y);
+
+  return TRUE;
+}
+
 int device_init(const device_opts_t* p_opts,
                 device_info_t* p_info,
                 driver_data_t* p_data)
@@ -85,8 +123,16 @@ int device_init(const device_opts_t* p_opts,
   gtk_window_set_title(GTK_WINDOW(g_cairo_gtk.window), p_opts->title);
   gtk_window_set_default_size(GTK_WINDOW(g_cairo_gtk.window), p_info->width, p_info->height);
   gtk_window_set_resizable(GTK_WINDOW(g_cairo_gtk.window), FALSE);
-
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "delete-event", G_CALLBACK(on_delete_event), NULL);
+
+  gtk_widget_set_events(g_cairo_gtk.window,
+                        GDK_POINTER_MOTION_MASK |
+                        GDK_BUTTON_PRESS_MASK |
+                        GDK_BUTTON_RELEASE_MASK);
+
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "motion-notify-event", G_CALLBACK(on_motion_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-press-event", G_CALLBACK(on_button_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-release-event", G_CALLBACK(on_button_event), NULL);
 
   GtkDrawingArea* drawing_area = (GtkDrawingArea*)gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER(g_cairo_gtk.window), (GtkWidget*)drawing_area);
