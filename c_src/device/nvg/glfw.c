@@ -94,13 +94,13 @@ void reshape_window(GLFWwindow* window, int w, int h)
 //---------------------------------------------------------
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-  send_key(key, scancode, action, mods);
+  send_key(KEYMAP_GLFW, key, scancode, action, mods);
 }
 
 //---------------------------------------------------------
 void charmods_callback(GLFWwindow* window, unsigned int codepoint, int mods)
 {
-    send_codepoint(codepoint, mods);
+    send_codepoint(KEYMAP_GLFW, codepoint, mods);
 }
 
 //---------------------------------------------------------
@@ -123,7 +123,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
   double x, y;
   glfwGetCursorPos(window, &x, &y);
-  send_mouse_button(button, action, mods, x, y);
+  send_mouse_button(KEYMAP_GLFW, button, action, mods, x, y);
 }
 
 //---------------------------------------------------------

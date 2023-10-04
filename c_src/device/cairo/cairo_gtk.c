@@ -91,12 +91,25 @@ static gboolean on_button_event(GtkWidget* widget,
     return FALSE;
   }
 
-  int mods = 0; // TODO: decipher event->state (GdkModifierType)
+  send_mouse_button(KEYMAP_GDK,
+                    event->button,
+                    action,
+                    event->state,
+                    event->x, event->y);
 
-  guint button = event->button - 1;
+  return TRUE;
+}
 
-  send_mouse_button(button, action, mods, event->x, event->y);
-
+static gboolean on_key_event(GtkWidget* widget,
+                             GdkEventKey* event,
+                             gpointer data)
+{
+  int action = (event->type == GDK_KEY_PRESS) ? 1 : 0;
+  uint32_t unicode = gdk_keyval_to_unicode(event->keyval);
+  send_key(KEYMAP_GDK, event->keyval, event->hardware_keycode, action, event->state);
+  if (!(event->keyval & 0xF000) && event->type == GDK_KEY_PRESS) {
+    send_codepoint(KEYMAP_GDK, unicode, event->state);
+  }
   return TRUE;
 }
 
@@ -128,11 +141,15 @@ int device_init(const device_opts_t* p_opts,
   gtk_widget_set_events(g_cairo_gtk.window,
                         GDK_POINTER_MOTION_MASK |
                         GDK_BUTTON_PRESS_MASK |
-                        GDK_BUTTON_RELEASE_MASK);
+                        GDK_BUTTON_RELEASE_MASK |
+                        GDK_KEY_PRESS_MASK |
+                        GDK_KEY_RELEASE_MASK);
 
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "motion-notify-event", G_CALLBACK(on_motion_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-press-event", G_CALLBACK(on_button_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-release-event", G_CALLBACK(on_button_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "key-press-event", G_CALLBACK(on_key_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "key-release-event", G_CALLBACK(on_key_event), NULL);
 
   GtkDrawingArea* drawing_area = (GtkDrawingArea*)gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER(g_cairo_gtk.window), (GtkWidget*)drawing_area);

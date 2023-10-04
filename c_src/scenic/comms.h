@@ -91,6 +91,13 @@ typedef enum {
   _MSG_OUT_SIZE_ = 0XFFFFFFFF,
 } msg_out_t;
 
+typedef enum {
+  KEYMAP_GLFW = 0x01,
+  KEYMAP_GDK = 0x02,
+
+  _KEYMAP_SIZE_ = 0xFFFFFFFF,
+} keymap_t;
+
 int read_exact(byte* buf, int len);
 int write_exact(byte* buf, int len);
 int read_msg_length(struct timeval * ptv);
@@ -127,11 +134,11 @@ void render(driver_data_t* p_data);
 
 void send_image_miss(unsigned int img_id);
 
-void send_reshape( int window_width, int window_height );
-void send_key(int key, int scancode, int action, int mods);
-void send_codepoint(unsigned int codepoint, int mods);
+void send_reshape(int window_width, int window_height);
+void send_key(keymap_t keymap, int key, int scancode, int action, int mods);
+void send_codepoint(keymap_t keymap, unsigned int codepoint, int mods);
 void send_cursor_pos(float xpos, float ypos);
-void send_mouse_button(int button, int action, int mods, float xpos,
+void send_mouse_button(keymap_t keymap, int button, int action, int mods, float xpos,
                        float ypos);
 void send_scroll(float xoffset, float yoffset, float xpos, float ypos);
 void send_cursor_enter(int entered, float xpos, float ypos);
