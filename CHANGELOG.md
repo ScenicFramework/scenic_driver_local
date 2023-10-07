@@ -1,3 +1,7 @@
+## Unreleased
+* Added Cairo support - @ringlej
+* Restructure C code - @ringlej
+
 ## 0.11.0
 Very minor fixes
 
