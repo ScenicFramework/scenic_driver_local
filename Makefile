@@ -64,6 +64,7 @@ NVG_COMMON_SRCS = \
 	c_src/device/nvg/nvg_script_ops.c
 
 CAIRO_COMMON_SRCS = \
+	c_src/device/cairo/cairo_common.c \
 	c_src/device/cairo/cairo_font_ops.c \
 	c_src/device/cairo/cairo_image_ops.c \
 	c_src/device/cairo/cairo_script_ops.c
@@ -143,6 +144,16 @@ else ifeq ($(SCENIC_LOCAL_TARGET),cairo-fb)
 		$(CAIRO_COMMON_SRCS) \
 		c_src/device/cairo/cairo_fb.c
 
+else ifeq ($(SCENIC_LOCAL_TARGET),cairo-gtk)
+	LDFLAGS += `pkg-config --static --libs freetype2 cairo gtk+-3.0`
+	CFLAGS += `pkg-config --static --cflags freetype2 cairo gtk+-3.0`
+	LDFLAGS += -lm
+	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
+	CFLAGS += -std=gnu99
+
+	DEVICE_SRCS += \
+		$(CAIRO_COMMON_SRCS) \
+		c_src/device/cairo/cairo_gtk.c
 else
 $(info ------ no SCENIC_LOCAL_TARGET set ------)
 $(info If you get here, then you are probably using a custom Nerves system)

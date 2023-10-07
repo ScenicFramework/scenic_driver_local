@@ -26,9 +26,9 @@ int write_exact(byte* buf, int len)
 
   do
   {
-      if ((i = write(1, buf + wrote, len - wrote)) <= 0)
+    if ((i = write(1, buf + wrote, len - wrote)) <= 0)
       return (i);
-      wrote += i;
+    wrote += i;
   } while (wrote < len);
 
   return (len);

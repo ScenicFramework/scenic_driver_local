@@ -43,10 +43,17 @@ For example, for apps running on a Mac/PC/Linux, it is usually set to `host`, wh
 
 If you are building for Nerves, it will use `bcm` (Broadcom Manager) for any of `rpi`, `rpi0`, `rip2`, `rpi3`, and `rpi3a`.
 
+### Cairo
+There is now a rendering backend to use `cairo`. You can set SCENIC_LOCAL_TARGET to `cairo-fb` which renders to `/dev/fb0` on an embedded device or `cairo-gtk` which renders to a window on a host (as an alternative to `glfw`).
+
+`cairo-fb` will require that your `nerves_system_*` has the `cairo` library selected.
+
 ### Nerves rpi4 & bbb Need Work / Help
 `Scenic.Driver.Local` uses `drm` (Direct Render Manager) for the `rpi4` and `bbb`. It currently renders on the rpi4, but is __very slow__. I haven't figured out why yet and if anyone wants to dig in, that would be appreciated. It should be really fast, so is probably a hardware configuration issue.
 
 The `bbb` doesn't work (is close in theory??) as the Nerves `bbb` system doesn't have the needed graphics support in it yet. There are others who have gotten SGX support working for the `bbb` and I could use some help from them.
+
+Please try using `cairo-fb` to see if it will work for you on `rpi4` or `bbb`.
 
 ### Custom Nerves Targets
 For custom systems (example - figuring out how to add SGX support to the `bbb`) You will need to set SCENIC_LOCAL_TARGET manually. You may also need to set the SCENIC_LOCAL_GL as well.
@@ -92,9 +99,16 @@ Once these components have been installed, you should be able to build the `scen
 
 The easiest way to install on Ubuntu is to use apt-get. Just run the following:
 
+For `glfw`:
 ```bash
 apt-get update
 apt-get install pkgconf libglfw3 libglfw3-dev libglew2.1 libglew-dev
+```
+
+For `cairo-gtk`:
+```bash
+apt-get update
+apt-get install pkgconf libgtk-3-0 libgtk-3-dev libsystemd-dev libwebp-dev libzstd-dev
 ```
 
 Once these components have been installed, you should be able to build the `scenic_driver_local` driver.

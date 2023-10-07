@@ -32,11 +32,6 @@ typedef struct {
   float font_size;
   text_align_t text_align;
   text_base_t text_base;
-  union {
-    u_int8_t  *c;
-    u_int16_t *s;
-    u_int32_t *i;
-  } fbbuff;
   cairo_surface_t* surface;
   cairo_t* cr;
   pattern_stack_t* pattern_stack_head;
@@ -52,6 +47,10 @@ typedef struct {
   float dist_tolerance;
   float ratio;
 } scenic_cairo_ctx_t;
+
+scenic_cairo_ctx_t* scenic_cairo_init(const device_opts_t* p_opts,
+                                      device_info_t* p_info);
+void scenic_cairo_fini(scenic_cairo_ctx_t* p_ctx);
 
 void pattern_stack_push(scenic_cairo_ctx_t* p_ctx);
 void pattern_stack_pop(scenic_cairo_ctx_t* p_ctx);

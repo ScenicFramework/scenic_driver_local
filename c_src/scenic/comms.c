@@ -241,15 +241,16 @@ void send_reshape( int window_width, int window_height )
 PACK(typedef struct msg_key_t
 {
   uint32_t msg_id;
+  uint32_t keymap;
   uint32_t key;
   uint32_t scancode;
   uint32_t action;
   uint32_t mods;
 }) msg_key_t;
 
-void send_key(int key, int scancode, int action, int mods)
+void send_key(keymap_t keymap, int key, int scancode, int action, int mods)
 {
-  msg_key_t msg = { MSG_OUT_KEY, key, scancode, action, mods };
+  msg_key_t msg = { MSG_OUT_KEY, keymap, key, scancode, action, mods };
   write_cmd((byte*) &msg, sizeof(msg_key_t));
 }
 
@@ -257,13 +258,14 @@ void send_key(int key, int scancode, int action, int mods)
 PACK(typedef struct msg_codepoint_t
 {
   uint32_t msg_id;
+  uint32_t keymap;
   uint32_t codepoint;
   uint32_t mods;
 }) msg_codepoint_t;
 
-void send_codepoint(unsigned int codepoint, int mods)
+void send_codepoint(keymap_t keymap, unsigned int codepoint, int mods)
 {
-  msg_codepoint_t msg = { MSG_OUT_CODEPOINT, codepoint, mods };
+  msg_codepoint_t msg = { MSG_OUT_CODEPOINT, keymap, codepoint, mods };
   write_cmd((byte*) &msg, sizeof(msg_codepoint_t));
 }
 
@@ -285,6 +287,7 @@ void send_cursor_pos(float xpos, float ypos)
 PACK(typedef struct msg_mouse_button_t
 {
   uint32_t msg_id;
+  uint32_t keymap;
   uint32_t button;
   uint32_t action;
   uint32_t mods;
@@ -292,10 +295,11 @@ PACK(typedef struct msg_mouse_button_t
   float    ypos;
 }) msg_mouse_button_t;
 
-void send_mouse_button(int button, int action, int mods, float xpos, float ypos)
+void send_mouse_button(keymap_t keymap, int button, int action, int mods, float xpos, float ypos)
 {
   msg_mouse_button_t msg = {
     MSG_OUT_MOUSE_BUTTON,
+    keymap,
     button,
     action,
     mods,
