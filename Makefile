@@ -131,6 +131,17 @@ else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 	else
 		CFLAGS += -DSCENIC_GLES3
 	endif
+else ifeq ($(SCENIC_LOCAL_TARGET),cairo)
+	LDFLAGS += `pkg-config --static --libs freetype2 cairo`
+	CFLAGS += `pkg-config --static --cflags freetype2 cairo`
+	LDFLAGS += -lm
+	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
+	CFLAGS += -std=gnu99
+
+	DEVICE_SRCS += c_src/device/cairo.c
+	FONT_SRCS += c_src/font/cairo_font_ops.c
+	IMAGE_SRCS += c_src/image/cairo_image_ops.c
+	SCENIC_SRCS += c_src/scenic/ops/cairo_script_ops.c
 else
 $(info ------ no SCENIC_LOCAL_TARGET set ------)
 $(info If you get here, then you are probably using a custom Nerves system)

@@ -221,11 +221,10 @@ void script_ops_draw_text(void* v_ctx,
 
 //---------------------------------------------------------
 // see: https://github.com/memononen/nanovg/issues/348
-static void draw_image(void* v_ctx,
+static void draw_image(NVGcontext* p_ctx,
                        sid_t id,
                        const sprite_t s)
 {
-  NVGcontext* p_ctx = (NVGcontext*)v_ctx;
   float ax, ay;
   NVGpaint img_pattern;
 

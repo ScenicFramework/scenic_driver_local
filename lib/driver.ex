@@ -25,6 +25,7 @@ defmodule Scenic.Driver.Local do
     layer: [type: :integer, default: @default_layer],
     opacity: [type: :integer, default: @default_opacity],
     debug: [type: :boolean, default: false],
+    debugger: [type: :string, default: ""],
     antialias: [type: :boolean, default: true],
     calibration: [
       type: {:custom, __MODULE__, :validate_calibration, []},
@@ -212,6 +213,7 @@ defmodule Scenic.Driver.Local do
         false -> 0
       end
 
+    {:ok, debugger} = Keyword.fetch(opts, :debugger)
     {:ok, layer} = Keyword.fetch(opts, :layer)
     {:ok, opacity} = Keyword.fetch(opts, :opacity)
 
@@ -231,7 +233,9 @@ defmodule Scenic.Driver.Local do
     # open and initialize the window
     Process.flag(:trap_exit, true)
 
-    executable = :code.priv_dir(:scenic_driver_local) ++ @port ++ to_charlist(args)
+    executable =
+      to_charlist(debugger) ++
+        ' ' ++ :code.priv_dir(:scenic_driver_local) ++ @port ++ to_charlist(args)
 
     port = Port.open({:spawn, executable}, [:binary, {:packet, 4}])
 

@@ -2,6 +2,8 @@
 #include "script.h"
 #include "script_ops.h"
 
+extern device_opts_t g_opts;
+
 static const char* log_prefix = "Unimplemented";
 
 __attribute__((weak))
@@ -197,11 +199,11 @@ void log_script_ops_draw_text(const char* prefix, const char* func, log_level_t 
 {
   log_message(level, "%s %s: %{"
               "size: %d, "
-              "text: '%s'"
+              "text: '%.*s'"
               "}",
               prefix, func,
               size,
-              text);
+              size, text);
 }
 
 __attribute__((weak))
@@ -211,12 +213,30 @@ void script_ops_draw_sprites(void* v_ctx, sid_t id, uint32_t count, const sprite
 }
 void log_script_ops_draw_sprites(const char* prefix, const char* func, log_level_t level, sid_t id, uint32_t count, const sprite_t* sprites)
 {
-  log_message(level, "%s %s", prefix, func);
+  log_message(level, "%s %s: %{"
+              "id: '%.*s', "
+              "count: %d"
+              "}", prefix, func,
+              id.size, id.p_data,
+              count);
+  for (int i = 0; i < count; i++) {
+    log_message(level, "%s %s: index: %d %{"
+                "s: {{%.1f,%.1f},{%.1f,%.1f}}, "
+                "d: {{%.1f,%.1f},{%.1f,%.1f}}"
+                "}", prefix, func, i,
+                sprites[i].sx, sprites[i].sy, sprites[i].sw, sprites[i].sh,
+                sprites[i].dx, sprites[i].dy, sprites[i].dw, sprites[i].dh);
+  }
 }
 
 __attribute__((weak))
 void script_ops_draw_script(void* v_ctx, sid_t id)
 {
+  if (g_opts.debug_mode) {
+    log_debug("%s id: '%.*s'", __func__,
+              id.size, id.p_data);
+  }
+
   render_script(v_ctx, id);
 }
 
