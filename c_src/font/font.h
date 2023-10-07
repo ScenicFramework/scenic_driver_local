@@ -7,7 +7,6 @@
 #pragma once
 
 #include "scenic_types.h"
-#include "nanovg.h"
 #include "font_ops.h"
 
 void init_fonts(void);

@@ -24,8 +24,8 @@
   #define NANOVG_GLES3_IMPLEMENTATION
 #endif
 #include <EGL/egl.h>
-#include "nanovg.h"
-#include "nanovg_gl.h"
+#include "nanovg/nanovg.h"
+#include "nanovg/nanovg_gl.h"
 
 #include "scenic_types.h"
 #include "comms.h"

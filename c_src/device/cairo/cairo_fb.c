@@ -12,7 +12,6 @@
 #include "comms.h"
 #include "device.h"
 #include "fontstash.h"
-#include "ops/script_ops.h"
 
 const char* device = "/dev/fb0";
 

@@ -1,6 +1,6 @@
 #include "comms.h"
 #include "image_ops.h"
-#include "nanovg.h"
+#include "nanovg/nanovg.h"
 
 #define REPEAT_XY (NVG_IMAGE_REPEATX | NVG_IMAGE_REPEATY)
 

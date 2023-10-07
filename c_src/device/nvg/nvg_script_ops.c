@@ -5,7 +5,7 @@
 #include "image.h"
 #include "script_ops.h"
 #include "scenic_types.h"
-#include "nanovg.h"
+#include "nanovg/nanovg.h"
 
 extern device_opts_t g_opts;
 

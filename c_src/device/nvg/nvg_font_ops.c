@@ -1,5 +1,5 @@
 #include "font_ops.h"
-#include "nanovg.h"
+#include "nanovg/nanovg.h"
 
 int32_t font_ops_create(void* v_ctx, font_t* p_font, uint32_t size)
 {
