@@ -110,7 +110,7 @@ void scenic_ops_crash()
   receive_crash();
 }
 
-void dispatch_scenic_ops(int msg_length, driver_data_t* p_data)
+void dispatch_scenic_ops(uint32_t msg_length, driver_data_t* p_data)
 {
   scenic_op_t op;
   read_bytes_down(&op, sizeof(uint32_t), &msg_length);

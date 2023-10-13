@@ -58,7 +58,7 @@ int write_cmd(byte* buf, unsigned int len)
 }
 
 //---------------------------------------------------------
-bool read_bytes_down(void* p_buff, int bytes_to_read, int* p_bytes_to_remaining)
+bool read_bytes_down(void* p_buff, int bytes_to_read, uint32_t* p_bytes_to_remaining)
 {
   if (p_bytes_to_remaining <= 0)
     return false;
@@ -420,7 +420,7 @@ void render(driver_data_t* p_data)
 }
 
 //---------------------------------------------------------
-void set_global_tx(int* p_msg_length, driver_data_t* p_data)
+void set_global_tx(uint32_t* p_msg_length, driver_data_t* p_data)
 {
   for (int i = 0; i < 6; i++) {
     read_bytes_down(&p_data->global_tx[i], sizeof(float), p_msg_length);
@@ -428,7 +428,7 @@ void set_global_tx(int* p_msg_length, driver_data_t* p_data)
 }
 
 //---------------------------------------------------------
-void set_cursor_tx(int* p_msg_length, driver_data_t* p_data)
+void set_cursor_tx(uint32_t* p_msg_length, driver_data_t* p_data)
 {
   for (int i = 0; i < 6; i++) {
     read_bytes_down(&p_data->cursor_tx[i], sizeof(float), p_msg_length);
@@ -436,7 +436,7 @@ void set_cursor_tx(int* p_msg_length, driver_data_t* p_data)
 }
 
 //---------------------------------------------------------
-void update_cursor(int* p_msg_length, driver_data_t* p_data)
+void update_cursor(uint32_t* p_msg_length, driver_data_t* p_data)
 {
   read_bytes_down(&p_data->f_show_cursor, sizeof(uint32_t), p_msg_length);
   for (int i = 0; i < 2; i++) {
@@ -445,7 +445,7 @@ void update_cursor(int* p_msg_length, driver_data_t* p_data)
 }
 
 //---------------------------------------------------------
-void clear_color(int* p_msg_length)
+void clear_color(uint32_t* p_msg_length)
 {
   byte r, g, b, a;
   read_bytes_down(&r, 1, p_msg_length);

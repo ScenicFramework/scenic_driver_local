@@ -80,7 +80,7 @@ void reset_images(void* v_ctx)
 int read_pixels(void* p_pixels,
                 uint32_t width, uint32_t height,
                 image_format_t format_in,
-                int* p_msg_length)
+                uint32_t* p_msg_length)
 {
   // read incoming data into a temporary buffer
   int buffer_size = *p_msg_length;
@@ -154,7 +154,7 @@ int read_pixels(void* p_pixels,
 }
 
 //---------------------------------------------------------
-void put_image(int* p_msg_length, void* v_ctx)
+void put_image(uint32_t* p_msg_length, void* v_ctx)
 {
   // read in the fixed size data
   uint32_t id_length;

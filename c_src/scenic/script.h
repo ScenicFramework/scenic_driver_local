@@ -11,8 +11,8 @@
 
 void init_scripts(void);
 
-void put_script(int* p_msg_length);
-void delete_script(int* p_msg_length);
+void put_script(uint32_t* p_msg_length);
+void delete_script(uint32_t* p_msg_length);
 
 void reset_scripts();
 void render_script(void* v_ctx, sid_t id);

@@ -76,7 +76,7 @@ void do_delete_script(sid_t id)
 }
 
 //---------------------------------------------------------
-void put_script(int* p_msg_length)
+void put_script(uint32_t* p_msg_length)
 {
   // read in the length of the id, which is in the first four bytes
   uint32_t id_length;
@@ -118,7 +118,7 @@ void put_script(int* p_msg_length)
 }
 
 //---------------------------------------------------------
-void delete_script(int* p_msg_length)
+void delete_script(uint32_t* p_msg_length)
 {
   sid_t id;
 
@@ -157,30 +157,35 @@ void reset_scripts() {
 //=============================================================================
 // rendering
 
-static inline byte get_byte( void* p, uint32_t offset ) {
+static inline byte get_byte(void* p, uint32_t offset)
+{
   return *((byte*)(p + offset));
 }
 
-static inline unsigned short get_uint16( void* p, uint32_t offset ) {
+static inline unsigned short get_uint16(void* p, uint32_t offset)
+{
   return ntoh_ui16(*((unsigned short*)(p + offset)));
 }
 
-static inline unsigned int get_uint32( void* p, uint32_t offset ) {
+static inline unsigned int get_uint32(void* p, uint32_t offset)
+{
   return ntoh_ui32(*((unsigned int*)(p + offset)));
 }
 
-static inline float get_float( void* p, uint32_t offset ) {
+static inline float get_float(void* p, uint32_t offset)
+{
   return ntoh_f32(*((float*)(p + offset)));
 }
 
 
-int padded_advance( int size ) {
+int padded_advance(int size)
+{
   switch( size % 4 ) {
     case 0: return size;
     case 1: return size + 3;
     case 2: return size + 2;
     case 3: return size + 1;
-    default: size;
+    default: return size;
   };
 }
 
