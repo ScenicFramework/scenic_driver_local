@@ -145,7 +145,7 @@ defmodule Scenic.Driver.Local.FromPort do
         <<@msg_warn_id::unsigned-integer-size(32)-native>> <> msg,
         driver
       ) do
-    Logger.warn("scenic_driver_local: #{msg}")
+    Logger.warning("scenic_driver_local: #{msg}")
     {:noreply, driver}
   end
 
