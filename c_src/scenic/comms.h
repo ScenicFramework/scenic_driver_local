@@ -87,15 +87,11 @@ typedef enum {
   MSG_OUT_WARN = 0XA1,
   MSG_OUT_ERROR = 0XA2,
   MSG_OUT_DEBUG = 0XA3,
-
-  _MSG_OUT_SIZE_ = 0XFFFFFFFF,
 } msg_out_t;
 
 typedef enum {
   KEYMAP_GLFW = 0x01,
   KEYMAP_GDK = 0x02,
-
-  _KEYMAP_SIZE_ = 0xFFFFFFFF,
 } keymap_t;
 
 int read_exact(byte* buf, int len);

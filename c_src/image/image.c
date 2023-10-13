@@ -145,6 +145,8 @@ int read_pixels(void* p_pixels,
   case IMAGE_FORMAT_RGBA:
     memcpy(p_pixels, p_buffer, pixel_count * 4);
     break;
+  default:
+    break;
   }
 
   // clean up
