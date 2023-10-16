@@ -1,9 +1,12 @@
 #include "comms.h"
+#include "device.h"
 #include "font.h"
 #include "image.h"
 #include "scenic_ops.h"
 #include "script.h"
 #include "utils.h"
+
+extern device_info_t g_device_info;
 
 inline
 void scenic_ops_put_script(uint32_t* p_msg_length, const driver_data_t* p_data)
@@ -168,3 +171,24 @@ void dispatch_scenic_ops(uint32_t msg_length, driver_data_t* p_data)
 
   check_gl_error();
 }
+
+void* scenic_loop(void* user_data)
+{
+  driver_data_t* p_data = (driver_data_t*)user_data;
+  // signal the app that the window is ready
+  send_ready();
+
+  /* Loop until the calling app closes the window */
+  while (p_data->keep_going && !isCallerDown()) {
+    // check for incoming messages - blocks with a timeout
+    handle_stdio_in(p_data);
+    device_poll();
+  }
+
+  reset_images(p_data->v_ctx);
+
+  device_close(&g_device_info);
+
+  return NULL;
+}
+

@@ -49,9 +49,10 @@ void scenic_ops_cursor_tx(uint32_t* p_msg_length, driver_data_t* p_data);
 void scenic_ops_render(uint32_t* p_msg_length, driver_data_t* p_data);
 void scenic_ops_update_cursor(uint32_t* p_msg_length, driver_data_t* p_data);
 void scenic_ops_clear_color(uint32_t* p_msg_length, const driver_data_t* p_data);
-void scenic_ops_quit(driver_data_t* data);
+void scenic_ops_quit(driver_data_t* p_data);
 void scenic_ops_put_font(uint32_t* p_msg_length, driver_data_t* p_data);
 void scenic_ops_put_image(uint32_t* p_msg_length, driver_data_t* p_data);
 void scenic_ops_crash();
 
 void dispatch_scenic_ops(uint32_t msg_length, driver_data_t* p_data);
+void* scenic_loop(void* user_data);

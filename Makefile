@@ -61,6 +61,7 @@ NVG_COMMON_SRCS = \
 	c_src/device/nvg/nanovg/nanovg.c \
 	c_src/device/nvg/nvg_font_ops.c \
 	c_src/device/nvg/nvg_image_ops.c \
+	c_src/device/nvg/nvg_scenic.c \
 	c_src/device/nvg/nvg_script_ops.c
 
 CAIRO_COMMON_SRCS = \
