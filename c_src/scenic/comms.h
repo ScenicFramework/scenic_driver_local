@@ -94,8 +94,8 @@ typedef enum {
   KEYMAP_GDK = 0x02,
 } keymap_t;
 
-int read_exact(byte* buf, int len);
-int write_exact(byte* buf, int len);
+int read_exact(uint8_t* buf, int len);
+int write_exact(uint8_t* buf, int len);
 int read_msg_length(struct timeval * ptv);
 bool isCallerDown();
 

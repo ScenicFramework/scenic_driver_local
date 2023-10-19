@@ -45,13 +45,13 @@ extern device_info_t g_device_info;
 
 //---------------------------------------------------------
 // the length indicator from erlang is always big-endian
-int write_cmd(byte* buf, unsigned int len)
+int write_cmd(uint8_t* buf, unsigned int len)
 {
   int written = 0;
 
   uint32_t cmd_len = len;
   cmd_len = hton_ui32(cmd_len);
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
+  write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
   written = write_exact(buf, len);
 
   return written;
@@ -89,9 +89,9 @@ void logv(uint32_t cmd, const char* msg, va_list args)
   uint32_t msg_len = vasprintf(&output, msg, args);
   uint32_t cmd_len = ntoh_ui32(msg_len + sizeof(uint32_t));
 
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) output, msg_len);
+  write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
+  write_exact((uint8_t*) &cmd, sizeof(uint32_t));
+  write_exact((uint8_t*) output, msg_len);
   free(output);
 }
 
@@ -163,9 +163,9 @@ void send_write(const char* msg)
 
   cmd_len = ntoh_ui32(cmd_len);
 
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) msg, msg_len);
+  write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
+  write_exact((uint8_t*) &cmd, sizeof(uint32_t));
+  write_exact((uint8_t*) msg, msg_len);
 }
 
 //---------------------------------------------------------
@@ -176,8 +176,8 @@ void send_inspect(void* data, int length)
 
   ntoh_ui32(cmd_len);
 
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
+  write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
+  write_exact((uint8_t*) &cmd, sizeof(uint32_t));
   write_exact(data, length);
 }
 
@@ -190,9 +190,9 @@ void send_static_texture_miss(const char* key)
 
   ntoh_ui32(cmd_len);
 
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) key, msg_len);
+  write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
+  write_exact((uint8_t*) &cmd, sizeof(uint32_t));
+  write_exact((uint8_t*) key, msg_len);
 }
 
 //---------------------------------------------------------
@@ -204,9 +204,9 @@ void send_dynamic_texture_miss(const char* key)
 
   ntoh_ui32(cmd_len);
 
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) key, msg_len);
+  write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
+  write_exact((uint8_t*) &cmd, sizeof(uint32_t));
+  write_exact((uint8_t*) key, msg_len);
 }
 
 //---------------------------------------------------------
@@ -218,9 +218,9 @@ void send_font_miss(const char* key)
 
   ntoh_ui32(cmd_len);
 
-  write_exact((byte*) &cmd_len, sizeof(uint32_t));
-  write_exact((byte*) &cmd, sizeof(uint32_t));
-  write_exact((byte*) key, msg_len);
+  write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
+  write_exact((uint8_t*) &cmd, sizeof(uint32_t));
+  write_exact((uint8_t*) key, msg_len);
 }
 
 //---------------------------------------------------------
@@ -234,7 +234,7 @@ PACK(typedef struct msg_reshape_t
 void send_reshape( int window_width, int window_height )
 {
   msg_reshape_t msg = { MSG_OUT_RESHAPE, window_width, window_height };
-  write_cmd((byte*) &msg, sizeof(msg_reshape_t));
+  write_cmd((uint8_t*) &msg, sizeof(msg_reshape_t));
 }
 
 //---------------------------------------------------------
@@ -251,7 +251,7 @@ PACK(typedef struct msg_key_t
 void send_key(keymap_t keymap, int key, int scancode, int action, int mods)
 {
   msg_key_t msg = { MSG_OUT_KEY, keymap, key, scancode, action, mods };
-  write_cmd((byte*) &msg, sizeof(msg_key_t));
+  write_cmd((uint8_t*) &msg, sizeof(msg_key_t));
 }
 
 //---------------------------------------------------------
@@ -266,7 +266,7 @@ PACK(typedef struct msg_codepoint_t
 void send_codepoint(keymap_t keymap, unsigned int codepoint, int mods)
 {
   msg_codepoint_t msg = { MSG_OUT_CODEPOINT, keymap, codepoint, mods };
-  write_cmd((byte*) &msg, sizeof(msg_codepoint_t));
+  write_cmd((uint8_t*) &msg, sizeof(msg_codepoint_t));
 }
 
 //---------------------------------------------------------
@@ -280,7 +280,7 @@ PACK(typedef struct msg_cursor_pos_t
 void send_cursor_pos(float xpos, float ypos)
 {
   msg_cursor_pos_t msg = { MSG_OUT_CURSOR_POS, xpos, ypos };
-  write_cmd((byte*) &msg, sizeof(msg_cursor_pos_t));
+  write_cmd((uint8_t*) &msg, sizeof(msg_cursor_pos_t));
 }
 
 //---------------------------------------------------------
@@ -306,7 +306,7 @@ void send_mouse_button(keymap_t keymap, int button, int action, int mods, float 
     xpos,
     ypos
   };
-  write_cmd((byte*) &msg, sizeof(msg_mouse_button_t));
+  write_cmd((uint8_t*) &msg, sizeof(msg_mouse_button_t));
 }
 
 //---------------------------------------------------------
@@ -322,7 +322,7 @@ PACK(typedef struct msg_scroll_t
 void send_scroll(float xoffset, float yoffset, float xpos, float ypos)
 {
   msg_scroll_t msg = { MSG_OUT_MOUSE_SCROLL, xoffset, yoffset, xpos, ypos };
-  write_cmd((byte*) &msg, sizeof(msg_scroll_t));
+  write_cmd((uint8_t*) &msg, sizeof(msg_scroll_t));
 }
 
 //---------------------------------------------------------
@@ -337,7 +337,7 @@ PACK(typedef struct msg_cursor_enter_t
 void send_cursor_enter(int entered, float xpos, float ypos)
 {
   msg_cursor_enter_t msg = { MSG_OUT_CURSOR_ENTER, entered, xpos, ypos };
-  write_cmd((byte*) &msg, sizeof(msg_cursor_enter_t));
+  write_cmd((uint8_t*) &msg, sizeof(msg_cursor_enter_t));
 }
 
 //---------------------------------------------------------
@@ -350,7 +350,7 @@ PACK(typedef struct msg_close_t
 void send_close( int reason )
 {
   msg_close_t msg = { MSG_OUT_CLOSE, reason };
-  write_cmd((byte*) &msg, sizeof(msg_close_t));
+  write_cmd((uint8_t*) &msg, sizeof(msg_close_t));
 }
 
 //---------------------------------------------------------
@@ -363,14 +363,14 @@ PACK(typedef struct img_miss_t
 void send_image_miss( unsigned int img_id )
 {
   img_miss_t msg = { MSG_OUT_IMG_MISS, img_id };
-  write_cmd((byte*) &msg, sizeof(img_miss_t));
+  write_cmd((uint8_t*) &msg, sizeof(img_miss_t));
 }
 
 //---------------------------------------------------------
 void send_ready()
 {
   uint32_t msg_id = MSG_OUT_READY;
-  write_cmd((byte*) &msg_id, sizeof(msg_id));
+  write_cmd((uint8_t*) &msg_id, sizeof(msg_id));
 }
 
 //=============================================================================
@@ -447,7 +447,7 @@ void update_cursor(uint32_t* p_msg_length, driver_data_t* p_data)
 //---------------------------------------------------------
 void clear_color(uint32_t* p_msg_length)
 {
-  byte r, g, b, a;
+  uint8_t r, g, b, a;
   read_bytes_down(&r, 1, p_msg_length);
   read_bytes_down(&g, 1, p_msg_length);
   read_bytes_down(&b, 1, p_msg_length);
