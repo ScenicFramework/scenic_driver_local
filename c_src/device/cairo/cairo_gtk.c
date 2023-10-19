@@ -1,6 +1,7 @@
 #include <cairo.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <math.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -58,10 +59,13 @@ static gboolean on_motion_event(GtkWidget* widget,
                                 GdkEventMotion* event,
                                 gpointer data)
 {
-  if ((g_cairo_gtk.last_x != event->x) && (g_cairo_gtk.last_y != event->y)) {
-    send_cursor_pos(event->x, event->y);
-    g_cairo_gtk.last_x = event->x;
-    g_cairo_gtk.last_y = event->y;
+  float x = floorf(event->x);
+  float y = floorf(event->y);
+
+  if ((g_cairo_gtk.last_x != x) && (g_cairo_gtk.last_y != y)) {
+    send_cursor_pos(x, y);
+    g_cairo_gtk.last_x = x;
+    g_cairo_gtk.last_y = y;
   }
 
   return TRUE;
@@ -83,11 +87,14 @@ static gboolean on_button_event(GtkWidget* widget,
     return FALSE;
   }
 
+  float x = floorf(event->x);
+  float y = floorf(event->y);
+
   send_mouse_button(KEYMAP_GDK,
                     event->button,
                     action,
                     event->state,
-                    event->x, event->y);
+                    x, y);
 
   return TRUE;
 }
