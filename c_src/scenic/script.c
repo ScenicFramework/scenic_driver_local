@@ -157,19 +157,19 @@ void reset_scripts() {
 //=============================================================================
 // rendering
 
-static inline byte get_byte(void* p, uint32_t offset)
+static inline uint8_t get_byte(void* p, uint32_t offset)
 {
-  return *((byte*)(p + offset));
+  return *((uint8_t*)(p + offset));
 }
 
-static inline unsigned short get_uint16(void* p, uint32_t offset)
+static inline uint16_t get_uint16(void* p, uint32_t offset)
 {
-  return ntoh_ui16(*((unsigned short*)(p + offset)));
+  return ntoh_ui16(*((uint16_t*)(p + offset)));
 }
 
-static inline unsigned int get_uint32(void* p, uint32_t offset)
+static inline uint32_t get_uint32(void* p, uint32_t offset)
 {
-  return ntoh_ui32(*((unsigned int*)(p + offset)));
+  return ntoh_ui32(*((uint32_t*)(p + offset)));
 }
 
 static inline float get_float(void* p, uint32_t offset)
