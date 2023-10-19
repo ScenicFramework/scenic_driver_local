@@ -125,6 +125,19 @@ static gboolean on_enter_leave_event(GtkWidget* widget,
   return TRUE;
 }
 
+static gboolean on_scroll_event(GtkWidget* widget,
+                                GdkEventScroll* event,
+                                gpointer data)
+{
+  float x = floorf(event->x);
+  float y = floorf(event->y);
+  float xoffset = floorf(event->delta_x);
+  float yoffset = floorf(event->delta_y);
+  send_scroll(xoffset, yoffset, x, y);
+
+  return TRUE;
+}
+
 int device_init(const device_opts_t* p_opts,
                 device_info_t* p_info,
                 driver_data_t* p_data)
@@ -157,7 +170,8 @@ int device_init(const device_opts_t* p_opts,
                         GDK_ENTER_NOTIFY_MASK |
                         GDK_KEY_PRESS_MASK |
                         GDK_KEY_RELEASE_MASK |
-                        GDK_LEAVE_NOTIFY_MASK);
+                        GDK_LEAVE_NOTIFY_MASK |
+                        GDK_SCROLL_MASK );
 
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "motion-notify-event", G_CALLBACK(on_motion_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-press-event", G_CALLBACK(on_button_event), NULL);
@@ -166,6 +180,7 @@ int device_init(const device_opts_t* p_opts,
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "key-release-event", G_CALLBACK(on_key_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "enter-notify-event", G_CALLBACK(on_enter_leave_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "leave-notify-event", G_CALLBACK(on_enter_leave_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "scroll-event", G_CALLBACK(on_scroll_event), NULL);
 
   GtkDrawingArea* drawing_area = (GtkDrawingArea*)gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER(g_cairo_gtk.window), (GtkWidget*)drawing_area);
