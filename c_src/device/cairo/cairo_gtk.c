@@ -112,6 +112,19 @@ static gboolean on_key_event(GtkWidget* widget,
   return TRUE;
 }
 
+static gboolean on_enter_leave_event(GtkWidget* widget,
+                                     GdkEventCrossing* event,
+                                     gpointer data)
+{
+  int action = (event->type == GDK_ENTER_NOTIFY) ? 1 : 0;
+  float x = floorf(event->x);
+  float y = floorf(event->y);
+
+  send_cursor_enter(action, x, y);
+
+  return TRUE;
+}
+
 int device_init(const device_opts_t* p_opts,
                 device_info_t* p_info,
                 driver_data_t* p_data)
@@ -141,14 +154,18 @@ int device_init(const device_opts_t* p_opts,
                         GDK_POINTER_MOTION_MASK |
                         GDK_BUTTON_PRESS_MASK |
                         GDK_BUTTON_RELEASE_MASK |
+                        GDK_ENTER_NOTIFY_MASK |
                         GDK_KEY_PRESS_MASK |
-                        GDK_KEY_RELEASE_MASK);
+                        GDK_KEY_RELEASE_MASK |
+                        GDK_LEAVE_NOTIFY_MASK);
 
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "motion-notify-event", G_CALLBACK(on_motion_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-press-event", G_CALLBACK(on_button_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-release-event", G_CALLBACK(on_button_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "key-press-event", G_CALLBACK(on_key_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "key-release-event", G_CALLBACK(on_key_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "enter-notify-event", G_CALLBACK(on_enter_leave_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "leave-notify-event", G_CALLBACK(on_enter_leave_event), NULL);
 
   GtkDrawingArea* drawing_area = (GtkDrawingArea*)gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER(g_cairo_gtk.window), (GtkWidget*)drawing_area);
