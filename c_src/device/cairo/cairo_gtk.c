@@ -210,9 +210,22 @@ void device_end_render(driver_data_t* p_data)
   g_idle_add((GSourceFunc)gtk_widget_queue_draw, (void*)g_cairo_gtk.window);
 }
 
+void glib_print(const gchar* string)
+{
+  log_info("glib: %s", string);
+}
+
+void glib_error(const gchar* string)
+{
+  log_error("glib: %s", string);
+}
+
 void device_loop(driver_data_t* p_data)
 {
   g_cairo_gtk.main = g_thread_new("scenic_loop", scenic_loop, p_data);
+
+  g_set_print_handler(glib_print);
+  g_set_printerr_handler(glib_error);
 
   gtk_widget_show_all((GtkWidget*)g_cairo_gtk.window);
   gtk_main();
