@@ -56,3 +56,6 @@ void scenic_ops_crash();
 
 void dispatch_scenic_ops(uint32_t msg_length, driver_data_t* p_data);
 void* scenic_loop(void* user_data);
+
+void scenic_cmd_lock();
+void scenic_cmd_unlock();

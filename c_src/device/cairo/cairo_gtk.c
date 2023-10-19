@@ -21,6 +21,7 @@ typedef struct {
   GThread* main;
   GtkWidget* window;
   GMutex render_mutex;
+  GMutex cmd_mutex;
   float last_x;
   float last_y;
 } cairo_gtk_t;
@@ -250,6 +251,16 @@ void glib_print(const gchar* string)
 void glib_error(const gchar* string)
 {
   log_error("glib: %s", string);
+}
+
+void scenic_cmd_lock()
+{
+  g_mutex_lock(&g_cairo_gtk.cmd_mutex);
+}
+
+void scenic_cmd_unlock()
+{
+  g_mutex_unlock(&g_cairo_gtk.cmd_mutex);
 }
 
 void device_loop(driver_data_t* p_data)

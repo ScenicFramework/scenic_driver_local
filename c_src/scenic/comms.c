@@ -37,7 +37,6 @@ The caller will typically be erlang, so use the 2-byte length indicator
 
 extern device_info_t g_device_info;
 
-
 //=============================================================================
 // raw comms with host app
 // from erl_comm.c
@@ -45,14 +44,17 @@ extern device_info_t g_device_info;
 
 //---------------------------------------------------------
 // the length indicator from erlang is always big-endian
-int write_cmd(uint8_t* buf, unsigned int len)
+int write_cmd(uint8_t* buf, uint32_t len)
 {
   int written = 0;
 
   uint32_t cmd_len = len;
   cmd_len = hton_ui32(cmd_len);
+
+  scenic_cmd_lock();
   write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
   written = write_exact(buf, len);
+  scenic_cmd_unlock();
 
   return written;
 }
@@ -89,9 +91,11 @@ void logv(uint32_t cmd, const char* msg, va_list args)
   uint32_t msg_len = vasprintf(&output, msg, args);
   uint32_t cmd_len = ntoh_ui32(msg_len + sizeof(uint32_t));
 
+  scenic_cmd_lock();
   write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
   write_exact((uint8_t*) &cmd, sizeof(uint32_t));
   write_exact((uint8_t*) output, msg_len);
+  scenic_cmd_unlock();
   free(output);
 }
 
@@ -163,9 +167,11 @@ void send_write(const char* msg)
 
   cmd_len = ntoh_ui32(cmd_len);
 
+  scenic_cmd_lock();
   write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
   write_exact((uint8_t*) &cmd, sizeof(uint32_t));
   write_exact((uint8_t*) msg, msg_len);
+  scenic_cmd_unlock();
 }
 
 //---------------------------------------------------------
@@ -176,9 +182,11 @@ void send_inspect(void* data, int length)
 
   ntoh_ui32(cmd_len);
 
+  scenic_cmd_lock();
   write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
   write_exact((uint8_t*) &cmd, sizeof(uint32_t));
   write_exact(data, length);
+  scenic_cmd_unlock();
 }
 
 //---------------------------------------------------------
@@ -190,9 +198,11 @@ void send_static_texture_miss(const char* key)
 
   ntoh_ui32(cmd_len);
 
+  scenic_cmd_lock();
   write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
   write_exact((uint8_t*) &cmd, sizeof(uint32_t));
   write_exact((uint8_t*) key, msg_len);
+  scenic_cmd_unlock();
 }
 
 //---------------------------------------------------------
@@ -204,9 +214,11 @@ void send_dynamic_texture_miss(const char* key)
 
   ntoh_ui32(cmd_len);
 
+  scenic_cmd_lock();
   write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
   write_exact((uint8_t*) &cmd, sizeof(uint32_t));
   write_exact((uint8_t*) key, msg_len);
+  scenic_cmd_unlock();
 }
 
 //---------------------------------------------------------
@@ -218,9 +230,11 @@ void send_font_miss(const char* key)
 
   ntoh_ui32(cmd_len);
 
+  scenic_cmd_lock();
   write_exact((uint8_t*) &cmd_len, sizeof(uint32_t));
   write_exact((uint8_t*) &cmd, sizeof(uint32_t));
   write_exact((uint8_t*) key, msg_len);
+  scenic_cmd_unlock();
 }
 
 //---------------------------------------------------------
