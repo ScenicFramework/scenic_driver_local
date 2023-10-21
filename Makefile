@@ -1,35 +1,6 @@
-# Variables to override
-#
-# CC            C compiler
-# CROSSCOMPILE	crosscompiler prefix, if any
-# CFLAGS	compiler flags for compiling all C files
-# ERL_CFLAGS	additional compiler flags for files using Erlang header files
-# ERL_EI_INCLUDE_DIR include path to ei.h (Required for crosscompile)
-# ERL_EI_LIBDIR path to libei.a (Required for crosscompile)
-# LDFLAGS	linker flags for linking all binaries
-# ERL_LDFLAGS	additional linker flags for projects referencing Erlang libraries
-
-
 MIX = mix
 PREFIX = $(MIX_APP_PATH)/priv
 DEFAULT_TARGETS ?= $(PREFIX) $(PREFIX)/scenic_driver_local
-
-# # Look for the EI library and header files
-# # For crosscompiled builds, ERL_EI_INCLUDE_DIR and ERL_EI_LIBDIR must be
-# # passed into the Makefile.
-# ifeq ($(ERL_EI_INCLUDE_DIR),)
-# ERL_ROOT_DIR = $(shell erl -eval "io:format(\"~s~n\", [code:root_dir()])" -s init stop -noshell)
-# ifeq ($(ERL_ROOT_DIR),)
-# 	$(error Could not find the Erlang installation. Check to see that 'erl' is in your PATH)
-# endif
-# ERL_EI_INCLUDE_DIR = "$(ERL_ROOT_DIR)/usr/include"
-# ERL_EI_LIBDIR = "$(ERL_ROOT_DIR)/usr/lib"
-# endif
-
-# # Set Erlang-specific compile and linker flags
-# ERL_CFLAGS ?= -I$(ERL_EI_INCLUDE_DIR)
-# ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
-
 
 $(info SCENIC_LOCAL_TARGET: $(SCENIC_LOCAL_TARGET))
 ifdef SCENIC_LOCAL_GL
@@ -70,7 +41,47 @@ CAIRO_COMMON_SRCS = \
 	c_src/device/cairo/cairo_image_ops.c \
 	c_src/device/cairo/cairo_script_ops.c
 
-ifeq ($(SCENIC_LOCAL_TARGET),glfw)
+ifeq ($(SCENIC_LOCAL_TARGET),cairo-gtk)
+	CFLAGS = -O3 -std=gnu99
+
+	ifndef MIX_ENV
+		MIX_ENV = dev
+	endif
+
+	ifdef DEBUG
+		CFLAGS += -O0 -pedantic -Wall -Wextra -Wno-unused-parameter
+	endif
+
+	ifeq ($(MIX_ENV),dev)
+		CFLAGS += -g
+	endif
+
+	LDFLAGS += `pkg-config --static --libs freetype2 cairo gtk+-3.0`
+	CFLAGS += `pkg-config --static --cflags freetype2 cairo gtk+-3.0`
+	LDFLAGS += -lm
+
+	DEVICE_SRCS += \
+		$(CAIRO_COMMON_SRCS) \
+		c_src/device/cairo/cairo_gtk.c
+
+else ifeq ($(SCENIC_LOCAL_TARGET),cairo-fb)
+	LDFLAGS += `pkg-config --static --libs freetype2 cairo`
+	CFLAGS += `pkg-config --static --cflags freetype2 cairo`
+	LDFLAGS += -lm
+	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
+	CFLAGS += -std=gnu99
+
+	DEVICE_SRCS += \
+		$(CAIRO_COMMON_SRCS) \
+		c_src/device/cairo/cairo_fb.c
+
+else ifeq ($(SCENIC_LOCAL_TARGET),glfw)
+$(info )
+$(info **********************************************************************************)
+$(info SCENIC_LOCAL_TARGET=glfw is deprecated. Please use `SCENIC_LOCAL_TARGET=cairo-gtk`)
+$(info **********************************************************************************)
+$(info )
+
 	CFLAGS = -O3 -std=c99
 
 	ifndef MIX_ENV
@@ -103,6 +114,12 @@ ifeq ($(SCENIC_LOCAL_TARGET),glfw)
 		c_src/device/nvg/glfw.c
 
 else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
+$(info )
+$(info ********************************************************************************)
+$(info SCENIC_LOCAL_TARGET=bcm is deprecated. Please use `SCENIC_LOCAL_TARGET=cairo-fb`)
+$(info ********************************************************************************)
+$(info )
+
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -lbcm_host
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
@@ -118,7 +135,12 @@ else ifeq ($(SCENIC_LOCAL_TARGET),bcm)
 	endif
 
 else ifeq ($(SCENIC_LOCAL_TARGET),drm)
-	# drm is the forward looking default
+$(info )
+$(info ********************************************************************************)
+$(info SCENIC_LOCAL_TARGET=drm is deprecated. Please use `SCENIC_LOCAL_TARGET=cairo-fb`)
+$(info ********************************************************************************)
+$(info )
+
 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 	CFLAGS += -std=gnu99
@@ -134,53 +156,8 @@ else ifeq ($(SCENIC_LOCAL_TARGET),drm)
 		CFLAGS += -DSCENIC_GLES3
 	endif
 
-else ifeq ($(SCENIC_LOCAL_TARGET),cairo-fb)
-	LDFLAGS += `pkg-config --static --libs freetype2 cairo`
-	CFLAGS += `pkg-config --static --cflags freetype2 cairo`
-	LDFLAGS += -lm
-	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
-	CFLAGS += -std=gnu99
-
-	DEVICE_SRCS += \
-		$(CAIRO_COMMON_SRCS) \
-		c_src/device/cairo/cairo_fb.c
-
-else ifeq ($(SCENIC_LOCAL_TARGET),cairo-gtk)
-	LDFLAGS += `pkg-config --static --libs freetype2 cairo gtk+-3.0`
-	CFLAGS += `pkg-config --static --cflags freetype2 cairo gtk+-3.0`
-	LDFLAGS += -lm
-	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
-	CFLAGS += -std=gnu99
-
-	DEVICE_SRCS += \
-		$(CAIRO_COMMON_SRCS) \
-		c_src/device/cairo/cairo_gtk.c
-else
-$(info ------ no SCENIC_LOCAL_TARGET set ------)
-$(info If you get here, then you are probably using a custom Nerves system)
-$(info Please export/set SCENIC_LOCAL_TARGET to one of [glfw, bcm, drm])
-$(info If you are running on a desktop machine, pick: glfw)
-$(info For any varient of rpi <= 3, pick: bcm)
-$(info For any varient of rpi >= 4, pick: drm)
-$(info For any varient of bbb, pick: drm)
-$(info example for a custom rpi3 build system:)
-$(info export SCENIC_LOCAL_TARGET=bcm)
-$(info For bbb, you also need to set SCENIC_LOCAL_GL=gles2)
-$(info For >= rpi4, you also need to set SCENIC_LOCAL_GL=gles3)
-$(info ----------------------------------------)
 endif
 
-# ifeq ($(SCENIC_LOCAL_TARGET),drm_gles3)
-# 	LDFLAGS += -lGLESv2 -lEGL -lm -lvchostif -ldrm -lgbm
-# 	CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
-# 	CFLAGS += -std=gnu99
-
-# 	CFLAGS += -fPIC -I$(NERVES_SDK_SYSROOT)/usr/include/drm
-
-# 	SRCS = c_src/device/drm_gles3.c
-# endif
-
-# $(info $(shell printenv))
 CFLAGS += \
 	-Ic_src \
 	-Ic_src/device \
