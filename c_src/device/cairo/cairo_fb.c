@@ -12,6 +12,7 @@
 #include "comms.h"
 #include "device.h"
 #include "fontstash.h"
+#include "scenic_ops.h"
 
 const char* device = "/dev/fb0";
 
@@ -326,5 +327,10 @@ void device_end_render(driver_data_t* p_data)
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)p_data->v_ctx;
   render_cairo_surface_to_fb(p_ctx);
+}
+
+void device_loop(driver_data_t* p_data)
+{
+  scenic_loop(p_data);
 }
 

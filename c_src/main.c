@@ -63,23 +63,8 @@ int main(int argc, char **argv)
   data.debug_mode = g_opts.debug_mode;
   data.v_ctx = g_device_info.v_ctx;
 
-  // signal the app that the window is ready
-  send_ready();
+  device_loop(&data);
 
-#ifdef SCENIC_GLES2
-  log_info("~~~~~~~~~~~~~SCENIC_GLES2 was defined!");
-#endif
-
-  /* Loop until the calling app closes the window */
-  while (data.keep_going && !isCallerDown()) {
-    // check for incoming messages - blocks with a timeout
-    handle_stdio_in(&data);
-    device_poll();
-  }
-
-  reset_images(data.v_ctx);
-
-  device_close(&g_device_info);
   return 0;
 }
 

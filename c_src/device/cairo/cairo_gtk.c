@@ -13,6 +13,7 @@
 #include "comms.h"
 #include "device.h"
 #include "fontstash.h"
+#include "scenic_ops.h"
 #include "script_ops.h"
 
 typedef struct {
@@ -27,14 +28,6 @@ cairo_gtk_t g_cairo_gtk;
 
 extern device_info_t g_device_info;
 extern device_opts_t g_opts;
-
-static gpointer cairo_gtk_main(gpointer user_data)
-{
-  gtk_widget_show_all((GtkWidget*)g_cairo_gtk.window);
-  gtk_main();
-
-  return NULL;
-}
 
 static gboolean on_draw(GtkWidget* widget,
                         cairo_t* cr,
@@ -154,8 +147,6 @@ int device_init(const device_opts_t* p_opts,
   gtk_container_add(GTK_CONTAINER(g_cairo_gtk.window), (GtkWidget*)drawing_area);
   g_signal_connect((GtkWidget*)drawing_area, "draw", G_CALLBACK(on_draw), p_ctx);
 
-  g_cairo_gtk.main = g_thread_new("gtk_main", cairo_gtk_main, NULL);
-
   return 0;
 }
 
@@ -167,8 +158,9 @@ int device_close(device_info_t* p_info)
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)p_info->v_ctx;
   gtk_main_quit();
-  g_thread_join(g_cairo_gtk.main);
   scenic_cairo_fini(p_ctx);
+
+  return 0;
 }
 
 void device_poll()
@@ -209,4 +201,12 @@ void device_end_render(driver_data_t* p_data)
   g_mutex_unlock(&g_cairo_gtk.render_mutex);
 
   g_idle_add((GSourceFunc)gtk_widget_queue_draw, (void*)g_cairo_gtk.window);
+}
+
+void device_loop(driver_data_t* p_data)
+{
+  g_cairo_gtk.main = g_thread_new("scenic_loop", scenic_loop, p_data);
+
+  gtk_widget_show_all((GtkWidget*)g_cairo_gtk.window);
+  gtk_main();
 }
