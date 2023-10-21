@@ -192,3 +192,8 @@ void* scenic_loop(void* user_data)
   return NULL;
 }
 
+__attribute__((weak))
+void scenic_cmd_lock() { }
+
+__attribute__((weak))
+void scenic_cmd_unlock() { }

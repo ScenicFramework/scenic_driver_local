@@ -1,6 +1,7 @@
 #include <cairo.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <math.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -20,6 +21,7 @@ typedef struct {
   GThread* main;
   GtkWidget* window;
   GMutex render_mutex;
+  GMutex cmd_mutex;
   float last_x;
   float last_y;
 } cairo_gtk_t;
@@ -58,10 +60,13 @@ static gboolean on_motion_event(GtkWidget* widget,
                                 GdkEventMotion* event,
                                 gpointer data)
 {
-  if ((g_cairo_gtk.last_x != event->x) && (g_cairo_gtk.last_y != event->y)) {
-    send_cursor_pos(event->x, event->y);
-    g_cairo_gtk.last_x = event->x;
-    g_cairo_gtk.last_y = event->y;
+  float x = floorf(event->x);
+  float y = floorf(event->y);
+
+  if ((g_cairo_gtk.last_x != x) && (g_cairo_gtk.last_y != y)) {
+    send_cursor_pos(x, y);
+    g_cairo_gtk.last_x = x;
+    g_cairo_gtk.last_y = y;
   }
 
   return TRUE;
@@ -83,11 +88,14 @@ static gboolean on_button_event(GtkWidget* widget,
     return FALSE;
   }
 
+  float x = floorf(event->x);
+  float y = floorf(event->y);
+
   send_mouse_button(KEYMAP_GDK,
                     event->button,
                     action,
                     event->state,
-                    event->x, event->y);
+                    x, y);
 
   return TRUE;
 }
@@ -102,6 +110,32 @@ static gboolean on_key_event(GtkWidget* widget,
   if (!(event->keyval & 0xF000) && event->type == GDK_KEY_PRESS) {
     send_codepoint(KEYMAP_GDK, unicode, event->state);
   }
+  return TRUE;
+}
+
+static gboolean on_enter_leave_event(GtkWidget* widget,
+                                     GdkEventCrossing* event,
+                                     gpointer data)
+{
+  int action = (event->type == GDK_ENTER_NOTIFY) ? 1 : 0;
+  float x = floorf(event->x);
+  float y = floorf(event->y);
+
+  send_cursor_enter(action, x, y);
+
+  return TRUE;
+}
+
+static gboolean on_scroll_event(GtkWidget* widget,
+                                GdkEventScroll* event,
+                                gpointer data)
+{
+  float x = floorf(event->x);
+  float y = floorf(event->y);
+  float xoffset = floorf(event->delta_x);
+  float yoffset = floorf(event->delta_y);
+  send_scroll(xoffset, yoffset, x, y);
+
   return TRUE;
 }
 
@@ -134,14 +168,20 @@ int device_init(const device_opts_t* p_opts,
                         GDK_POINTER_MOTION_MASK |
                         GDK_BUTTON_PRESS_MASK |
                         GDK_BUTTON_RELEASE_MASK |
+                        GDK_ENTER_NOTIFY_MASK |
                         GDK_KEY_PRESS_MASK |
-                        GDK_KEY_RELEASE_MASK);
+                        GDK_KEY_RELEASE_MASK |
+                        GDK_LEAVE_NOTIFY_MASK |
+                        GDK_SCROLL_MASK );
 
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "motion-notify-event", G_CALLBACK(on_motion_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-press-event", G_CALLBACK(on_button_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "button-release-event", G_CALLBACK(on_button_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "key-press-event", G_CALLBACK(on_key_event), NULL);
   g_signal_connect(G_OBJECT(g_cairo_gtk.window), "key-release-event", G_CALLBACK(on_key_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "enter-notify-event", G_CALLBACK(on_enter_leave_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "leave-notify-event", G_CALLBACK(on_enter_leave_event), NULL);
+  g_signal_connect(G_OBJECT(g_cairo_gtk.window), "scroll-event", G_CALLBACK(on_scroll_event), NULL);
 
   GtkDrawingArea* drawing_area = (GtkDrawingArea*)gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER(g_cairo_gtk.window), (GtkWidget*)drawing_area);
@@ -203,9 +243,32 @@ void device_end_render(driver_data_t* p_data)
   g_idle_add((GSourceFunc)gtk_widget_queue_draw, (void*)g_cairo_gtk.window);
 }
 
+void glib_print(const gchar* string)
+{
+  log_info("glib: %s", string);
+}
+
+void glib_error(const gchar* string)
+{
+  log_error("glib: %s", string);
+}
+
+void scenic_cmd_lock()
+{
+  g_mutex_lock(&g_cairo_gtk.cmd_mutex);
+}
+
+void scenic_cmd_unlock()
+{
+  g_mutex_unlock(&g_cairo_gtk.cmd_mutex);
+}
+
 void device_loop(driver_data_t* p_data)
 {
   g_cairo_gtk.main = g_thread_new("scenic_loop", scenic_loop, p_data);
+
+  g_set_print_handler(glib_print);
+  g_set_printerr_handler(glib_error);
 
   gtk_widget_show_all((GtkWidget*)g_cairo_gtk.window);
   gtk_main();
