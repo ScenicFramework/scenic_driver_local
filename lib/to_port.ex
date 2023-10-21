@@ -6,7 +6,7 @@
 defmodule Scenic.Driver.Local.ToPort do
   @moduledoc false
 
-  use Bitwise
+  import Bitwise
 
   @cmd_put_script 0x01
   @cmd_del_script 0x02

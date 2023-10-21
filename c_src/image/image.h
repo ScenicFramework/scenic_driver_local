@@ -25,10 +25,9 @@ typedef enum {
   IMAGE_FORMAT_GRAY_ALPHA = 2,
   IMAGE_FORMAT_RGB = 3,
   IMAGE_FORMAT_RGBA = 4,
-  IMAGE_FORMAT_SIZE = 0xffffffff, // ensure enum is 32 bits wide
 } image_format_t;
 
 void init_images(void);
-void put_image(int* p_msg_length, void* v_ctx);
+void put_image(uint32_t* p_msg_length, void* v_ctx);
 void reset_images(void* v_ctx);
 image_t* get_image(sid_t id);

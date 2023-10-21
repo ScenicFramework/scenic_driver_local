@@ -130,7 +130,7 @@ typedef enum {
 
 #define SCRIPT_FUNC(name, args...) \
   void script_ops_ ## name(void* v_ctx, ##args); \
-  void log_script_ops_ ## name(const char* prefix, const char* func, log_level_t level, ##args);
+  void log_script_ops_ ## name(const char* prefix, const char* func, log_level_t level, ##args)
 
 SCRIPT_FUNC(draw_line, coordinates_t a, coordinates_t b, bool stroke);
 SCRIPT_FUNC(draw_triangle, coordinates_t a, coordinates_t b, coordinates_t c, bool fill, bool stroke);

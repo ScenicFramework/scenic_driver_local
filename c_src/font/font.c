@@ -52,7 +52,7 @@ font_t* get_font(sid_t id)
 }
 
 //---------------------------------------------------------
-void put_font(int* p_msg_length, void* v_ctx)
+void put_font(uint32_t* p_msg_length, void* v_ctx)
 {
   // read in the id size, which is in the first four bytes
   uint32_t id_length;

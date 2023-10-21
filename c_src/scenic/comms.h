@@ -87,24 +87,20 @@ typedef enum {
   MSG_OUT_WARN = 0XA1,
   MSG_OUT_ERROR = 0XA2,
   MSG_OUT_DEBUG = 0XA3,
-
-  _MSG_OUT_SIZE_ = 0XFFFFFFFF,
 } msg_out_t;
 
 typedef enum {
   KEYMAP_GLFW = 0x01,
   KEYMAP_GDK = 0x02,
-
-  _KEYMAP_SIZE_ = 0xFFFFFFFF,
 } keymap_t;
 
-int read_exact(byte* buf, int len);
-int write_exact(byte* buf, int len);
+int read_exact(uint8_t* buf, int len);
+int write_exact(uint8_t* buf, int len);
 int read_msg_length(struct timeval * ptv);
 bool isCallerDown();
 
 bool read_bytes_down(void* p_buff, int bytes_to_read,
-                     int* p_bytes_to_remaining);
+                     uint32_t* p_bytes_to_remaining);
 
 // basic events to send up to the caller
 void send_puts(const char* msg, ...);
@@ -124,10 +120,10 @@ void log_info(const char* msg, ...);
 void log_warn(const char* msg, ...);
 void log_error(const char* msg, ...);
 
-void set_global_tx(int* p_msg_length, driver_data_t* p_data);
-void set_cursor_tx(int* p_msg_length, driver_data_t* p_data);
-void update_cursor(int* p_msg_length, driver_data_t* p_data);
-void clear_color(int* p_msg_length);
+void set_global_tx(uint32_t* p_msg_length, driver_data_t* p_data);
+void set_cursor_tx(uint32_t* p_msg_length, driver_data_t* p_data);
+void update_cursor(uint32_t* p_msg_length, driver_data_t* p_data);
+void clear_color(uint32_t* p_msg_length);
 void receive_crash();
 void receive_quit(driver_data_t* p_data);
 void render(driver_data_t* p_data);

@@ -1,4 +1,5 @@
 #include <cairo.h>
+#define _GNU_SOURCE
 #include <math.h>
 
 #include "cairo_ctx.h"
@@ -258,7 +259,7 @@ void script_ops_draw_text(void* v_ctx,
   cairo_text_extents_t text_extents;
   cairo_scaled_font_glyph_extents(scaled_font, glyphs, glyph_count, &text_extents);
 
-  float align_offset;
+  float align_offset = 0;
   switch (p_ctx->text_align) {
   case TEXT_ALIGN_LEFT:
     align_offset = 0;
@@ -271,7 +272,7 @@ void script_ops_draw_text(void* v_ctx,
     break;
   }
 
-  float base_offset;
+  float base_offset = 0;
   switch (p_ctx->text_base) {
   case TEXT_BASE_TOP:
     base_offset = font_extents.ascent;
@@ -345,7 +346,7 @@ void script_ops_draw_sprites(void* v_ctx,
 
   image_pattern_data_t* image_data = find_image_pattern(p_ctx, p_image->image_id);
 
-  for (int i = 0; i < count; i++) {
+  for (uint32_t i = 0; i < count; i++) {
     draw_sprite(p_ctx, image_data->surface, sprites[i]);
   }
 }

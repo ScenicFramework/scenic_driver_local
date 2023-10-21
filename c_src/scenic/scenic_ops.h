@@ -54,4 +54,4 @@ void scenic_ops_put_font(uint32_t* p_msg_length, driver_data_t* p_data);
 void scenic_ops_put_image(uint32_t* p_msg_length, driver_data_t* p_data);
 void scenic_ops_crash();
 
-void dispatch_scenic_ops(int msg_length, driver_data_t* p_data);
+void dispatch_scenic_ops(uint32_t msg_length, driver_data_t* p_data);

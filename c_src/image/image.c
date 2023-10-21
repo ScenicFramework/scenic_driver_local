@@ -10,9 +10,9 @@
 #include "common.h"
 #include "comms.h"
 #include "image.h"
+#include "image_ops.h"
 #include "scenic_types.h"
 #include "utils.h"
-#include "image_ops.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -80,7 +80,7 @@ void reset_images(void* v_ctx)
 int read_pixels(void* p_pixels,
                 uint32_t width, uint32_t height,
                 image_format_t format_in,
-                int* p_msg_length)
+                uint32_t* p_msg_length)
 {
   // read incoming data into a temporary buffer
   int buffer_size = *p_msg_length;
@@ -145,6 +145,8 @@ int read_pixels(void* p_pixels,
   case IMAGE_FORMAT_RGBA:
     memcpy(p_pixels, p_buffer, pixel_count * 4);
     break;
+  default:
+    break;
   }
 
   // clean up
@@ -154,7 +156,7 @@ int read_pixels(void* p_pixels,
 }
 
 //---------------------------------------------------------
-void put_image(int* p_msg_length, void* v_ctx)
+void put_image(uint32_t* p_msg_length, void* v_ctx)
 {
   // read in the fixed size data
   uint32_t id_length;

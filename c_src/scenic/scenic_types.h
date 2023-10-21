@@ -23,8 +23,6 @@
   #endif
 #endif
 
-typedef unsigned char byte;
-
 //---------------------------------------------------------
 PACK(typedef struct Vector2f
 {
