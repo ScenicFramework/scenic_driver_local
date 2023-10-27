@@ -279,5 +279,16 @@ void device_loop(driver_data_t* p_data)
   g_set_printerr_handler(glib_error);
 
   gtk_widget_show_all((GtkWidget*)g_cairo_gtk.window);
+
+  gtk_widget_set_opacity(GTK_WIDGET(g_cairo_gtk.window), (g_opts.global_opacity / 255.0f));
+
+  if (g_opts.layer > 0) {
+    gtk_window_set_keep_above(GTK_WINDOW(g_cairo_gtk.window), TRUE);
+  }
+
+  if (g_opts.layer < 0) {
+    gtk_window_set_keep_below(GTK_WINDOW(g_cairo_gtk.window), TRUE);
+  }
+
   gtk_main();
 }
