@@ -132,8 +132,16 @@ static gboolean on_scroll_event(GtkWidget* widget,
 {
   float x = floorf(event->x);
   float y = floorf(event->y);
-  float xoffset = floorf(event->delta_x);
-  float yoffset = floorf(event->delta_y);
+  float xoffset = 0.0;
+  float yoffset = 0.0;
+
+  switch (event->direction) {
+  case GDK_SCROLL_UP:    yoffset = -1.0; break;
+  case GDK_SCROLL_DOWN:  yoffset = 1.0; break;
+  case GDK_SCROLL_LEFT:  xoffset = 1.0; break;
+  case GDK_SCROLL_RIGHT: xoffset = -1.0; break;
+  case GDK_SCROLL_SMOOTH: return FALSE;
+  }
   send_scroll(xoffset, yoffset, x, y);
 
   return TRUE;
