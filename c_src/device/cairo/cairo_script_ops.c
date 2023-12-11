@@ -288,6 +288,7 @@ void script_ops_draw_text(void* v_ctx,
     break;
   }
 
+  cairo_save(p_ctx->cr);
   cairo_translate(p_ctx->cr, align_offset, base_offset);
   cairo_set_source(p_ctx->cr, p_ctx->pattern.fill);
 
@@ -307,9 +308,7 @@ void script_ops_draw_text(void* v_ctx,
   } else {
     log_error("%s: cairo_scaled_font_text_to_glyphs: error %d", __func__, status);
   }
-
-  p_ctx->text_align = TEXT_ALIGN_LEFT;
-  p_ctx->text_base = TEXT_BASE_ALPHABETIC;
+  cairo_restore(p_ctx->cr);
 }
 
 static void draw_sprite(scenic_cairo_ctx_t* p_ctx,
