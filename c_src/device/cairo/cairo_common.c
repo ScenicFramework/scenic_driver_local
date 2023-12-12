@@ -75,6 +75,8 @@ void pattern_stack_push(scenic_cairo_ctx_t* p_ctx)
   pattern_stack_t* ptr = (pattern_stack_t*)malloc(sizeof(pattern_stack_t));
 
   ptr->pattern = p_ctx->pattern;
+  ptr->text_align = p_ctx->text_align;
+  ptr->text_base = p_ctx->text_base;
 
   if (!p_ctx->pattern_stack_head) {
     ptr->next = NULL;
@@ -93,6 +95,8 @@ void pattern_stack_pop(scenic_cairo_ctx_t* p_ctx)
     log_error("pattern stack underflow");
   } else {
     p_ctx->pattern = ptr->pattern;
+    p_ctx->text_align = ptr->text_align;
+    p_ctx->text_base = ptr->text_base;
     p_ctx->pattern_stack_head = p_ctx->pattern_stack_head->next;
     free(ptr);
   }

@@ -12,6 +12,8 @@ typedef struct {
 
 typedef struct pattern_stack_t_ {
   fill_stroke_pattern_t pattern;
+  text_align_t text_align;
+  text_base_t text_base;
   struct pattern_stack_t_* next;
 } pattern_stack_t;
 
