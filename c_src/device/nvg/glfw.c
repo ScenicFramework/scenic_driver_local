@@ -41,6 +41,7 @@ typedef struct {
   bool glew_ok;
 
   GLFWwindow* p_window;
+  GLFWcursor *p_cursor;
 
   device_info_t* p_info;
 } glfw_data_t;
@@ -153,6 +154,26 @@ void window_close_callback(GLFWwindow* window)
   glfwSetWindowShouldClose(window, false);
 }
 
+//---------------------------------------------------------
+void refresh_window_callback(GLFWwindow* window)
+{
+  // XXX: This is a hack. I just want to redraw the window here w/o reshaping the window.
+  int window_width, window_height;
+  glfwGetWindowSize(window, &window_width, &window_height);
+  reshape_window(window, window_width, window_height);
+}
+
+//---------------------------------------------------------
+void focus_window_callback(GLFWwindow* window, int focused)
+{
+  if (focused == GLFW_TRUE) {
+    // If we enter focus again, set the cursor. If we don't do this,
+    // the cursor is missing for some WM / composers.
+    glfwSetCursor(window, g_glfw_data.p_cursor);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
+}
+
 // //=============================================================================
 // // main setup
 
@@ -213,6 +234,8 @@ NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
   glfwSetMouseButtonCallback(window, mouse_button_callback);
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetWindowCloseCallback(window, window_close_callback);
+  glfwSetWindowRefreshCallback(window, refresh_window_callback);
+  glfwSetWindowFocusCallback(window, focus_window_callback);
 
   // set the initial clear color
   glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -254,6 +277,9 @@ int device_init(const device_opts_t* p_opts,
     glfwTerminate();
     return -1;
   }
+
+  // Setup a standard cursor. XXX: We might not want to show a cursor
+  g_glfw_data.p_cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
 
   // set up one-time features of the window
   g_glfw_data.p_info = p_info;
