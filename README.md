@@ -43,8 +43,8 @@ For example, for apps running on a Mac/PC/Linux, it is usually set to `host`, wh
 
 If you are building for Nerves, it will use `cairo-fb`
 
-Previous versions of `scenic_driver_local` would use `bcm` (Broadcom Manager) for any of `rpi`, `rpi0`, `rip2`, `rpi3`, and `rpi3a` and `drm` for `bbb` and `rpi4`.
-You can explicitly use thes by setting `SCENIC_LOCAL_TARGET=bcm` or `SCENIC_LOCAL_TARGET=drm`, **but these options are being deprecated**.
+Previous versions of `scenic_driver_local` would use `bcm` (Broadcom Manager) for any of `rpi`, `rpi0`, `rip2`, `rpi3` and `rpi3a`, and `drm` for `bbb` and `rpi4`.
+You can explicitly use these by setting `SCENIC_LOCAL_TARGET=bcm` or `SCENIC_LOCAL_TARGET=drm`, **but these options are being deprecated**.
 Please try the default of `SCENIC_LOCAL_TARGET=cairo-fb` as this should work universally on any Nerves target.
 
 `cairo-fb` will require that your `nerves_system_*` has the `cairo` library selected.
