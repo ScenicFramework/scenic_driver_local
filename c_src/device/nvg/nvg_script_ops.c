@@ -236,7 +236,7 @@ static void draw_image(NVGcontext* p_ctx,
   int iw,ih;
   nvgImageSize(p_ctx, p_image->image_id, &iw, &ih);
 
-  // Aspect ration of pixel in x an y dimensions. This allows us to scale
+  // Aspect ratio of pixel in x and y dimensions. This allows us to scale
   // the sprite to fill the whole rectangle.
   ax = s.dw / s.sw;
   ay = s.dh / s.sh;
