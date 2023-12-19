@@ -76,6 +76,7 @@ typedef struct {
   float dy;
   float dw;
   float dh;
+  float alpha;
 } sprite_t;
 
 typedef struct {

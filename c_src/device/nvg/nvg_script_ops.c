@@ -245,7 +245,7 @@ static void draw_image(NVGcontext* p_ctx,
   img_pattern = nvgImagePattern(p_ctx,
                                 s.dx - s.sx*ax, s.dy - s.sy*ay,
                                 (float)iw*ax, (float)ih*ay,
-                                0, p_image->image_id, 1.0);
+                                0, p_image->image_id, s.alpha);
 
   // draw the image into a rect
   nvgBeginPath(p_ctx);
