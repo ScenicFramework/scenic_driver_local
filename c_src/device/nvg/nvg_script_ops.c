@@ -223,7 +223,7 @@ void script_ops_draw_text(void* v_ctx,
 // see: https://github.com/memononen/nanovg/issues/348
 static void draw_image(NVGcontext* p_ctx,
                        sid_t id,
-                       const sprite_t s)
+                       const sprite_t sprite)
 {
   float ax, ay;
   NVGpaint img_pattern;
@@ -238,18 +238,18 @@ static void draw_image(NVGcontext* p_ctx,
 
   // Aspect ratio of pixel in x and y dimensions. This allows us to scale
   // the sprite to fill the whole rectangle.
-  ax = s.dw / s.sw;
-  ay = s.dh / s.sh;
+  ax = sprite.dw / sprite.sw;
+  ay = sprite.dh / sprite.sh;
 
   // create the temporary pattern
   img_pattern = nvgImagePattern(p_ctx,
-                                s.dx - s.sx*ax, s.dy - s.sy*ay,
+                                sprite.dx - sprite.sx*ax, sprite.dy - sprite.sy*ay,
                                 (float)iw*ax, (float)ih*ay,
-                                0, p_image->image_id, s.alpha);
+                                0, p_image->image_id, sprite.alpha);
 
   // draw the image into a rect
   nvgBeginPath(p_ctx);
-  nvgRect(p_ctx, s.dx, s.dy, s.dw, s.dh);
+  nvgRect(p_ctx, sprite.dx, sprite.dy, sprite.dw, sprite.dh);
   nvgFillPaint(p_ctx, img_pattern);
   nvgFill(p_ctx);
 
