@@ -2,7 +2,7 @@ defmodule Scenic.Driver.Local.MixProject do
   use Mix.Project
 
   @app_name :scenic_driver_local
-  @version "0.11.0"
+  @version "0.12.0"
   @github "https://github.com/ScenicFramework/scenic_driver_local"
 
   def project do
