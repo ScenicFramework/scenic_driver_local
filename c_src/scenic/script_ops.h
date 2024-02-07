@@ -14,6 +14,7 @@ typedef enum {
   SCRIPT_OP_DRAW_ELLIPSE = 0X09,
   SCRIPT_OP_DRAW_TEXT = 0X0A,
   SCRIPT_OP_DRAW_SPRITES = 0X0B,
+  SCRIPT_OP_DRAW_RRECTV = 0X0C,
   SCRIPT_OP_DRAW_SCRIPT = 0X0F,
 
   SCRIPT_OP_BEGIN_PATH = 0X20,
@@ -137,6 +138,7 @@ SCRIPT_FUNC(draw_triangle, coordinates_t a, coordinates_t b, coordinates_t c, bo
 SCRIPT_FUNC(draw_quad, coordinates_t a, coordinates_t b, coordinates_t c, coordinates_t d, bool fill, bool stroke);
 SCRIPT_FUNC(draw_rect, float w, float h, bool fill, bool stroke);
 SCRIPT_FUNC(draw_rrect, float w, float h, float radius, bool fill, bool stroke);
+SCRIPT_FUNC(draw_rrectv, float w, float h, float ulr, float urr, float lrr, float llr, bool fill, bool stroke);
 SCRIPT_FUNC(draw_arc, float radius, float radians, bool fill, bool stroke);
 SCRIPT_FUNC(draw_sector, float radius, float radians, bool fill, bool stroke);
 SCRIPT_FUNC(draw_circle, float radius, bool fill, bool stroke);
