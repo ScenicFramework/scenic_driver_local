@@ -28,6 +28,7 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #define STDIO_TIMEOUT 32
 
 extern device_info_t g_device_info;
+extern device_opts_t g_opts;
 
 //=============================================================================
 // raw comms with host app
@@ -431,9 +432,9 @@ void render(driver_data_t* p_data)
   clock_t end_frame = clock();
   clock_t delta_ticks = end_frame - begin_frame;
 
-  if (delta_ticks > 0) {
+  if ((g_opts.debug_fps > 1) && (delta_ticks > 0)) {
     render_fps = CLOCKS_PER_SEC / delta_ticks;
-    // log_debug("render_fps (cpu time): %d", render_fps);
+    log_debug("render_fps (cpu time): %d", render_fps);
   }
 
   frames++;
@@ -443,8 +444,8 @@ void render(driver_data_t* p_data)
   start_real = end_real;
   time_remaining -= delta_real;
 
-  if (time_remaining <= 0) {
-    log_debug("real_fps: %d", frames);
+  if ((g_opts.debug_fps > 0) && (time_remaining <= 0)) {
+    log_info("real_fps: %d", frames);
     start_real = monotonic_time();
     time_remaining = 1000;
     frames = 0;
