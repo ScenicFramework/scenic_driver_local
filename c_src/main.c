@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   driver_data_t data = {0};
 
   // super simple arg check
-  if (argc != 10) {
+  if (argc != 11) {
     log_error("Wrong number of parameters");
     return -1;
   }
@@ -41,10 +41,11 @@ int main(int argc, char **argv)
   g_opts.global_opacity = atoi(argv[3]);
   g_opts.antialias = atoi(argv[4]);
   g_opts.debug_mode = atoi(argv[5]);
-  g_opts.width = atoi(argv[6]);
-  g_opts.height = atoi(argv[7]);
-  g_opts.resizable = atoi(argv[8]);
-  g_opts.title = argv[9];
+  g_opts.debug_fps = atoi(argv[6]);
+  g_opts.width = atoi(argv[7]);
+  g_opts.height = atoi(argv[8]);
+  g_opts.resizable = atoi(argv[9]);
+  g_opts.title = argv[10];
 
   // init the hashtables
   init_scripts();

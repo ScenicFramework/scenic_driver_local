@@ -26,6 +26,7 @@ defmodule Scenic.Driver.Local do
     opacity: [type: :integer, default: @default_opacity],
     debug: [type: :boolean, default: false],
     debugger: [type: :string, default: ""],
+    debug_fps: [type: :integer, default: 0],
     antialias: [type: :boolean, default: true],
     calibration: [
       type: {:custom, __MODULE__, :validate_calibration, []},
@@ -214,6 +215,7 @@ defmodule Scenic.Driver.Local do
       end
 
     {:ok, debugger} = Keyword.fetch(opts, :debugger)
+    {:ok, debug_fps} = Keyword.fetch(opts, :debug_fps)
     {:ok, layer} = Keyword.fetch(opts, :layer)
     {:ok, opacity} = Keyword.fetch(opts, :opacity)
 
@@ -227,7 +229,7 @@ defmodule Scenic.Driver.Local do
       end
 
     args =
-      " #{internal_cursor} #{layer} #{opacity} #{antialias} #{debug_mode}" <>
+      " #{internal_cursor} #{layer} #{opacity} #{antialias} #{debug_mode} #{debug_fps}" <>
         " #{width} #{height} #{resizeable} \"#{title}\""
 
     # open and initialize the window
