@@ -61,6 +61,7 @@ typedef struct {
 typedef struct {
   // options from the command line
   int debug_mode;
+  int debug_fps;
   int layer;
   int global_opacity;
   int antialias;

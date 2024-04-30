@@ -21,21 +21,14 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #include "script.h"
 #include "utils.h"
 
-// handy time definitions in microseconds
-#define MILLISECONDS_8 8000
-#define MILLISECONDS_16 16000
-#define MILLISECONDS_20 20000
-#define MILLISECONDS_32 32000
-#define MILLISECONDS_64 64000
-#define MILLISECONDS_128 128000
-
 // Setting the timeout too high means input will be laggy as you
 // are starving the input polling. Setting it too low means using
 // energy for no purpose. Probably best if set similar to the
 // frame rate of the application
-#define STDIO_TIMEOUT MILLISECONDS_32
+#define STDIO_TIMEOUT 32
 
 extern device_info_t g_device_info;
+extern device_opts_t g_opts;
 
 //=============================================================================
 // raw comms with host app
@@ -407,6 +400,14 @@ void receive_crash()
 //---------------------------------------------------------
 void render(driver_data_t* p_data)
 {
+  // Setup FPS calc
+  static int64_t start_real = 0;
+  static int64_t time_remaining = -1;
+  static clock_t render_fps = 0;
+  static uint32_t frames = 0;
+
+  clock_t begin_frame = clock();
+
   // prep the id to the root scene
   sid_t id;
   id.p_data = "_root_";
@@ -428,6 +429,27 @@ void render(driver_data_t* p_data)
   }
 
   device_end_render(p_data);
+  clock_t end_frame = clock();
+  clock_t delta_ticks = end_frame - begin_frame;
+
+  if ((g_opts.debug_fps > 1) && (delta_ticks > 0)) {
+    render_fps = CLOCKS_PER_SEC / delta_ticks;
+    log_debug("render_fps (cpu time): %d", render_fps);
+  }
+
+  frames++;
+
+  int64_t end_real = monotonic_time();
+  int64_t delta_real = (end_real - start_real);
+  start_real = end_real;
+  time_remaining -= delta_real;
+
+  if ((g_opts.debug_fps > 0) && (time_remaining <= 0)) {
+    log_info("real_fps: %d", frames);
+    start_real = monotonic_time();
+    time_remaining = 1000;
+    frames = 0;
+  }
 
   // all done
   send_ready();
