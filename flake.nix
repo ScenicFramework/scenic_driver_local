@@ -2,7 +2,7 @@
   description = "Flake for building scenic driver local.";
 
   inputs = {
-    nixpkgs = { url = "github:NixOS/nixpkgs/nixos-23.05"; };
+    nixpkgs = { url = "github:NixOS/nixpkgs/nixos-23.11"; };
     flake-utils = { url = "github:numtide/flake-utils"; };
   };
   outputs = { self, nixpkgs, flake-utils }:
@@ -17,7 +17,7 @@
     {
       devShell = pkgs.mkShell {
         buildInputs = [
-          elixir
+          elixir_1_16
           elixir_ls
           glibcLocales
           glew glfw pkg-config
