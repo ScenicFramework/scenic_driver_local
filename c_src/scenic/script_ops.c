@@ -222,10 +222,12 @@ void log_script_ops_draw_sprites(const char* prefix, const char* func, log_level
   for (int i = 0; i < count; i++) {
     log_message(level, "%s %s: index: %d %{"
                 "s: {{%.1f,%.1f},{%.1f,%.1f}}, "
-                "d: {{%.1f,%.1f},{%.1f,%.1f}}"
+                "d: {{%.1f,%.1f},{%.1f,%.1f}}, "
+                "alpha: %.1f}"
                 "}", prefix, func, i,
                 sprites[i].sx, sprites[i].sy, sprites[i].sw, sprites[i].sh,
-                sprites[i].dx, sprites[i].dy, sprites[i].dw, sprites[i].dh);
+                sprites[i].dx, sprites[i].dy, sprites[i].dw, sprites[i].dh,
+                sprites[i].alpha);
   }
 }
 

@@ -317,10 +317,11 @@ void render_script(void* v_ctx, sid_t id)
               .dx = get_float(p, i + 16),
               .dy = get_float(p, i + 20),
               .dw = get_float(p, i + 24),
-              .dh = get_float(p, i + 28)
+              .dh = get_float(p, i + 28),
+              .alpha = get_float( p, i + 32 )
             };
 
-            i += 32;
+            i += 36;
           }
           script_ops_draw_sprites(v_ctx, id, count, sprites);
           free(sprites);

@@ -322,7 +322,8 @@ static void draw_sprite(scenic_cairo_ctx_t* p_ctx,
 
   cairo_rectangle(p_ctx->cr, sprite.dx, sprite.dy, sprite.dw, sprite.dh);
   cairo_scale(p_ctx->cr, sprite.dw / sprite.sw, sprite.dh / sprite.sh);
-  cairo_fill(p_ctx->cr);
+  cairo_clip(p_ctx->cr);
+  cairo_paint_with_alpha(p_ctx->cr, sprite.alpha);
 
   cairo_restore(p_ctx->cr);
 }
