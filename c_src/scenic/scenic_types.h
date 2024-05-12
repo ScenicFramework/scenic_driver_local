@@ -69,6 +69,7 @@ typedef struct {
   int width;
   int height;
   int resizable;
+  char* fbdev;
   char* title;
 } device_opts_t;
 

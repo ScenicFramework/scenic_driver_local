@@ -45,7 +45,8 @@ int main(int argc, char **argv)
   g_opts.width = atoi(argv[7]);
   g_opts.height = atoi(argv[8]);
   g_opts.resizable = atoi(argv[9]);
-  g_opts.title = argv[10];
+  g_opts.fbdev = argv[10];
+  g_opts.title = argv[11];
 
   // init the hashtables
   init_scripts();
