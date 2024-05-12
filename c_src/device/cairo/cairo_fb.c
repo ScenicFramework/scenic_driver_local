@@ -17,7 +17,6 @@
 #include "scenic_ops.h"
 
 #define FB0_TIMEOUT 60 //seconds
-const char* device = "/dev/fb0";
 
 typedef struct {
   int fd;
@@ -100,14 +99,14 @@ int device_init(const device_opts_t* p_opts,
 
   time_t fb0_timer_start = time(NULL);
   while ((time(NULL) - fb0_timer_start) < FB0_TIMEOUT) {
-    if ((g_cairo_fb.fd = open(device, O_RDWR)) != -1) {
+    if ((g_cairo_fb.fd = open(g_opts.fbdev, O_RDWR)) != -1) {
       break;
     }
     sched_yield();
   }
 
   if (g_cairo_fb.fd == -1) {
-    log_error("Failed to open device %s: %s", device, strerror(errno));
+    log_error("Failed to open device %s: %s", g_opts.fbdev, strerror(errno));
     return -1;
   }
 
