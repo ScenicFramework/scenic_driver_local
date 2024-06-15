@@ -106,6 +106,27 @@ void script_ops_draw_rrect(void* v_ctx,
   if (stroke) nvgStroke(p_ctx);
 }
 
+void script_ops_draw_rrectv(void* v_ctx,
+                           float w,
+                           float h,
+                           float ulr,
+                           float urr,
+                           float lrr,
+                           float llr,
+                           bool fill, bool stroke)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_draw_rrectv(log_prefix, __func__, log_level_info,
+                               w, h, ulr, urr, lrr, llr, fill, stroke);
+  }
+
+  NVGcontext* p_ctx = (NVGcontext*)v_ctx;
+  nvgBeginPath(p_ctx);
+  nvgRoundedRectVarying(p_ctx, 0, 0, w, h, ulr, urr, lrr, llr);
+  if (fill) nvgFill(p_ctx);
+  if (stroke) nvgStroke(p_ctx);
+}
+
 void script_ops_draw_arc(void* v_ctx,
                          float radius,
                          float radians,
