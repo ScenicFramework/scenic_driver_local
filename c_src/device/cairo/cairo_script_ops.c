@@ -141,6 +141,30 @@ void script_ops_draw_rrect(void* v_ctx,
   do_fill_stroke(p_ctx, fill, stroke);
 }
 
+void script_ops_draw_rrectv(void *v_ctx,
+                            float w,
+                            float h,
+                            float ulr,
+                            float urr,
+                            float lrr,
+                            float llr,
+                            bool fill, bool stroke)
+{
+  if (g_opts.debug_mode) {
+    log_script_ops_draw_rrectv(log_prefix, __func__, log_level_info,
+                               w, h, ulr, urr, lrr, llr, fill, stroke);
+  }
+
+  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
+  cairo_arc(p_ctx->cr, 0 + ulr, 0 + ulr, ulr, 2 * (M_PI / 2), 3 * (M_PI / 2));
+  cairo_arc(p_ctx->cr, w - urr, 0 + urr, urr, 3 * (M_PI / 2), 4 * (M_PI / 2));
+  cairo_arc(p_ctx->cr, w - lrr, h - lrr, lrr, 0 * (M_PI / 2), 1 * (M_PI / 2));
+  cairo_arc(p_ctx->cr, 0 + llr, h - llr, llr, 1 * (M_PI / 2), 2 * (M_PI / 2));
+  cairo_close_path(p_ctx->cr);
+
+  do_fill_stroke(p_ctx, fill, stroke);
+}
+
 void script_ops_draw_arc(void* v_ctx,
                          float radius,
                          float radians,
