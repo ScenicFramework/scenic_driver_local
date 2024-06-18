@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   driver_data_t data = {0};
 
   // super simple arg check
-  if (argc != 11) {
+  if (argc != 12) {
     log_error("Wrong number of parameters");
     return -1;
   }
