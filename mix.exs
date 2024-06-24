@@ -2,7 +2,7 @@ defmodule Scenic.Driver.Local.MixProject do
   use Mix.Project
 
   @app_name :scenic_driver_local
-  @version "0.11.0"
+  @version "0.12.0-rc.0"
   @github "https://github.com/ScenicFramework/scenic_driver_local"
 
   def project do
@@ -49,7 +49,7 @@ defmodule Scenic.Driver.Local.MixProject do
   defp deps do
     [
       {:input_event, "~> 1.0 or ~> 0.4"},
-      {:scenic, "~> 0.11.0"},
+      {:scenic, "~> 0.12"},
 
       # Tools
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
