@@ -9,13 +9,13 @@ This driver replaces both `:scenic_driver_glfw` and `:scenic_driver_nerves_rpi` 
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `scenic_driver_local` to your list of dependencies in `mix.exs`:
+scenic_driver_local can be installed by adding `scenic_driver_local` to your
+list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:scenic_driver_local, "~> 0.11.0"}
+    {:scenic_driver_local, "~> 0.12.0"}
   ]
 end
 ```
@@ -35,9 +35,9 @@ Example:
 
 There are quite a few new options as well. It uses `NimbleOptions` to confirm them, so look at the `Scenic.Driver.Local` module for details.
 
-## Targets
+## Targets (Nerves)
 
-This driver figures out what underlying graphics technology to use depending on what your MIX_TARGET is set to.
+This driver figures out what underlying graphics technology to use depending on what your `MIX_TARGET` environment variable is set to.
 
 For example, for apps running on a Mac/PC/Linux, it is usually set to `host`, which causes the driver to use `cairo-gtk` as the underlying tech.
 
@@ -49,7 +49,10 @@ Previous versions of `scenic_driver_local` would use `bcm` (Broadcom Manager) fo
 You can explicitly use these by setting `SCENIC_LOCAL_TARGET=bcm` or `SCENIC_LOCAL_TARGET=drm`, **but these options are being deprecated**.
 Please try the default of `SCENIC_LOCAL_TARGET=cairo-fb` as this should work universally on any Nerves target.
 
-`cairo-fb` will require that your `nerves_system_*` has the `cairo` library selected.
+`cairo-fb` will require that your `nerves_system_*` has the `cairo` library
+selected via the `BR2_PACKAGE_CAIRO=y` buildroot configuration. If you're using
+one of the official nerves systems then `BR2_PACKAGE_CAIRO=y` is configured by
+default if you're using 1.25.0 or greater.
 
 ## Prerequisites
 
@@ -108,6 +111,9 @@ Lastly, install the GLEW package. Find the packaged `include` folder and extract
 
 Once these components have been installed, you should be able to build the `scenic_driver_local` driver.
 
+### Installing on Nerves
+
+See the "Targets" section above
 
 ## Documentation
 
