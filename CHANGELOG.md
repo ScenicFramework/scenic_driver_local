@@ -6,7 +6,7 @@ This is a major update that adds support for Cairo and makes Cairo the default r
 * Add CI - @axelson
 * Updat README for 0.12 - @axelson
 * Improve text handling - @JediLuke
-* Better control of scene element opacity wiht `:clear` background - @seb3s
+* Better control of scene element opacity with `:clear` background - @seb3s
 * Add `input_blacklist` options to remove `InputEvent` streams - @ringlej
 * Fix `script_opts_draw_line` to handle stroke properly - @ringlej
 * Add arc script command - @GPrimola
