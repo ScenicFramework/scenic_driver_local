@@ -2,14 +2,14 @@ defmodule Scenic.Driver.Local.MixProject do
   use Mix.Project
 
   @app_name :scenic_driver_local
-  @version "0.11.0"
+  @version "0.12.0-rc.0"
   @github "https://github.com/ScenicFramework/scenic_driver_local"
 
   def project do
     [
       app: @app_name,
       version: @version,
-      elixir: "~> 1.12",
+      elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       description: description(),
       build_embedded: true,
@@ -48,14 +48,14 @@ defmodule Scenic.Driver.Local.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:input_event, "~> 1.0 or ~> 0.4"},
-      {:scenic, "~> 0.11.0"},
+      {:input_event, "~> 1.4"},
+      {:scenic, "~> 0.12.0-rc.0"},
 
       # Tools
-      {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:elixir_make, "~> 0.6 or ~> 0.7", runtime: false},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.1", only: :dev, runtime: false}
+      {:credo, ">= 1.7.7", only: [:dev, :test], runtime: false},
+      {:elixir_make, "~> 0.8", runtime: false},
+      {:ex_doc, ">= 0.34.1", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.4", only: :dev, runtime: false}
     ]
   end
 

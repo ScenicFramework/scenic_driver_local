@@ -100,107 +100,112 @@ defmodule Scenic.Driver.Local.Input do
     # Logger.warn( "INPUT #{source}: #{inspect(events)}" )
 
     driver =
-      with {:ok, device} <- Map.fetch(input_state, source) do
-        # record the old pos and key state
-        %{abs_pos: old_abs_pos} = device
+      case Map.fetch(input_state, source) do
+        {:ok, device} ->
+          # record the old pos and key state
+          %{abs_pos: old_abs_pos} = device
 
-        # add some zero'd out relative values to the device state
-        device =
-          device
-          |> Map.put(:rel_pos_dx, 0)
-          |> Map.put(:rel_pos_dy, 0)
-          |> Map.put(:rel_wheel_dx, 0)
-          |> Map.put(:rel_wheel_dy, 0)
+          # add some zero'd out relative values to the device state
+          device =
+            device
+            |> Map.put(:rel_pos_dx, 0)
+            |> Map.put(:rel_pos_dy, 0)
+            |> Map.put(:rel_wheel_dx, 0)
+            |> Map.put(:rel_wheel_dy, 0)
 
-        # process the events
-        {device, driver} =
-          Enum.reduce(events, {device, driver}, fn event, {%{debounce: db}, _} = acc ->
-            case Enum.member?(db, event) do
-              true -> acc
-              false -> do_input_event(event, source, acc)
+          # process the events
+          {device, driver} =
+            Enum.reduce(events, {device, driver}, fn event, {%{debounce: db}, _} = acc ->
+              case Enum.member?(db, event) do
+                true -> acc
+                false -> do_input_event(event, source, acc)
+              end
+            end)
+
+          # if the absolute position changed (example: by a touchscreen), then calculate the
+          # normal (not transformed) screen coordinates and move that into the cursor_pos
+          new_abs_pos = device[:abs_pos]
+
+          driver =
+            case new_abs_pos != old_abs_pos do
+              true -> assign(driver, :cursor_pos, new_abs_pos)
+              false -> driver
             end
+
+          # parse rest if the state
+          %{
+            rel_wheel_dx: rel_wheel_dx,
+            rel_wheel_dy: rel_wheel_dy
+          } = device
+
+          %{
+            assigns: %{
+              cursor_pos: new_cursor_pos,
+              keys: new_keys
+            }
+          } = driver
+
+          # calculate the cursor position in scene coordinates
+          scene_pos = scene_coords(new_cursor_pos, device, driver)
+
+          # the regular cursor_scroll event
+          if rel_wheel_dx != 0 || rel_wheel_dy != 0 do
+            # vector = scene_rel({rel_wheel_dx, rel_wheel_dy}, device, driver)
+            vector = {rel_wheel_dx, rel_wheel_dy}
+            send_input(driver, {:cursor_scroll, {vector, scene_pos}})
+          end
+
+          # The cursor itself would have changed if absolute position devices were in use
+          driver =
+            with true <- auto_cursor,
+                 true <- new_cursor_pos != old_cursor_pos do
+              send_input(driver, {:cursor_pos, scene_pos})
+
+              driver
+              |> Cursor.hide()
+              |> Cursor.set_position(new_cursor_pos)
+            else
+              _ -> driver
+            end
+
+          # generate the cursor button events
+          # we didn't generate them at the time the button was pressed because the x/y position
+          # changes are often after them in the event list. So... process the event first then
+          # rescan the events looking for any button events that would trigger an input
+          Enum.each(events, fn
+            {:ev_key, key, value} ->
+              with "btn_" <> _ <- to_string(key) do
+                # special case btn_touch to be a left mouse button press
+                {btn, driver} =
+                  case key do
+                    :btn_touch -> {:btn_left, Cursor.hide(driver)}
+                    btn -> {btn, driver}
+                  end
+
+                send_input(
+                  driver,
+                  {:cursor_button, {btn, value, KeyMap.mods(new_keys), scene_pos}}
+                )
+              end
+
+            _ ->
+              :ok
           end)
 
-        # if the absolute position changed (example: by a touchscreen), then calculate the
-        # normal (not transformed) screen coordinates and move that into the cursor_pos
-        new_abs_pos = device[:abs_pos]
+          # clean up the temporary relative device state
+          device =
+            device
+            |> Map.delete(:rel_pos_dx)
+            |> Map.delete(:rel_pos_dy)
+            |> Map.delete(:rel_wheel_dx)
+            |> Map.delete(:rel_wheel_dy)
 
-        driver =
-          case new_abs_pos != old_abs_pos do
-            true -> assign(driver, :cursor_pos, new_abs_pos)
-            false -> driver
-          end
+          # save the completed device state in the input state
+          input_state = Map.put(input_state, source, device)
+          assign(driver, input_state: input_state)
 
-        # parse rest if the state
-        %{
-          rel_wheel_dx: rel_wheel_dx,
-          rel_wheel_dy: rel_wheel_dy
-        } = device
-
-        %{
-          assigns: %{
-            cursor_pos: new_cursor_pos,
-            keys: new_keys
-          }
-        } = driver
-
-        # calculate the cursor position in scene coordinates
-        scene_pos = scene_coords(new_cursor_pos, device, driver)
-
-        # the regular cursor_scroll event
-        if rel_wheel_dx != 0 || rel_wheel_dy != 0 do
-          # vector = scene_rel({rel_wheel_dx, rel_wheel_dy}, device, driver)
-          vector = {rel_wheel_dx, rel_wheel_dy}
-          send_input(driver, {:cursor_scroll, {vector, scene_pos}})
-        end
-
-        # The cursor itself would have changed if absolute position devices were in use
-        driver =
-          with true <- auto_cursor,
-               true <- new_cursor_pos != old_cursor_pos do
-            send_input(driver, {:cursor_pos, scene_pos})
-
-            driver
-            |> Cursor.hide()
-            |> Cursor.set_position(new_cursor_pos)
-          else
-            _ -> driver
-          end
-
-        # generate the cursor button events
-        # we didn't generate them at the time the button was pressed because the x/y position
-        # changes are often after them in the event list. So... process the event first then
-        # rescan the events looking for any button events that would trigger an input
-        Enum.each(events, fn
-          {:ev_key, key, value} ->
-            with "btn_" <> _ <- to_string(key) do
-              # special case btn_touch to be a left mouse button press
-              {btn, driver} =
-                case key do
-                  :btn_touch -> {:btn_left, Cursor.hide(driver)}
-                  btn -> {btn, driver}
-                end
-
-              send_input(driver, {:cursor_button, {btn, value, KeyMap.mods(new_keys), scene_pos}})
-            end
-
-          _ ->
-            :ok
-        end)
-
-        # clean up the temporary relative device state
-        device =
-          device
-          |> Map.delete(:rel_pos_dx)
-          |> Map.delete(:rel_pos_dy)
-          |> Map.delete(:rel_wheel_dx)
-          |> Map.delete(:rel_wheel_dy)
-
-        # save the completed device state in the input state
-        input_state = Map.put(input_state, source, device)
-        assign(driver, input_state: input_state)
-      else
-        _ -> driver
+        _ ->
+          driver
       end
 
     {:noreply, driver}
