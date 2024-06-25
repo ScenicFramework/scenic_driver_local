@@ -189,7 +189,8 @@ defmodule Scenic.Driver.Local.Callbacks do
   # --------------------------------------------------------
   defp do_put_scripts(%{assigns: %{port: port}, viewport: vp} = driver, ids) do
     Enum.reduce(ids, driver, fn id, driver ->
-      with {:ok, script} <- ViewPort.get_script(vp, id) do
+      case ViewPort.get_script(vp, id) do
+      {:ok, script} ->
         driver = ensure_media(script, driver)
 
         script
@@ -197,7 +198,6 @@ defmodule Scenic.Driver.Local.Callbacks do
         |> ToPort.put_script(id, port)
 
         driver
-      else
         _ -> driver
       end
     end)
