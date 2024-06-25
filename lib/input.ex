@@ -100,7 +100,8 @@ defmodule Scenic.Driver.Local.Input do
     # Logger.warn( "INPUT #{source}: #{inspect(events)}" )
 
     driver =
-      with {:ok, device} <- Map.fetch(input_state, source) do
+      case Map.fetch(input_state, source) do
+        {:ok, device} ->
         # record the old pos and key state
         %{abs_pos: old_abs_pos} = device
 
@@ -199,7 +200,7 @@ defmodule Scenic.Driver.Local.Input do
         # save the completed device state in the input state
         input_state = Map.put(input_state, source, device)
         assign(driver, input_state: input_state)
-      else
+
         _ -> driver
       end
 
