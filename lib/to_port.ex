@@ -191,17 +191,18 @@ defmodule Scenic.Driver.Local.ToPort do
   @doc false
   def reshape(width, height, port) when is_integer(width) and is_integer(height) do
     # enforce a minimum size...
-    w =
-      cond do
-        width < @min_window_width -> @min_window_width
-        true -> width
-      end
+    w = if width < @min_window_width do
+      @min_window_width
+    else
+      width
+    end
 
-    h =
-      cond do
-        height < @min_window_height -> @min_window_height
-        true -> height
-      end
+
+    h = if height < @min_window_height do
+      @min_window_height
+    else
+      height
+    end
 
     msg = <<
       @cmd_reshape::unsigned-integer-size(32)-native,
