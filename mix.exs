@@ -49,7 +49,7 @@ defmodule Scenic.Driver.Local.MixProject do
   defp deps do
     [
       {:input_event, "~> 1.0 or ~> 0.4"},
-      {:scenic, "~> 0.12"},
+      {:scenic, "~> 0.12.0-rc.0"},
 
       # Tools
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
