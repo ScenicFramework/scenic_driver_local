@@ -9,7 +9,7 @@ defmodule Scenic.Driver.Local.MixProject do
     [
       app: @app_name,
       version: @version,
-      elixir: "~> 1.12",
+      elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       description: description(),
       build_embedded: true,
