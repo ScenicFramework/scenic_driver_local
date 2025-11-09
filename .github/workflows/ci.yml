@@ -17,9 +17,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:        
-          - elixir: '1.16.0'
-            otp: '26.2'
+        include:
+          - elixir: '1.16.3'
+            otp: '26.2.5.16'
+          - elixir: '1.19.2'
+            otp: '28.1.1'
 
     steps:
     - uses: actions/checkout@v3
@@ -57,3 +59,4 @@ jobs:
       run: mix credo suggest --min-priority=high
     - name: mix format
       run: mix format --check-formatted
+      if: startsWith(matrix.elixir, '1.19')
