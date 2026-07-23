@@ -94,6 +94,12 @@ void pattern_stack_pop(scenic_cairo_ctx_t* p_ctx)
   if (!ptr) {
     log_error("pattern stack underflow");
   } else {
+    if (p_ctx->pattern.fill && p_ctx->pattern.fill_owned) {
+      cairo_pattern_destroy(p_ctx->pattern.fill);
+    }
+    if (p_ctx->pattern.stroke && p_ctx->pattern.stroke_owned) {
+      cairo_pattern_destroy(p_ctx->pattern.stroke);
+    }
     p_ctx->pattern = ptr->pattern;
     p_ctx->text_align = ptr->text_align;
     p_ctx->text_base = ptr->text_base;

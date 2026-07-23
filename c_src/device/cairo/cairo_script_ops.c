@@ -14,14 +14,22 @@ extern device_opts_t g_opts;
 
 static const char* log_prefix = "cairo";
 
-void set_fill_pattern(scenic_cairo_ctx_t* p_ctx, cairo_pattern_t* pattern)
+void set_fill_pattern(scenic_cairo_ctx_t* p_ctx, cairo_pattern_t* pattern, bool owned)
 {
+  if (p_ctx->pattern.fill && p_ctx->pattern.fill_owned) {
+    cairo_pattern_destroy(p_ctx->pattern.fill);
+  }
   p_ctx->pattern.fill = pattern;
+  p_ctx->pattern.fill_owned = owned;
 }
 
-void set_stroke_pattern(scenic_cairo_ctx_t* p_ctx, cairo_pattern_t* pattern)
+void set_stroke_pattern(scenic_cairo_ctx_t* p_ctx, cairo_pattern_t* pattern, bool owned)
 {
+  if (p_ctx->pattern.stroke && p_ctx->pattern.stroke_owned) {
+    cairo_pattern_destroy(p_ctx->pattern.stroke);
+  }
   p_ctx->pattern.stroke = pattern;
+  p_ctx->pattern.stroke_owned = owned;
 }
 
 void do_fill_stroke(scenic_cairo_ctx_t* p_ctx, bool fill, bool stroke)
@@ -671,7 +679,7 @@ void script_ops_fill_color(void* v_ctx,
                                                           color.green / 255.0f,
                                                           color.blue / 255.0f,
                                                           color.alpha / 255.0f);
-  set_fill_pattern(p_ctx, color_rgba);
+  set_fill_pattern(p_ctx, color_rgba, true);
 }
 
 void script_ops_fill_linear(void* v_ctx,
@@ -697,7 +705,7 @@ void script_ops_fill_linear(void* v_ctx,
                                     color_end.green / 255.0f,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
-  set_fill_pattern(p_ctx, linear_gradient);
+  set_fill_pattern(p_ctx, linear_gradient, true);
 }
 
 void script_ops_fill_radial(void* v_ctx,
@@ -728,7 +736,7 @@ void script_ops_fill_radial(void* v_ctx,
                                     color_end.green / 255.0f,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
-  set_fill_pattern(p_ctx, radial_gradient);
+  set_fill_pattern(p_ctx, radial_gradient, true);
 }
 
 void script_ops_fill_image(void* v_ctx, sid_t id)
@@ -747,7 +755,7 @@ void script_ops_fill_image(void* v_ctx, sid_t id)
   image_pattern_data_t* image_data = find_image_pattern(p_ctx, p_image->image_id);
 
   cairo_set_antialias(p_ctx->cr, CAIRO_ANTIALIAS_NONE);
-  set_fill_pattern(p_ctx, image_data->pattern);
+  set_fill_pattern(p_ctx, image_data->pattern, false);
 }
 
 void script_ops_fill_stream(void* v_ctx,
@@ -788,7 +796,7 @@ void script_ops_stroke_color(void* v_ctx,
                                                           color.green / 255.0f,
                                                           color.blue / 255.0f,
                                                           color.alpha / 255.0f);
-  set_stroke_pattern(p_ctx, color_rgba);
+  set_stroke_pattern(p_ctx, color_rgba, true);
 }
 
 void script_ops_stroke_linear(void* v_ctx,
@@ -814,7 +822,7 @@ void script_ops_stroke_linear(void* v_ctx,
                                     color_end.green / 255.0f,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
-  set_stroke_pattern(p_ctx, linear_gradient);
+  set_stroke_pattern(p_ctx, linear_gradient, true);
 }
 
 void script_ops_stroke_radial(void* v_ctx,
@@ -845,7 +853,7 @@ void script_ops_stroke_radial(void* v_ctx,
                                     color_end.green / 255.0f,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
-  set_stroke_pattern(p_ctx, radial_gradient);
+  set_stroke_pattern(p_ctx, radial_gradient, true);
 }
 
 void script_ops_stroke_image(void* v_ctx, sid_t id)
@@ -864,7 +872,7 @@ void script_ops_stroke_image(void* v_ctx, sid_t id)
   image_pattern_data_t* image_data = find_image_pattern(p_ctx, p_image->image_id);
 
   cairo_set_antialias(p_ctx->cr, CAIRO_ANTIALIAS_NONE);
-  set_stroke_pattern(p_ctx, image_data->pattern);
+  set_stroke_pattern(p_ctx, image_data->pattern, false);
 }
 
 void script_ops_stroke_stream(void* v_ctx,

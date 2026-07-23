@@ -2,12 +2,15 @@
 
 #include <cairo.h>
 #include <ft2build.h>
+#include <stdbool.h>
 #include FT_FREETYPE_H
 #include "script_ops.h"
 
 typedef struct {
   cairo_pattern_t* fill;
   cairo_pattern_t* stroke;
+  bool fill_owned;
+  bool stroke_owned;
 } fill_stroke_pattern_t;
 
 typedef struct pattern_stack_t_ {
