@@ -117,9 +117,21 @@ defmodule Scenic.Driver.Local.FromPort do
         System.halt(reason)
         {:noreply, assign(driver, :closing, true)}
 
-      {module, _fun, 1} ->
-        module.fun(reason)
-        {:noreply, assign(driver, :closing, true)}
+      {module, fun, args} when is_list(args) ->
+        case apply(module, fun, [reason | args]) do
+          :cancel ->
+            {:noreply, assign(driver, :closing, false)}
+
+          :authorize ->
+            Scenic.Driver.Local.ToPort.close(driver.assigns.port)
+            {:noreply, assign(driver, :closing, true)}
+
+          :defer ->
+            {:noreply, assign(driver, :closing, false)}
+
+          other ->
+            raise ArgumentError, "invalid on_close callback result: #{inspect(other)}"
+        end
     end
   end
 
