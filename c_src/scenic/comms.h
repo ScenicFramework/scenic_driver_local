@@ -141,5 +141,6 @@ void send_cursor_enter(int entered, float xpos, float ypos);
 void send_close( int reason );
 void send_ready();
 void handle_stdio_in(driver_data_t* p_data);
+void take_screenshot(uint32_t* p_msg_length, driver_data_t* p_data);
 
 int64_t monotonic_time();

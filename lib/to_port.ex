@@ -32,6 +32,7 @@ defmodule Scenic.Driver.Local.ToPort do
 
   @cmd_put_font 0x40
   @cmd_put_img 0x41
+  @cmd_screenshot 0x50
 
   @min_window_width 40
   @min_window_height 20
@@ -164,6 +165,7 @@ defmodule Scenic.Driver.Local.ToPort do
 
   @doc false
   def render(port) do
+    :telemetry.execute([:render, :start], %{timestamp: :erlang.system_time()})
     Port.command(port, <<@cmd_render::unsigned-integer-size(32)-native>>)
   end
 
@@ -303,6 +305,17 @@ defmodule Scenic.Driver.Local.ToPort do
       >>,
       id,
       bin
+    ]
+
+    Port.command(port, msg)
+  end
+
+  @doc false
+  def screenshot(path, port) when is_binary(path) do
+    msg = [
+      <<@cmd_screenshot::unsigned-integer-size(32)-native>>,
+      <<byte_size(path)::unsigned-integer-size(32)-native>>,
+      path
     ]
 
     Port.command(port, msg)

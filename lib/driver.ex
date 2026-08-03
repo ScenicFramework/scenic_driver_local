@@ -70,6 +70,12 @@ defmodule Scenic.Driver.Local do
   alias Scenic.Math.Matrix
   alias Scenic.Math.Vector2
 
+  @doc "Cancel a deferred native close request and allow future requests."
+  def cancel_close(driver), do: send(driver, :_cancel_close_)
+
+  @doc "Authorize a deferred native close request exactly once."
+  def authorize_close(driver), do: send(driver, :_authorize_close_)
+
   @port ~c"/scenic_driver_local"
 
   # @root_id Scenic.ViewPort.root_id()
@@ -177,6 +183,13 @@ defmodule Scenic.Driver.Local do
 
   def hide_cursor(pid) do
     Process.send(pid, :_hide_cursor_, [])
+  end
+
+  @spec screenshot(driver :: pid | Driver.t(), path :: String.t()) :: :ok
+  def screenshot(%Scenic.Driver{pid: pid}, path), do: screenshot(pid, path)
+
+  def screenshot(pid, path) when is_binary(path) do
+    Process.send(pid, {:_screenshot_, path}, [])
   end
 
   defp put_if_set(opts, key, value)
@@ -308,6 +321,9 @@ defmodule Scenic.Driver.Local do
   @impl Scenic.Driver
   defdelegate clear_color(color, driver), to: Callbacks
 
+  @doc false
+  defdelegate screenshot(path, driver), to: Callbacks
+
   # --------------------------------------------------------
 
   @doc false
@@ -400,8 +416,26 @@ defmodule Scenic.Driver.Local do
     {:noreply, Cursor.hide(driver)}
   end
 
+  def handle_info(:_cancel_close_, driver) do
+    {:noreply, assign(driver, :closing, false)}
+  end
+
+  def handle_info(:_authorize_close_, %{assigns: %{closing: true}} = driver) do
+    {:noreply, driver}
+  end
+
+  def handle_info(:_authorize_close_, %{assigns: %{port: port}} = driver) do
+    ToPort.close(port)
+    {:noreply, assign(driver, :closing, true)}
+  end
+
   def handle_info({:_clear_input_debounce_, source, event}, driver) do
     {:noreply, Input.clear_input_debounce(source, event, driver)}
+  end
+
+  def handle_info({:_screenshot_, path}, driver) do
+    {:ok, driver} = Callbacks.screenshot(path, driver)
+    {:noreply, driver}
   end
 
   def handle_info(_msg, driver) do

@@ -21,11 +21,13 @@ The caller will typically be erlang, so use the 2-byte length indicator
 #include "script.h"
 #include "utils.h"
 
+// handy time definitions in microseconds
+#define MILLISECONDS_8 8000
+
 // Setting the timeout too high means input will be laggy as you
 // are starving the input polling. Setting it too low means using
-// energy for no purpose. Probably best if set similar to the
-// frame rate of the application
-#define STDIO_TIMEOUT 32
+// energy for no purpose.
+#define STDIO_TIMEOUT MILLISECONDS_8
 
 extern device_info_t g_device_info;
 extern device_opts_t g_opts;
