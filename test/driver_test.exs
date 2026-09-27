@@ -35,4 +35,21 @@ defmodule Scenic.Driver.LocalTest do
 
     assert validation_error.message =~ "expected :name"
   end
+
+  test "set_cursor/2 with a driver struct sends set_cursor to the driver" do
+    Scenic.Driver.Local.set_cursor(%Scenic.Driver{pid: self()}, :touch_spot)
+    assert_receive({:_set_cursor_, :touch_spot})
+  end
+
+  test "hide_cursor/1 with a driver struct sends hide_cursor to the driver" do
+    Scenic.Driver.Local.hide_cursor(%Scenic.Driver{pid: self()})
+    assert_receive(:_hide_cursor_)
+  end
+
+  test "the show_cursor message shows the cursor" do
+    driver = %Scenic.Driver{assigns: %{cursor_showing: false}}
+
+    assert {:noreply, %{assigns: %{cursor_showing: true}}} =
+             Scenic.Driver.Local.handle_info(:_show_cursor_, driver)
+  end
 end
