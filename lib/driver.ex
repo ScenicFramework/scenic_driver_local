@@ -159,7 +159,7 @@ defmodule Scenic.Driver.Local do
   # number of clients.
 
   @spec set_cursor(driver :: pid | Driver.t(), cursor :: Cursor.t()) :: :ok
-  def set_cursor(%Scenic.Driver{pid: pid}, cursor), do: position(pid, cursor)
+  def set_cursor(%Scenic.Driver{pid: pid}, cursor), do: set_cursor(pid, cursor)
 
   def set_cursor(pid, cursor) when is_atom(cursor) or is_list(cursor) do
     Process.send(pid, {:_set_cursor_, cursor}, [])
@@ -173,7 +173,7 @@ defmodule Scenic.Driver.Local do
   end
 
   @spec hide_cursor(driver :: pid | Driver.t()) :: :ok
-  def hide_cursor(%Scenic.Driver{pid: pid}), do: show_cursor(pid)
+  def hide_cursor(%Scenic.Driver{pid: pid}), do: hide_cursor(pid)
 
   def hide_cursor(pid) do
     Process.send(pid, :_hide_cursor_, [])
@@ -397,7 +397,7 @@ defmodule Scenic.Driver.Local do
   end
 
   def handle_info(:_show_cursor_, driver) do
-    {:noreply, Cursor.hide(driver)}
+    {:noreply, Cursor.show(driver)}
   end
 
   def handle_info({:_clear_input_debounce_, source, event}, driver) do
