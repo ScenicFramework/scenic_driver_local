@@ -150,7 +150,7 @@ defmodule Scenic.Driver.Local.ToPort do
   def del_script(id, port) do
     msg = [
       <<@cmd_del_script::unsigned-integer-size(32)-native>>,
-      <<byte_size(id)::integer-size(32)-big>>,
+      <<byte_size(id)::integer-size(32)-native>>,
       id
     ]
 
