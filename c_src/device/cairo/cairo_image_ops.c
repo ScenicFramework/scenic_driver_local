@@ -63,10 +63,24 @@ int delete_image_pattern(scenic_cairo_ctx_t* p_ctx, int id)
   return 0;
 }
 
+// Converts straight-alpha RGBA to the premultiplied ARGB that
+// CAIRO_FORMAT_ARGB32 requires. Without premultiplying, transparent pixels
+// keep their color (often white) and get added onto whatever is underneath.
 static
 uint32_t convert_rgba_to_argb(uint32_t pixel)
 {
-  return ((pixel & 0xFFFFFF00) >> 8) | ((pixel & 0xFF) << 24);
+  uint32_t a = pixel & 0xFF;
+  uint32_t r = (pixel >> 24) & 0xFF;
+  uint32_t g = (pixel >> 16) & 0xFF;
+  uint32_t b = (pixel >> 8) & 0xFF;
+
+  if (a != 0xFF) {
+    r = (r * a + 127) / 255;
+    g = (g * a + 127) / 255;
+    b = (b * a + 127) / 255;
+  }
+
+  return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
 int32_t image_ops_create(void* v_ctx,
