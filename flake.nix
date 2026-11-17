@@ -42,7 +42,13 @@
             xorg.libX11
             xorg.libXau
             xorg.libXdmcp
-          ] ++ optional stdenv.isLinux inotify-tools
+          ] ++ optionals stdenv.isLinux [
+            inotify-tools
+            # heap tools and a headless display for scripts/repro
+            valgrind
+            heaptrack
+            xvfb-run
+          ]
           ++ optional stdenv.isDarwin terminal-notifier
           ++ optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [
             CoreFoundation
