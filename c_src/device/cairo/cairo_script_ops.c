@@ -264,11 +264,13 @@ void script_ops_draw_text(void* v_ctx,
 
   scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)v_ctx;
 
+  // text_to_glyphs returns early without writing the counts if the font is
+  // already in an error state, so start them at zero.
   cairo_glyph_t* glyphs = NULL;
-  int glyph_count;
+  int glyph_count = 0;
   cairo_text_cluster_t* clusters = NULL;
-  int cluster_count;
-  cairo_text_cluster_flags_t cluster_flags;
+  int cluster_count = 0;
+  cairo_text_cluster_flags_t cluster_flags = 0;
 
   cairo_scaled_font_t* scaled_font = cairo_get_scaled_font(p_ctx->cr);
   cairo_status_t status = cairo_scaled_font_text_to_glyphs(scaled_font,
@@ -333,6 +335,12 @@ void script_ops_draw_text(void* v_ctx,
     log_error("%s: cairo_scaled_font_text_to_glyphs: error %d", __func__, status);
   }
   cairo_restore(p_ctx->cr);
+
+  // The caller owns both arrays. On failure cairo frees anything it
+  // allocated and leaves the pointers NULL, so freeing here is safe on
+  // every path.
+  cairo_glyph_free(glyphs);
+  cairo_text_cluster_free(clusters);
 }
 
 static void draw_sprite(scenic_cairo_ctx_t* p_ctx,
