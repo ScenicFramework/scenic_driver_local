@@ -74,7 +74,10 @@ void pattern_stack_push(scenic_cairo_ctx_t* p_ctx)
 {
   pattern_stack_t* ptr = (pattern_stack_t*)malloc(sizeof(pattern_stack_t));
 
+  // the saved entry shares the current patterns, with its own references
   ptr->pattern = p_ctx->pattern;
+  cairo_pattern_reference(ptr->pattern.fill);
+  cairo_pattern_reference(ptr->pattern.stroke);
   ptr->text_align = p_ctx->text_align;
   ptr->text_base = p_ctx->text_base;
 
@@ -94,6 +97,10 @@ void pattern_stack_pop(scenic_cairo_ctx_t* p_ctx)
   if (!ptr) {
     log_error("pattern stack underflow");
   } else {
+    // drop the patterns set since the push; the saved entry's references
+    // move back to the context
+    cairo_pattern_destroy(p_ctx->pattern.fill);
+    cairo_pattern_destroy(p_ctx->pattern.stroke);
     p_ctx->pattern = ptr->pattern;
     p_ctx->text_align = ptr->text_align;
     p_ctx->text_base = ptr->text_base;

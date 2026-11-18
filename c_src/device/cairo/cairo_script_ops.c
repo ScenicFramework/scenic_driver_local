@@ -14,13 +14,21 @@ extern device_opts_t g_opts;
 
 static const char* log_prefix = "cairo";
 
+// The context holds its own reference to the current fill and stroke
+// patterns, and so does every entry on the pattern stack. Setting a pattern
+// takes a reference to the new one and drops the one it replaces, so a caller
+// that created the pattern still has to destroy its own reference.
 void set_fill_pattern(scenic_cairo_ctx_t* p_ctx, cairo_pattern_t* pattern)
 {
+  cairo_pattern_reference(pattern);
+  cairo_pattern_destroy(p_ctx->pattern.fill);
   p_ctx->pattern.fill = pattern;
 }
 
 void set_stroke_pattern(scenic_cairo_ctx_t* p_ctx, cairo_pattern_t* pattern)
 {
+  cairo_pattern_reference(pattern);
+  cairo_pattern_destroy(p_ctx->pattern.stroke);
   p_ctx->pattern.stroke = pattern;
 }
 
@@ -705,6 +713,7 @@ void script_ops_fill_color(void* v_ctx,
                                                           color.blue / 255.0f,
                                                           color.alpha / 255.0f);
   set_fill_pattern(p_ctx, color_rgba);
+  cairo_pattern_destroy(color_rgba);
 }
 
 void script_ops_fill_linear(void* v_ctx,
@@ -731,6 +740,7 @@ void script_ops_fill_linear(void* v_ctx,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
   set_fill_pattern(p_ctx, linear_gradient);
+  cairo_pattern_destroy(linear_gradient);
 }
 
 void script_ops_fill_radial(void* v_ctx,
@@ -762,6 +772,7 @@ void script_ops_fill_radial(void* v_ctx,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
   set_fill_pattern(p_ctx, radial_gradient);
+  cairo_pattern_destroy(radial_gradient);
 }
 
 void script_ops_fill_image(void* v_ctx, sid_t id)
@@ -822,6 +833,7 @@ void script_ops_stroke_color(void* v_ctx,
                                                           color.blue / 255.0f,
                                                           color.alpha / 255.0f);
   set_stroke_pattern(p_ctx, color_rgba);
+  cairo_pattern_destroy(color_rgba);
 }
 
 void script_ops_stroke_linear(void* v_ctx,
@@ -848,6 +860,7 @@ void script_ops_stroke_linear(void* v_ctx,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
   set_stroke_pattern(p_ctx, linear_gradient);
+  cairo_pattern_destroy(linear_gradient);
 }
 
 void script_ops_stroke_radial(void* v_ctx,
@@ -879,6 +892,7 @@ void script_ops_stroke_radial(void* v_ctx,
                                     color_end.blue / 255.0f,
                                     color_end.alpha / 255.0f);
   set_stroke_pattern(p_ctx, radial_gradient);
+  cairo_pattern_destroy(radial_gradient);
 }
 
 void script_ops_stroke_image(void* v_ctx, sid_t id)
