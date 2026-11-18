@@ -153,6 +153,12 @@ defmodule Scenic.Driver.Local.Callbacks do
     {:ok, driver}
   end
 
+  @doc false
+  def screenshot(path, %{assigns: %{port: port}} = driver) do
+    ToPort.screenshot(path, port)
+    {:ok, driver}
+  end
+
   # ============================================================================
   # message handlers
 

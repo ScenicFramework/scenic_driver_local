@@ -108,6 +108,15 @@ void scenic_ops_put_image(uint32_t* p_msg_length, driver_data_t* p_data)
 }
 
 inline
+void scenic_ops_screenshot(uint32_t* p_msg_length, driver_data_t* p_data)
+{
+  if (p_data->debug_mode) {
+    log_info("%s", __func__);
+  }
+  take_screenshot(p_msg_length, p_data);
+}
+
+inline
 void scenic_ops_crash()
 {
   receive_crash();
@@ -152,6 +161,9 @@ void dispatch_scenic_ops(uint32_t msg_length, driver_data_t* p_data)
     break;
   case scenic_op_put_image:
     scenic_ops_put_image(&msg_length, p_data);
+    break;
+  case scenic_op_screenshot:
+    scenic_ops_screenshot(&msg_length, p_data);
     break;
   case scenic_op_crash:
     scenic_ops_crash();

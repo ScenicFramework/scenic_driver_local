@@ -76,11 +76,6 @@ else ifeq ($(SCENIC_LOCAL_TARGET),cairo-fb)
 		c_src/device/cairo/cairo_fb.c
 
 else ifeq ($(SCENIC_LOCAL_TARGET),glfw)
-$(info )
-$(info **********************************************************************************)
-$(info SCENIC_LOCAL_TARGET=glfw is deprecated. Please use `SCENIC_LOCAL_TARGET=cairo-gtk`)
-$(info **********************************************************************************)
-$(info )
 
 	CFLAGS = -O3 -std=c99
 

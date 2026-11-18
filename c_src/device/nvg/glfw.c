@@ -21,6 +21,9 @@
 #include "nanovg/nanovg.h"
 #include "nanovg/nanovg_gl.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "nanovg/stb_image_write.h"
+
 #include "scenic_types.h"
 #include "utils.h"
 #include "comms.h"
@@ -240,6 +243,10 @@ NVGcontext* setup_window(GLFWwindow* window, const device_opts_t* p_opts)
   // set the initial clear color
   glClearColor(0.0, 0.0, 0.0, 1.0);
 
+  // Disable vsync to reduce input latency
+  // (vsync can cause up to 16ms+ delays per frame)
+  glfwSwapInterval(0);
+
   // return the nvg context
   return p_ctx;
 }
@@ -368,5 +375,63 @@ void device_end_render(driver_data_t* p_data)
 void device_poll()
 {
   glfwPollEvents();
+}
+
+//---------------------------------------------------------
+void take_screenshot(uint32_t* p_msg_length, driver_data_t* p_data)
+{
+  uint32_t path_len;
+  char* path;
+
+  // Read the file path length
+  read_bytes_down(&path_len, sizeof(uint32_t), p_msg_length);
+
+  // Allocate and read the path
+  path = malloc(path_len + 1);
+  read_bytes_down(path, path_len, p_msg_length);
+  path[path_len] = '\0'; // Null terminate
+
+  // Get actual framebuffer dimensions using OpenGL viewport
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  int width = viewport[2];
+  int height = viewport[3];
+
+  // Ensure proper pixel alignment
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+  // Allocate buffer for pixel data (RGBA format)
+  unsigned char* pixels = malloc(width * height * 4);
+
+  // Read pixels from front buffer (what's currently displayed)
+  glReadBuffer(GL_FRONT);
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+  // Flip image vertically and convert RGBA to RGB
+  unsigned char* flipped = malloc(width * height * 3);
+  for(int y = 0; y < height; y++) {
+    for(int x = 0; x < width; x++) {
+      int src_idx = ((height - 1 - y) * width + x) * 4;  // RGBA source
+      int dst_idx = (y * width + x) * 3;                 // RGB destination
+      flipped[dst_idx + 0] = pixels[src_idx + 0];  // R
+      flipped[dst_idx + 1] = pixels[src_idx + 1];  // G
+      flipped[dst_idx + 2] = pixels[src_idx + 2];  // B
+    }
+  }
+
+  // Write PNG file
+  int result = stbi_write_png(path, width, height, 3, flipped, width * 3);
+
+  // Cleanup
+  free(pixels);
+  free(flipped);
+  free(path);
+
+  // Log result
+  if(result) {
+    log_info("Screenshot saved successfully");
+  } else {
+    log_error("Failed to save screenshot");
+  }
 }
 

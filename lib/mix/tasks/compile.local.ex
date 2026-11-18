@@ -21,7 +21,7 @@ defmodule Mix.Tasks.Compile.ScenicDriverLocal do
     with nil <- System.get_env("SCENIC_LOCAL_TARGET") do
       case target() do
         n when n in [:dev, :host] ->
-          System.put_env("SCENIC_LOCAL_TARGET", "cairo-gtk")
+          System.put_env("SCENIC_LOCAL_TARGET", "glfw")
 
         _ ->
           System.put_env("SCENIC_LOCAL_TARGET", "cairo-fb")
