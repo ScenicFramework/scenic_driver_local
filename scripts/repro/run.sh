@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Build the cairo-gtk driver and run one of the scripts in scripts/repro
-# against it:
+# Build the driver and run one of the scripts in scripts/repro against it:
 #
 #   scripts/repro/run.sh SCRIPT.exs
 #
-# Environment variables are passed through to the script. See README.md.
+# REPRO_TARGET picks the backend: cairo-gtk (the default) or cairo-fb, which
+# also needs REPRO_FBDEV set to a framebuffer device. Other environment
+# variables are passed through to the script. See README.md.
 #
 # macOS: runs natively; the scripts attribute leaks with `leaks`.
 # Linux: the scripts attribute leaks with valgrind or heaptrack. If one of
@@ -34,7 +35,42 @@ if [ "$(uname -s)" = "Linux" ]; then
   fi
 fi
 
-export SCENIC_LOCAL_TARGET=cairo-gtk
+target="${REPRO_TARGET:-cairo-gtk}"
+
+case "$target" in
+  cairo-gtk) ;;
+  cairo-fb)
+    # The port draws straight into this device, so it must be one that isn't
+    # anybody's screen: the kernel's virtual framebuffer (modprobe vfb).
+    fbdev="${REPRO_FBDEV:-}"
+    if [ -z "$fbdev" ]; then
+      echo "REPRO_TARGET=cairo-fb needs REPRO_FBDEV, e.g. REPRO_FBDEV=/dev/fb1" >&2
+      echo "create a virtual framebuffer with: sudo modprobe vfb vfb_enable=1" >&2
+      exit 1
+    fi
+    fbname="$(cat "/sys/class/graphics/$(basename "$fbdev")/name" 2>/dev/null || true)"
+    if [ "$fbname" != "Virtual FB" ] && [ -z "${REPRO_ALLOW_REAL_FB:-}" ]; then
+      echo "$fbdev is '${fbname:-unknown}', not a virtual framebuffer; the port would draw over a real screen." >&2
+      echo "set REPRO_ALLOW_REAL_FB=1 if that is what you want" >&2
+      exit 1
+    fi
+    # The port retries a failed open for 60 seconds, so check first.
+    if [ ! -r "$fbdev" ] || [ ! -w "$fbdev" ]; then
+      echo "no read/write access to $fbdev ($(ls -l "$fbdev" 2>/dev/null))" >&2
+      exit 1
+    fi
+    export REPRO_FBDEV="$fbdev"
+    # The Makefile builds this target without debug info, and the leak tools
+    # need it to tell driver frames from library frames.
+    export CFLAGS="${CFLAGS:--O2 -g}"
+    ;;
+  *)
+    echo "REPRO_TARGET=$target is not supported (cairo-gtk or cairo-fb)" >&2
+    exit 1
+    ;;
+esac
+
+export SCENIC_LOCAL_TARGET="$target"
 export MIX_ENV="${MIX_ENV:-dev}"
 
 # The Makefile only rebuilds when a C source changes, not when the target
@@ -49,7 +85,7 @@ mix compile
 # desktop nor take input focus. REPRO_SHOW_WINDOW=1 uses the real display.
 # (the ${run[@]+...} form below keeps bash 3.2 on macOS happy under set -u)
 run=()
-if [ "$(uname -s)" = "Linux" ] && [ -z "${REPRO_SHOW_WINDOW:-}" ]; then
+if [ "$target" = "cairo-gtk" ] && [ "$(uname -s)" = "Linux" ] && [ -z "${REPRO_SHOW_WINDOW:-}" ]; then
   if have xvfb-run; then
     echo "running on a virtual display (xvfb-run); set REPRO_SHOW_WINDOW=1 to see the windows"
     run=(env -u WAYLAND_DISPLAY GDK_BACKEND=x11 xvfb-run -a)
@@ -60,5 +96,5 @@ if [ "$(uname -s)" = "Linux" ] && [ -z "${REPRO_SHOW_WINDOW:-}" ]; then
   fi
 fi
 
-echo "driver commit: $(git rev-parse --short HEAD)$(git diff --quiet HEAD -- c_src || echo ' (c_src modified)')"
+echo "driver commit: $(git rev-parse --short HEAD)$(git diff --quiet HEAD -- c_src || echo ' (c_src modified)'), target: $target"
 ${run[@]+"${run[@]}"} mix run --no-start "scripts/repro/$script"

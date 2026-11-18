@@ -1,8 +1,8 @@
 # Leak reproduction scripts (cairo)
 
-Two scripts that build the real driver with `SCENIC_LOCAL_TARGET=cairo-gtk`,
-start the port binary directly and talk to it over the normal port protocol
-(no ViewPort), then measure what it leaks:
+Two scripts that build the real driver for a cairo backend (`cairo-gtk` by
+default, or `cairo-fb`), start the port binary directly and talk to it over
+the normal port protocol (no ViewPort), then measure what it leaks:
 
 - `leak_sweep.sh` exercises every script op and port command, one at a time,
   and reports which of them leak.
@@ -39,6 +39,31 @@ The scripts work out the environment for themselves:
 
 The port's stderr (GTK and fontconfig warnings, messages from the heap tools)
 goes to a log file in the temp directory, not the terminal.
+
+## Testing the framebuffer backend
+
+`REPRO_TARGET=cairo-fb` builds and runs the `cairo-fb` backend. It draws
+straight into a framebuffer device, so give it one that is nobody's screen:
+the kernel's virtual framebuffer.
+
+```sh
+sudo modprobe vfb vfb_enable=1        # creates a new /dev/fbN
+grep . /sys/class/graphics/fb*/name   # the one named "Virtual FB"
+sudo chmod a+rw /dev/fb1              # unless you are in the video group
+
+REPRO_TARGET=cairo-fb REPRO_FBDEV=/dev/fb1 scripts/repro/leak_sweep.sh
+```
+
+`REPRO_FBDEV` is required, and the scripts refuse a device that isn't a
+virtual framebuffer unless `REPRO_ALLOW_REAL_FB=1` is set. The backend is
+built with `-g` here (the Makefile leaves it out for this target) because the
+leak tools need debug info to recognise driver frames.
+
+The virtual framebuffer starts at 640x480 and 8 bits per pixel, which runs
+the driver's colour-map path. The driver also handles 16, 24 and 32 bits;
+changing the device's mode takes an `FBIOPUT_VSCREENINFO` ioctl (`fbset`,
+where available). Its default 1 MB of video memory fits 640x480 at 16 bits or
+400x300 at 32.
 
 ## Leak tools
 

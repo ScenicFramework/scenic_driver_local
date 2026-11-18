@@ -46,7 +46,10 @@ defmodule Repro do
   #
   # `wrapper` is a command (list of words) to run the port under.
   def open_port(env \\ [], wrapper \\ [], {width, height} \\ {400, 300}) do
-    args = ~w(0 0 255 1 0 0 #{width} #{height} 0 /dev/fb0 scenic_repro)
+    # Only the cairo-fb target opens the framebuffer device; run.sh sets
+    # REPRO_FBDEV for it after checking the device is a virtual one.
+    fbdev = System.get_env("REPRO_FBDEV", "/dev/fb0")
+    args = ~w(0 0 255 1 0 0 #{width} #{height} 0 #{fbdev} scenic_repro)
 
     {exe, args} =
       case wrapper do
@@ -648,9 +651,15 @@ defmodule Repro do
 
   def parse_heaptrack_stacks(text) do
     sources = driver_sources()
+    lines = String.split(text, "\n", trim: true)
 
-    text
-    |> String.split("\n", trim: true)
+    # Every stack passes through main(), so if no line has a driver frame the
+    # binary has no debug info and every row would be silently dropped.
+    if lines != [] and not Enum.any?(lines, &heaptrack_has_driver_frame?(&1, sources)) do
+      raise "no driver frames in the heaptrack stacks: build the port with debug info (-g)"
+    end
+
+    lines
     |> Enum.flat_map(fn line ->
       with [_, stack, cost] <- Regex.run(~r/^(.*) (-?\d+)$/, line),
            frames = stack |> String.split(";", trim: true) |> Enum.reverse(),
@@ -670,6 +679,10 @@ defmodule Repro do
     end)
     |> merge_rows()
     |> Enum.filter(&(&1.bytes > 0))
+  end
+
+  defp heaptrack_has_driver_frame?(line, sources) do
+    line |> String.split(";") |> Enum.any?(&heaptrack_driver_frame?(&1, sources))
   end
 
   defp heaptrack_driver_frame?(frame, sources) do
