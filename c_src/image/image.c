@@ -77,6 +77,10 @@ void reset_images(void* v_ctx)
 }
 
 //---------------------------------------------------------
+// Reads the rest of the message and converts it to RGBA in p_pixels.
+// Returns 0 on success. Returns -1, leaving p_pixels untouched, if the data
+// can't be decoded or doesn't hold a width x height image. The message is
+// consumed either way.
 int read_pixels(void* p_pixels,
                 uint32_t width, uint32_t height,
                 image_format_t format_in,
@@ -97,12 +101,34 @@ int read_pixels(void* p_pixels,
   int x, y, comp;
   void* p_temp = NULL;
 
+  // raw formats must supply every pixel, or the loops below read past the
+  // end of the buffer
+  unsigned int bytes_per_pixel = 0;
+  switch (format_in) {
+  case IMAGE_FORMAT_GRAY:       bytes_per_pixel = 1; break;
+  case IMAGE_FORMAT_GRAY_ALPHA: bytes_per_pixel = 2; break;
+  case IMAGE_FORMAT_RGB:        bytes_per_pixel = 3; break;
+  case IMAGE_FORMAT_RGBA:       bytes_per_pixel = 4; break;
+  default: break;
+  }
+  if ((uint64_t)pixel_count * bytes_per_pixel > (uint64_t)buffer_size) {
+    log_error("Image data too short: %d bytes for %ux%u", buffer_size, width, height);
+    free(p_buffer);
+    return -1;
+  }
+
   switch (format_in) {
   case IMAGE_FORMAT_FILE:
     p_temp = (void*)stbi_load_from_memory(p_buffer, buffer_size, &x, &y, &comp, 4);
-    if (p_temp && (x != width || y != height)) {
+    if (!p_temp) {
+      log_error("Unable to decode image: %s", stbi_failure_reason());
+      free(p_buffer);
+      return -1;
+    }
+    if (x != width || y != height) {
       send_puts("Image size mismatch!!");
       free(p_temp);
+      free(p_buffer);
       return -1;
     }
     memcpy(p_pixels, p_temp, pixel_count * 4);
@@ -224,7 +250,12 @@ void put_image(uint32_t* p_msg_length, void* v_ctx)
     p_image->p_pixels = ((void*)p_image) + struct_size + id_size;
 
     // get the image data in pixel format
-    read_pixels(p_image->p_pixels, width, height, format, p_msg_length);
+    if (read_pixels(p_image->p_pixels, width, height, format, p_msg_length) != 0) {
+      // nothing usable arrived, so don't create an image from garbage
+      free(p_image);
+      free(p_temp_id);
+      return;
+    }
 
     // create a texture from the pixel data
     p_image->image_id = image_ops_create(v_ctx, width, height, p_image->p_pixels);
@@ -235,8 +266,10 @@ void put_image(uint32_t* p_msg_length, void* v_ctx)
   } else {
     // the image already exists and is the right size.
     // can save some bit of work by replacing the pixels of the existing image
-    read_pixels(p_image->p_pixels, width, height, format, p_msg_length);
-    image_ops_update(v_ctx, p_image->image_id, p_image->p_pixels);
+    // on failure the existing pixels are untouched, so keep showing them
+    if (read_pixels(p_image->p_pixels, width, height, format, p_msg_length) == 0) {
+      image_ops_update(v_ctx, p_image->image_id, p_image->p_pixels);
+    }
   }
 
   free(p_temp_id);
