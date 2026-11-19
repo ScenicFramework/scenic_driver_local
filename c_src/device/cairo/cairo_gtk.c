@@ -198,15 +198,27 @@ int device_init(const device_opts_t* p_opts,
   return 0;
 }
 
+static gboolean quit_main_loop(gpointer data)
+{
+  gtk_main_quit();
+  return G_SOURCE_REMOVE;
+}
+
+// Runs on the scenic thread, while the GTK thread may be anywhere from
+// still starting up to drawing a frame.
 int device_close(device_info_t* p_info)
 {
   if (g_opts.debug_mode) {
     log_info("cairo %s", __func__);
   }
 
-  scenic_cairo_ctx_t* p_ctx = (scenic_cairo_ctx_t*)p_info->v_ctx;
-  gtk_main_quit();
-  scenic_cairo_fini(p_ctx);
+  // Quit from inside the main loop. An idle source waits for the loop if it
+  // hasn't started yet; gtk_main_quit() called before gtk_main() does nothing,
+  // and the loop would then run forever.
+  //
+  // The cairo context is not freed here: the GTK thread may still draw from
+  // it. device_loop frees it once the main loop has returned.
+  g_idle_add(quit_main_loop, NULL);
 
   return 0;
 }
@@ -291,4 +303,10 @@ void device_loop(driver_data_t* p_data)
   }
 
   gtk_main();
+
+  // The main loop only returns after device_close, which is the last thing
+  // the scenic thread does. Once that thread is gone nothing else uses the
+  // context.
+  g_thread_join(g_cairo_gtk.main);
+  scenic_cairo_fini((scenic_cairo_ctx_t*)p_data->v_ctx);
 }
